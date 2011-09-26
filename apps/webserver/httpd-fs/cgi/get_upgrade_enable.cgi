@@ -1,2 +1,0 @@
-<%! cgi-get-upgrade-ena
->

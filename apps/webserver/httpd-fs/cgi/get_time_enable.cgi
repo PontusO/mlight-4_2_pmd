@@ -1,2 +1,0 @@
-<%! get-tim-en-cgi
->

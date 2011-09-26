@@ -1,99 +1,53 @@
-h1
-{
+.hlinks a:link  { color: #FFFFFF; text-decoration: none; }
+.hlinks a:visited { color: #FFFFBB; text-decoration: none; }
+.hlinks a:active { color: #FFFF00; text-decoration: none; }
+.hlinks a:hover { color: #FFCC11; text-decoration: none; }
+h1 {
   text-align: center;
-  font-size:12pt;
-  font-family:arial,helvetica;
+  font-size:14pt;
   font-weight:bold;
   padding:10px;
+  font-family:verdana,arial,helvetica;
 }
-
-body
-{
-
-  background-color: #DEFFCB;
+body {
+  background-color: #EEEEEE;
   color:black;
-
-  font-size:9pt;
-  font-family:arial,helvetica;
-}
-
-.menu
-{
-  margin: 4px;
-  width:95%;
-
-  padding:2px;
-
-  border: solid 1px;
-  background-color: #fffcd2;
-  text-align:left;
-
   font-size:9pt;
   font-family:verdana,arial,helvetica;
 }
-
-div.menubox
-{
-  width: 14%;
-  border: 0;
-  float: left;
-  text-align: center;
+.menu {
+  margin: 4px;
+  width:97%;
+  padding:2px;
+  border: solid 1px;
+  background-color: #258D92;
+  text-align:left;
+  font-size:9pt;
+  font-family:verdana,arial,helvetica;
 }
-
-div.footbox
-{
+div.menubox {
   width: 33%;
   border: 0;
   float: left;
-  text-align: left;
+  text-align: center;
 }
-
-.contentblock
-{
+.contentblock {
   margin: 4px;
-  width:95%;
-
+  width:97%;
   padding:2px;
-
   border: 1px dotted;
   background-color: white;
-
   font-size:9pt;
   font-family:verdana,arial,helvetica;
-
 }
-
-p.intro
-{
-  margin-left:20px;
-  margin-right:20px;
-
-  font-size:10pt;
-  font-weight:bold;
-  font-family:verdana,arial,helvetica;
-}
-
-p.clink
-{
-  font-size:12pt;
-  font-family:courier,monospace;
-  text-align:center;
-}
-
-p.clink9
-{
-  font-size:9pt;
-  font-family:courier,monospace;
-  text-align:center;
-}
-
-p
-{
+p {
   padding-left:10px;
 }
-
-p.right
-{
+p.right {
   text-align:right;
 }
-
+.mytab {
+  font-size:10pt;
+  font-family:verdana,arial,helvetica;
+  text-align:left;
+}
