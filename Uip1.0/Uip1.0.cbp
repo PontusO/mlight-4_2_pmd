@@ -78,6 +78,7 @@
 		</Linker>
 		<ExtraCommands>
 			<Add before="perl ..\apps\webserver\makefsdata" />
+			<Add before="perl ..\apps\webserver\makestrings" />
 		</ExtraCommands>
 		<Unit filename="..\apps\webserver\base64.c">
 			<Option compilerVar="CC" />
@@ -95,42 +96,16 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\apps\webserver\httpd-fs.h" />
+		<Unit filename="..\apps\webserver\httpd-fs\401.html" />
 		<Unit filename="..\apps\webserver\httpd-fs\404.html" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\clear_entries.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_button_map.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_chan_map.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_discr_time.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_entries.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_host_ip.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_login_querytime.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_login_time.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_login_timeout.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_netmask.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_node_id.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_num_entries.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_router.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time_date.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time_enable.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time_interval.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time_ip.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time_port.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time_tz.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_tv_num.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_upgrade_enable.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_upgrade_ip.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\set_param.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\channels.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\_netset.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\_settings.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_level.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\set_level.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\footer.html" />
 		<Unit filename="..\apps\webserver\httpd-fs\header.html" />
-		<Unit filename="..\apps\webserver\httpd-fs\index.html" />
-		<Unit filename="..\apps\webserver\httpd-fs\netset.shtml" />
-		<Unit filename="..\apps\webserver\httpd-fs\remote.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\index.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\style.css" />
-		<Unit filename="..\apps\webserver\httpd-fs\system.shtml" />
-		<Unit filename="..\apps\webserver\httpd-fs\timeset.shtml" />
-		<Unit filename="..\apps\webserver\httpd-fs\ui.shtml" />
-		<Unit filename="..\apps\webserver\httpd-fs\upgrade.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fsdata.c">
 			<Option compilerVar="CC" />
 			<Option compile="0" />
@@ -146,13 +121,14 @@
 		</Unit>
 		<Unit filename="..\apps\webserver\httpd.h" />
 		<Unit filename="..\apps\webserver\makefsdata" />
+		<Unit filename="..\apps\webserver\makestrings" />
 		<Unit filename="..\apps\webserver\webserver.h" />
 		<Unit filename="..\doc\pt-1.4-refman.pdf" />
 		<Unit filename="..\doc\uip-refman.pdf" />
-		<Unit filename="..\driver\button.c">
+		<Unit filename="..\driver\CUart.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\driver\button.h" />
+		<Unit filename="..\driver\CUart.h" />
 		<Unit filename="..\driver\dm9000.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -169,17 +145,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\driver\if_dm9000.h" />
-		<Unit filename="..\driver\led.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\driver\led.h" />
-		<Unit filename="..\driver\remote.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\driver\remote.h" />
-		<Unit filename="..\driver\remote_isr.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="..\driver\rtc.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -195,10 +160,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\driver\swtimers.h" />
-		<Unit filename="..\ip_avenger\CUart.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\ip_avenger\CUart.h" />
 		<Unit filename="..\ip_avenger\clock-arch.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -212,6 +173,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\ip_avenger\main.h" />
+		<Unit filename="..\ip_avenger\product.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\ip_avenger\product.h" />
 		<Unit filename="..\ip_avenger\system.h" />
 		<Unit filename="..\ip_avenger\util.c">
 			<Option compilerVar="CC" />
@@ -219,38 +184,11 @@
 			<Option link="0" />
 		</Unit>
 		<Unit filename="..\ip_avenger\util.h" />
-		<Unit filename="..\lib\bank.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\lib\bank.h" />
-		<Unit filename="..\lib\cgi_utils.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\lib\cgi_utils.h" />
-		<Unit filename="..\lib\channel_map.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\lib\channel_map.h" />
 		<Unit filename="..\lib\packet_demux.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\lib\packet_demux.h" />
-		<Unit filename="..\pmd\App\theapp.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\pmd\App\theapp.h" />
-		<Unit filename="..\pmd\App\theapp_cb.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="..\pmd\doc\Readme" />
-		<Unit filename="..\pmd\main\pmd.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\pmd\main\pmd.h" />
-		<Unit filename="..\pmd\time_stamp_manager\time_stamp_mgr.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\pmd\time_stamp_manager\time_stamp_mgr.h" />
 		<Unit filename="..\uip\clock.h" />
 		<Unit filename="..\uip\lc-addrlabels.h" />
 		<Unit filename="..\uip\lc-switch.h" />
