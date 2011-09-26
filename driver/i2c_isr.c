@@ -29,7 +29,6 @@
  */
 #include "system.h"                 // SFR declarations
 #include "i2c.h"
-#include "led.h"
 
 extern char I2cCommand;
 extern char I2cWord;

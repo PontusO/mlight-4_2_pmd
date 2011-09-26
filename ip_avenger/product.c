@@ -32,17 +32,13 @@
 #include "system.h"       // System description
 #include "main.h"         // Locals
 #include "iet_debug.h"    // Debug macros
-#include "led.h"
 #include "swtimers.h"     // Software timer system
 #include "flash.h"
 #include "i2c.h"
 #include "rtc.h"
 #include "httpd-cgi.h"
-#include "pmd.h"
+#include "product.h"
 #include "sound.h"
-
-static u8_t num;
-static char lled[3];                  // Must include one extra position for NULL character
 
 extern static u16_t half_Sec;
 extern static u16_t ten_Secs;
@@ -60,33 +56,6 @@ void cleanup( void );
 extern void config();
 void Timer0_Init (void);
 
-void update_led(unsigned char n)
-{
-  sprintf(lled, "%02d", n);
-  led_out(lled);
-}
-
-/*
- * This function is only for start up sequence diagnostics.
- * It should be removed before relase.
- */
-void diag_led(unsigned char n)
-{
-#ifdef DEBUG_STARTUP
-  u16_t i,j;
-#endif
-
-  update_led(n);
-  P1 = digit[1];
-#ifdef DEBUG_STARTUP
-  for (i=0;i < 5;i++) {
-    for (j=0;j<65530;j++) {
-      P1 = digit[1];
-    }
-  }
-#endif
-}
-
 // ---------------------------------------------------------------------------
 //	pmd()
 //
@@ -97,55 +66,35 @@ void pmd(void) banked
   unsigned int i;
   unsigned char update = UPDATE_INTERVAL;
 
-  num = 0;
   callback_kicker = 0;
 
   config();                 // Configure the MCU
-  P0 |= DIGIT_FLIPPER;      // Display startup sequence on digit 0
-  diag_led(num++);          // Display diagnostics digit "0"
 
   half_Sec = UIP_TX_TIMER;
   ten_Secs = UIP_ARP_TIMER;
 
   Timer0_Init();            // 10 mSec interrupt rate
 
-  diag_led(num++);          // Display diagnostics digit "1"
 #ifdef USE_UART_INSTEAD_OF_SMB
   init_uart();              // Set the Uart up for operation
 #else
   init_i2c();
 #endif
 
-  diag_led(num++);          // Display diagnostics digit "2"
-  diag_led(num++);          // Display diagnostics digit "3"
 #ifdef HAVE_SOUND
   init_sound();
 #endif
 
-  diag_led(num++);          // Update diagnistics number "4"
   uip_init();               // Initialise the uIP TCP/IP stack.
 
-  diag_led(num++);          // Display diagnostics digit "5"
 #ifdef HAVE_FLASH
   validate_config_flash();  // before we do anything else do this.
 #endif
 
-  diag_led(num++);          // Display diagnostics digit "6"
   init_swtimers();          // Initialize all software timers
-
-  diag_led(num++);          // Display diagnostics digit "7"
-
-  diag_led(num++);          // Display diagnostics digit "8"
-  init_led();               // Initialize the led handler
-
-  diag_led(num++);          // Display diagnostics digit "9"
   httpd_init();             // Initialise the webserver app.
-
-  diag_led(num++);          // Update diagnistics number "0"
   if (InitDM9000())         // Initialise the device driver.
     cleanup();              // exit if init failed
-
-  diag_led(num++);          // Display diagnostics digit "1"
   uip_arp_init();           // Initialise the ARP cache.
 
   TX_EventPending = FALSE;	// False to poll the DM9000 receive hardware
@@ -154,8 +103,8 @@ void pmd(void) banked
   EA = TRUE;                // Enable interrupts
 
   A_(printf("\r\n");)
-  A_(printf("Invector Embedded Technologies Debug system output v. 1.001\r\n");)
-  A_(printf("System: iFutura PMD IET9121, 20MHz system clock, DM9000E Ethernet Controller\r\n");)
+  printf("Invector Embedded Technologies Debug system output v. 1.001\r\n");
+  printf("System: IET9123 mLight 4/2, 20MHz system clock, DM9000E Ethernet Controller\r\n")
   A_(printf("Current Host Settings:\r\n");)
   A_(printf("  IP Address: %d.%d.%d.%d\r\n",
     (u16_t)(htons(uip_hostaddr[0]) >> 8),
@@ -176,13 +125,8 @@ void pmd(void) banked
     (u16_t)uip_ethaddr.addr[0],(u16_t)uip_ethaddr.addr[1],(u16_t)uip_ethaddr.addr[2],
     (u16_t)uip_ethaddr.addr[3],(u16_t)uip_ethaddr.addr[4],(u16_t)uip_ethaddr.addr[5]);)
 
-  diag_led(num++);          // Update diagnistics number "2"
   init_rtc();               // Initialize the RTC
 
-  diag_led(num++);          // Update diagnistics number "3"
-
-  /* Turn off dp */
-  P1 = 0x80;
   beep(4000, 20);
 
   while(1)
@@ -293,7 +237,6 @@ void pmd(void) banked
      * Schedule system tasks
      */
     PT_SCHEDULE(handle_sound(&sys_snd));
-    PT_SCHEDULE(handle_led(&led));
     PT_SCHEDULE(handle_kicker(&kicker));
     PT_SCHEDULE(handle_time_client(&tc));
   }	// end of 'while (1)'

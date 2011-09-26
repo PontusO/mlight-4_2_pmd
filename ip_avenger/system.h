@@ -46,7 +46,6 @@
 #include "uipopt.h"
 #include "uip_arp.h"
 #include "uip-split.h"
-#include "led.h"
 #include "sound.h"
 
 /*

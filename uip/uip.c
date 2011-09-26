@@ -93,8 +93,6 @@
 #include <string.h>
 #include "iet_debug.h"
 
-#include "led.h"
-
 /*---------------------------------------------------------------------------*/
 /* Variable definitions. */
 

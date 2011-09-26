@@ -31,7 +31,6 @@
 
 #include "system.h"
 #include "swtimers.h"
-#include "led.h"
 #include "iet_debug.h"
 
 #include <stdio.h>

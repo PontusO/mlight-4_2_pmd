@@ -49,14 +49,12 @@
 #include "psock.h"
 #include "httpd.h"
 #include "httpd-cgi.h"
-#include "cgi_utils.h"
 #include "httpd-param.h"
 #include "httpd-fs.h"
 #include "flash.h"
 #include "rtc.h"
 #include "i2c.h"
 #include "iet_debug.h"
-#include "channel_map.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -266,7 +264,6 @@ PT_THREAD(get_tz_options(struct httpd_state *s, char *ptr) __reentrant)
 {
   PT_BEGIN(&s->utilpt);
   IDENTIFIER_NOT_USED(ptr);
-  PT_WAIT_THREAD(&s->utilpt, get_tz_options_util(s));
   PT_END(&s->utilpt);
 }
 
@@ -462,9 +459,7 @@ PT_THREAD(get_button_map(struct httpd_state *s, char *ptr) __reentrant)
   ptr++;
   /* The index of the color is in the webpage, go get it */
   color_index = atoi(ptr)-1;
-  PT_WAIT_THREAD(&s->utilpt, get_button_map_util(s));
-
-  PT_END(&s->utilpt);
+   PT_END(&s->utilpt);
 }
 
 extern u8_t cgi_button;
@@ -603,7 +598,7 @@ PT_THREAD(get_channel(struct httpd_state *s, char *ptr) __reentrant)
     chn = atoi(ptr);
     /* Check if we are changing channel interval from the web page */
     chn = channels_interval * 10 + chn;
-    sprintf(uip_appdata, "%02d", map_channel(chn));
+    sprintf(uip_appdata, "%02d", 100);
   }
 
   PSOCK_SEND_STR(&s->sout, uip_appdata);

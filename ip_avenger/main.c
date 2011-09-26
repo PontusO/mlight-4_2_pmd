@@ -52,14 +52,13 @@
 #include "system.h"       // System description
 #include "main.h"         // Locals
 #include "iet_debug.h"    // Debug macros
-#include "led.h"
 #include "swtimers.h"     // Software timer system
 #include "flash.h"
 #include "i2c.h"
 #include "rtc.h"
 #include "httpd-cgi.h"
 #include "sound.h"
-#include "pmd.h"
+#include "product.h"
 
 #define SAVE_PSBANK(n)      n = PSBANK
 #define SET_PSBANK(bank)    PSBANK = (PSBANK & 0xcf) | (bank << 4)
@@ -85,7 +84,6 @@ static near u8_t tmcnt;
 
 bit TX_EventPending;	        // the DM9000 hardware receive event
 bit ARP_EventPending;         // trigger the arp timer event
-bit digit_select;
 bit callback_kicker;
 
 //-----------------------------------------------------------------------------
@@ -137,19 +135,6 @@ void Timer0_ISR (void) interrupt TF0_VECTOR using 0
     ten_Secs = UIP_ARP_TIMER;           // and then set the event required to
     ARP_EventPending = TRUE;            // trigger the arp timer if necessary
   }
-
-  if (!digit_select)
-  {                                     // What digit to output
-    P0 &= ~DIGIT_FLIPPER;
-    P1 = (P1 & 0x80) | digit[0];
-  }
-  else
-  {
-    P0 |= DIGIT_FLIPPER;
-    P1 = (P1 & 0x80) | digit[1];
-  }
-
-  digit_select ^= 1;
 
   /* Count all used sw timers down by one */
   for(tmcnt=0 ; tmcnt<NUMBER_OF_SWTIMERS ; tmcnt++)

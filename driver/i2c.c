@@ -43,7 +43,6 @@
 
 #include "system.h"                 // SFR declarations
 #include "i2c.h"
-#include "led.h"
 #include "sound.h"
 
 //-----------------------------------------------------------------------------------
