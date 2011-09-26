@@ -53,9 +53,7 @@
 #include "httpd-param.h"
 #include "httpd-fs.h"
 #include "flash.h"
-#include "remote.h"
 #include "rtc.h"
-#include "time_stamp_mgr.h"
 #include "i2c.h"
 #include "iet_debug.h"
 #include "channel_map.h"
@@ -99,8 +97,6 @@ HTTPD_CGI_CALL(L_get_upgrade_ip, "get-upgrade-ip", get_upgrade_ip);
 HTTPD_CGI_CALL(L_get_channel,         "get-channel", get_channel);
 HTTPD_CGI_CALL(L_get_chan_sel,        "get-chan-sel", get_chan_sel);
 /* File wrapped cgi calls */
-HTTPD_CGI_CALL(L_get_num_entries,     "get-num-entries", get_num_entries);
-HTTPD_CGI_CALL(L_get_entries,         "get-entries", get_entries);
 HTTPD_CGI_CALL(L_clear_entries,       "clear-entries", clear_entries);
 HTTPD_CGI_CALL(L_get_chan_map,        "get-chan-map", get_chan_map);
 HTTPD_CGI_CALL(L_get_time_ena_cgi,    "get-tim-en-cgi", get_time_ena_cgi);
@@ -141,8 +137,6 @@ static const struct httpd_cgi_call *calls[] = {
   &L_get_password,
   /* File wrapped cgi calls */
   &L_clear_entries,
-  &L_get_num_entries,
-  &L_get_entries,
   &L_get_chan_map,
   &L_get_time_ena_cgi,
   &L_get_upgrade_ena_cgi,
@@ -407,120 +401,6 @@ PT_THREAD(get_interval(struct httpd_state *s, char *ptr) __reentrant)
 
   PSOCK_END(&s->sout);
 }
-
-struct dir_data dd;
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_num_entries(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-#ifndef USE_UART_INSTEAD_OF_SMB
-  /* Setup I2C data structure to read the direntry */
-  i2c.address = 0x0008;
-  i2c.device = EEPROM1;
-  i2c.buffer = (u8_t*)&dd;
-  i2c.len = sizeof(struct dir_data);
-  /* Do the I2C transfer, this is a blocking call. Nasty but will have to do */
-  nos_i2c_read(&i2c);
-#else
-  dd.no_entries = 5;
-#endif
-
-  sprintf((char *)uip_appdata, "%d", (u16_t)dd.no_entries);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-static struct time_data td;
-static char tempbuf[32];
-/*---------------------------------------------------------------------------*/
-static unsigned short
-create_entry(u16_t index) __reentrant
-{
-
-#ifndef USE_UART_INSTEAD_OF_SMB
-  /* First get the entry data from the EEPROM */
-  i2c.address = index * DATA_ENTRY_SIZE + FIRST_FREE_ENTRY;
-  i2c.device = EEPROM1;
-  i2c.buffer = (u8_t*)&td;
-  i2c.len = sizeof(struct time_data);
-  nos_i2c_read(&i2c);
-#else
-  /* For UART testing we simply create the same result for each request */
-  td.entry_type = ENTRY_CHANNEL;
-  td.entry_command = CMD_CHANNEL_CHANGE;
-  td.time_stamp = 2629584000;   /* 1 of may 1983 */
-  td.channel = 24;
-  td.user = 0;
-#endif
-  /*
-   * Since we are limited to 4 parameters in sprintf we need to split
-   * this into two separate prints
-   * The entry is formated as follows:
-   * Each entry is prepended with a "<" sign to indicate start of record.
-   * [Entry Number];[Domain];[Command];[Time Stamp];[User];[Channel];[Text TV]
-   *   - The text TV field is not implemented in this version of the software.
-   * Each entry is also terminated by a ">" sign to indicate the end of the entry.
-   *
-   * Example Entry:
-   *   The listed example below have the following meaning:
-   *
-   */
-  sprintf((char *)uip_appdata, "<%u;%u;%u;%lu;",
-          index,                      /* Entry being read */
-          td.entry_type,              /* What domain this entry belongs to */
-          td.entry_command,           /* What command have been issued */
-          td.time_stamp);             /* Time stamp */
-
-  sprintf(tempbuf, "%u;%u;0>",
-          td.user,                    /* User */
-          td.channel);                /* Selected channel, only valid for channel domain entries */
-
-  /* Glue the strings together */
-  strcat(uip_appdata, tempbuf);
-
-  return(strlen(uip_appdata));
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_entries(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-#ifndef USE_UART_INSTEAD_OF_SMB
-  /* Setup I2C data structure to read the direntry */
-  i2c.address = 0x0008;
-  i2c.device = EEPROM1;
-  i2c.buffer = (u8_t*)&dd;
-  i2c.len = sizeof(struct dir_data);
-  /* Do the I2C transfer, this is a blocking call. Nasty but will have to do */
-  nos_i2c_read(&i2c);
-#else
-  dd.no_entries = 5;
-#endif
-
-  A_(printf("start=%d, end=%d\r\n", gcgi_start, gcgi_end);)
-#if 0
-  /* This can be usefull for debug */
-  sprintf((char *)uip_appdata, "Found %d number of entries, start=%d, end=%d\r\n",
-          dd.no_entries, gcgi_start, gcgi_end);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-#endif
-  if (gcgi_start >= dd.no_entries ||
-      gcgi_end >= dd.no_entries ||
-      gcgi_start > gcgi_end) {
-    PSOCK_SEND_STR(&s->sout, "<Error 101>");
-  } else {
-    for (gi=gcgi_start;gi<=gcgi_end;gi++) {
-      create_entry(gi);
-      PSOCK_SEND_STR(&s->sout, uip_appdata);
-    }
-  }
-  PSOCK_END(&s->sout);
-}
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(clear_entries(struct httpd_state *s, char *ptr) __reentrant)
@@ -529,15 +409,7 @@ PT_THREAD(clear_entries(struct httpd_state *s, char *ptr) __reentrant)
 
   IDENTIFIER_NOT_USED(ptr);
 
-// #ifndef USE_UART_INSTEAD_OF_SMB
-  if (!tsm_reset_directory())
-    PSOCK_SEND_STR(&s->sout, "<OK>");
-  else
-    PSOCK_SEND_STR(&s->sout, "<Error 201>");
-// #else
-  /* UART build, always respond with OK */
-//  PSOCK_SEND_STR(&s->sout, "<OK>");
-//#endif
+  PSOCK_SEND_STR(&s->sout, "<OK>");
 
   PSOCK_END(&s->sout);
 }

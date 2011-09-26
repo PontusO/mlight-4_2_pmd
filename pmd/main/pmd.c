@@ -34,15 +34,11 @@
 #include "iet_debug.h"    // Debug macros
 #include "led.h"
 #include "swtimers.h"     // Software timer system
-#include "button.h"
-#include "theapp.h"       // The main application
 #include "flash.h"
 #include "i2c.h"
 #include "rtc.h"
-#include "time_stamp_mgr.h"
 #include "httpd-cgi.h"
 #include "pmd.h"
-#include "remote.h"
 #include "sound.h"
 
 static u8_t num;
@@ -121,10 +117,6 @@ void pmd(void) banked
 #endif
 
   diag_led(num++);          // Display diagnostics digit "2"
-#ifdef HAVE_REMOTE
-  remote_init();
-#endif
-
   diag_led(num++);          // Display diagnostics digit "3"
 #ifdef HAVE_SOUND
   init_sound();
@@ -142,7 +134,6 @@ void pmd(void) banked
   init_swtimers();          // Initialize all software timers
 
   diag_led(num++);          // Display diagnostics digit "7"
-  init_button();            // Initialize the button handler
 
   diag_led(num++);          // Display diagnostics digit "8"
   init_led();               // Initialize the led handler
@@ -189,11 +180,6 @@ void pmd(void) banked
   init_rtc();               // Initialize the RTC
 
   diag_led(num++);          // Update diagnistics number "3"
-  init_tsm();               // Initialize the time stamp manager
-  TSM_STARTUP_EVENT = 1;    // Make sure a proper init is done.
-
-  diag_led(num++);          // Update diagnistics number "4"
-  init_theapp();            // Initialize the main application
 
   /* Turn off dp */
   P1 = 0x80;
@@ -306,20 +292,10 @@ void pmd(void) banked
     /*
      * Schedule system tasks
      */
-    if (ENABLE_REMOTE_TRAINER_MODE) {
-      PT_SCHEDULE(handle_rtm(&rtm));
-    } else {
-      PT_SCHEDULE(handle_theapp(&theapp));
-      PT_SCHEDULE(handle_remote(&cremote));
-    }
     PT_SCHEDULE(handle_sound(&sys_snd));
-    PT_SCHEDULE(handle_button(&button));
     PT_SCHEDULE(handle_led(&led));
-    PT_SCHEDULE(handle_7seg(&Seg7));
     PT_SCHEDULE(handle_kicker(&kicker));
     PT_SCHEDULE(handle_time_client(&tc));
-    PT_SCHEDULE(handle_tsm(&tsm));
-    PT_SCHEDULE(handle_tsm_direct(&tsm_direct));
   }	// end of 'while (1)'
 }
 

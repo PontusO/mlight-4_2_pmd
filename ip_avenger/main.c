@@ -54,16 +54,12 @@
 #include "iet_debug.h"    // Debug macros
 #include "led.h"
 #include "swtimers.h"     // Software timer system
-#include "button.h"
-#include "theapp.h"       // The main application
 #include "flash.h"
 #include "i2c.h"
 #include "rtc.h"
-#include "time_stamp_mgr.h"
 #include "httpd-cgi.h"
-#include "pmd.h"
-#include "remote.h"
 #include "sound.h"
+#include "pmd.h"
 
 #define SAVE_PSBANK(n)      n = PSBANK
 #define SET_PSBANK(bank)    PSBANK = (PSBANK & 0xcf) | (bank << 4)
@@ -74,8 +70,6 @@
 //-----------------------------------------------------------------------------
 
 void Timer0_ISR (void) interrupt TF0_VECTOR;
-extern void PCA_ISR (void) interrupt PCA_VECTOR;
-extern void Timer1_ISR (void) interrupt TF1_VECTOR;
 extern void SMBus_ISR (void) interrupt SMB0_VECTOR;
 extern void rtc_isr(void) interrupt TF3_VECTOR;
 
