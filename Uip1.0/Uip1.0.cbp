@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Uip1.0" />
+		<Option pch_mode="2" />
+		<Option compiler="sdcc" />
+		<Build>
+			<Target title="Build and run">
+				<Option output="bin\Debug\Uip1.hex" prefix_auto="1" extension_auto="0" />
+				<Option object_output="obj\Debug\" />
+				<Option type="1" />
+				<Option compiler="sdcc" />
+				<ExtraCommands>
+					<Add after="bin\debug\flash_serial.bat" />
+				</ExtraCommands>
+			</Target>
+			<Target title="Build">
+				<Option output="bin\Debug\Uip1.hex" prefix_auto="1" extension_auto="0" />
+				<Option object_output="obj\Debug\" />
+				<Option type="1" />
+				<Option compiler="sdcc" />
+			</Target>
+			<Target title="Release">
+				<Option output="bin\Release\Uip1" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj\Release\" />
+				<Option type="1" />
+				<Option compiler="sdcc" />
+			</Target>
+			<Target title="Build and run with UART">
+				<Option output="bin\Debug\Uip1.hex" prefix_auto="1" extension_auto="0" />
+				<Option object_output="obj\Debug\" />
+				<Option type="1" />
+				<Option compiler="sdcc" />
+				<Compiler>
+					<Add option="-DUSE_UART_INSTEAD_OF_SMB=1" />
+					<Add option="-DPRINT_A=1" />
+				</Compiler>
+				<ExtraCommands>
+					<Add after="bin\debug\flash_serial.bat" />
+				</ExtraCommands>
+			</Target>
+			<Target title="Build with UART">
+				<Option output="bin\Debug\Uip1.hex" prefix_auto="1" extension_auto="0" />
+				<Option object_output="obj\Debug\" />
+				<Option type="1" />
+				<Option compiler="sdcc" />
+				<Compiler>
+					<Add option="-DUSE_UART_INSTEAD_OF_SMB=1" />
+					<Add option="-DPRINT_A=1" />
+				</Compiler>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="--model-large" />
+			<Add option="-mmcs51" />
+			<Add option="--opt-code-size" />
+			<Add option="--debug" />
+			<Add option="-DHAVE_REMOTE=1" />
+			<Add option="-DCONFIG_BANKED=1" />
+			<Add option="-DHAVE_SOUND=1" />
+			<Add option="-DHAVE_FLASH=1" />
+			<Add directory="..\apps\webserver" />
+			<Add directory="..\uip" />
+			<Add directory="..\unix" />
+			<Add directory="..\ip_avenger" />
+			<Add directory="..\driver" />
+			<Add directory="..\pmd\App" />
+			<Add directory="..\lib" />
+			<Add directory="..\pmd\time_stamp_manager" />
+			<Add directory="..\pmd\remote_trainer" />
+			<Add directory="..\pmd\main" />
+		</Compiler>
+		<Linker>
+			<Add option="-Wl-r" />
+			<Add option="-Wl-bUIP_BANK=0x28000" />
+			<Add option="-Wl-bAPP_BANK=0x38000" />
+		</Linker>
+		<ExtraCommands>
+			<Add before="perl ..\apps\webserver\makefsdata" />
+		</ExtraCommands>
+		<Unit filename="..\apps\webserver\base64.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\apps\webserver\http-strings" />
+		<Unit filename="..\apps\webserver\http-strings.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\apps\webserver\http-strings.h" />
+		<Unit filename="..\apps\webserver\httpd-cgi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\apps\webserver\httpd-cgi.h" />
+		<Unit filename="..\apps\webserver\httpd-fs.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\apps\webserver\httpd-fs.h" />
+		<Unit filename="..\apps\webserver\httpd-fs\404.html" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\clear_entries.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_button_map.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_chan_map.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_discr_time.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_entries.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_host_ip.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_login_querytime.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_login_time.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_login_timeout.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_netmask.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_node_id.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_num_entries.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_router.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time_date.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time_enable.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time_interval.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time_ip.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time_port.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_time_tz.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_tv_num.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_upgrade_enable.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_upgrade_ip.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cgi\set_param.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\channels.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\footer.html" />
+		<Unit filename="..\apps\webserver\httpd-fs\header.html" />
+		<Unit filename="..\apps\webserver\httpd-fs\index.html" />
+		<Unit filename="..\apps\webserver\httpd-fs\netset.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\remote.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\style.css" />
+		<Unit filename="..\apps\webserver\httpd-fs\system.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\timeset.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\ui.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\upgrade.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fsdata.c">
+			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
+		<Unit filename="..\apps\webserver\httpd-fsdata.h" />
+		<Unit filename="..\apps\webserver\httpd-param.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\apps\webserver\httpd-param.h" />
+		<Unit filename="..\apps\webserver\httpd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\apps\webserver\httpd.h" />
+		<Unit filename="..\apps\webserver\makefsdata" />
+		<Unit filename="..\apps\webserver\webserver.h" />
+		<Unit filename="..\doc\pt-1.4-refman.pdf" />
+		<Unit filename="..\doc\uip-refman.pdf" />
+		<Unit filename="..\driver\button.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\button.h" />
+		<Unit filename="..\driver\dm9000.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\dm9000.h" />
+		<Unit filename="..\driver\flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\flash.h" />
+		<Unit filename="..\driver\i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\i2c.h" />
+		<Unit filename="..\driver\i2c_isr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\if_dm9000.h" />
+		<Unit filename="..\driver\led.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\led.h" />
+		<Unit filename="..\driver\remote.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\remote.h" />
+		<Unit filename="..\driver\remote_isr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\rtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\rtc.h" />
+		<Unit filename="..\driver\rtc_isr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\sound.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\sound.h" />
+		<Unit filename="..\driver\swtimers.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\swtimers.h" />
+		<Unit filename="..\ip_avenger\CUart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\ip_avenger\CUart.h" />
+		<Unit filename="..\ip_avenger\clock-arch.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\ip_avenger\clock-arch.h" />
+		<Unit filename="..\ip_avenger\config.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\ip_avenger\fixed_addr.h" />
+		<Unit filename="..\ip_avenger\iet_debug.h" />
+		<Unit filename="..\ip_avenger\main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\ip_avenger\main.h" />
+		<Unit filename="..\ip_avenger\system.h" />
+		<Unit filename="..\ip_avenger\util.c">
+			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
+		<Unit filename="..\ip_avenger\util.h" />
+		<Unit filename="..\lib\bank.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\lib\bank.h" />
+		<Unit filename="..\lib\cgi_utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\lib\cgi_utils.h" />
+		<Unit filename="..\lib\channel_map.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\lib\channel_map.h" />
+		<Unit filename="..\lib\packet_demux.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\lib\packet_demux.h" />
+		<Unit filename="..\pmd\App\theapp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pmd\App\theapp.h" />
+		<Unit filename="..\pmd\App\theapp_cb.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pmd\doc\Readme" />
+		<Unit filename="..\pmd\main\pmd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pmd\main\pmd.h" />
+		<Unit filename="..\pmd\time_stamp_manager\time_stamp_mgr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pmd\time_stamp_manager\time_stamp_mgr.h" />
+		<Unit filename="..\uip\clock.h" />
+		<Unit filename="..\uip\lc-addrlabels.h" />
+		<Unit filename="..\uip\lc-switch.h" />
+		<Unit filename="..\uip\lc.h" />
+		<Unit filename="..\uip\psock.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\uip\psock.h" />
+		<Unit filename="..\uip\pt.h" />
+		<Unit filename="..\uip\timer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\uip\timer.h" />
+		<Unit filename="..\uip\uip-conf.h" />
+		<Unit filename="..\uip\uip-fw.h" />
+		<Unit filename="..\uip\uip-split.h" />
+		<Unit filename="..\uip\uip.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\uip\uip.h" />
+		<Unit filename="..\uip\uip_arch.h" />
+		<Unit filename="..\uip\uip_arp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\uip\uip_arp.h" />
+		<Unit filename="..\uip\uiplib.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\uip\uiplib.h" />
+		<Unit filename="..\uip\uipopt.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

@@ -1,0 +1,23 @@
+%!: /header.html
+<center>
+<h1>Network Settings</h1><br>
+<hr noshade width="75%"><form>
+<table width="50%" class="mytab">
+<tr><td>Household Number</td><td><input type="text" name="devid" size="6" maxlength="4" value="%! get-id
+"></td></tr>
+<tr><td>TV set number</td><td><input type="text" name="tvid" size="6" maxlength="1" value="%! get-tv
+"> (The PMD needs to be restarted if this is changed)</td></tr>
+<tr><td>IP Address</td><td><input type="text" name="hostip" size="15" maxlength="20" value="%! get-ip
+"></td></tr>
+<tr><td>Netmask</td><td><input type="text" name="netmask" size="15" maxlength="20" value="%! get-mask
+"></td></tr>
+<tr><td>Standard Router</td><td><input type="text" name="gateway" size="15" maxlength="20" value="%! get-router
+"></td></tr>
+</table>
+<br>
+<input type="submit" name="submit" value="save">
+<input type="reset" name="reset" value="reset">
+</form>
+<br>
+</center>
+%!: /footer.html

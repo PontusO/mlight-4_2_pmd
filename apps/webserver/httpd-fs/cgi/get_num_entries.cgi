@@ -1,0 +1,2 @@
+<%! get-num-entries
+>

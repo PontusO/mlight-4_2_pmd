@@ -1,0 +1,2 @@
+<%! get-upgrade-ip
+>

@@ -1,0 +1,2 @@
+<%! get-discr-tim
+>

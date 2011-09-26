@@ -1,0 +1,61 @@
+1     PMD Design Notes
+
+1.1   General information
+      This document holds design releated information regarding the PMD product
+
+2     Resource Allocations
+
+2.1   Timers
+
+2.1.1 Timer 0
+      Used to generate the time base for the TCP/IP stack
+
+2.1.2 Timer 1
+      Used to detect a remote control bit timeout.
+
+2.1.3 Timer 2
+      By UART0 in debug mode to generate the baud rate.
+
+2.1.4 Timer 3
+      Is used to generate a time base for the real time clock.
+
+2.1.5 Timer 4
+      Used to generate tones on the piezo buzzer
+
+2.2   UARTs
+      The product can be put into debug mode, overiding the SMBus interface with a UART1_VECTOR
+      to allow debug prints.
+
+2.3   SMBus
+
+2.3.1 SMBus 0
+      Used in this project to communicate with an external EEPROM and in the future
+      it can be used to extend the product.
+
+2.4   SPI
+      Not used in this product
+
+2.5   ADC2
+      No analog inputs using ADC2 are required in this product
+
+2.6   ADC0
+      No analog inputs using ADC0 are required in this product although ADC0.0 -
+      ADC0.6 are routed on the mother board PCB to the extension connector.
+
+2.7   DAC
+      No analog outputs are used in this product
+
+2.8   Comparators
+      On comparator (CP1) is used to detect a push button, CP0 is not used.
+
+2.9   Voltage reference.
+      The voltage reference is used to feed the VREF input just in case the analog
+      extension signals are ever used. It is also used to feed comparator CP1
+      to give a reference level for the comparator.
+
+2.10  PCA
+      The PCA is used to measure the input from the infrared remote sensor block.
+      CEX0 is connected to pin P0.2 which in turn is connected to the ir sensor on
+      the base board. The idea behind this is that the detection algorithm will
+      calculate the difference between up and down events on the pin and match that
+      towards a known reference stored in the FLASH memory.
