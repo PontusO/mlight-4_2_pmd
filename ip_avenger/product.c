@@ -75,11 +75,8 @@ void pmd(void) banked
 
   Timer0_Init();            // 10 mSec interrupt rate
 
-#ifdef USE_UART_INSTEAD_OF_SMB
-  init_uart();              // Set the Uart up for operation
-#else
-  init_i2c();
-#endif
+  CUart_init(BAUD_115200);  // Set the Uart up for operation
+//  init_i2c();
 
 #ifdef HAVE_SOUND
   init_sound();

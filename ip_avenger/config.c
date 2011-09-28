@@ -83,21 +83,21 @@ void config() {
 #endif
 #endif
 
-  // Configure the XBRn Registers
-#ifdef USE_UART_INSTEAD_OF_SMB
-  XBR0	= 0x0C;	// Enable UART, PCA and T4 out
-#else
-  XBR0	= 0x09;	// Enable SMB, PCA and T4 out
-#endif
-  XBR1	= 0x00;
-  XBR2	= 0x4A; // Enable Crossbar/weak pups, EMIF on low ports
+//-----------------------------------------------------------------------------
+// PORT_Init - set up crossbar and port designations
+//-----------------------------------------------------------------------------
 
-  // NOTE: Some peripheral I/O pins can function as either inputs or
-  // outputs, depending on the configuration of the peripheral. By default,
-  // the configuration utility will configure these I/O pins as push-pull
-  // outputs.
-  P0MDOUT = 0xF9; // Output configuration for P0
-  P1MDOUT = 0x00; // Output configuration for P1
+  // Configure the XBRn Registers
+  XBR0	= 0x24;	// Enable UART0 for debug print, UART1 for external LED control.
+  XBR1	= 0x00;
+  XBR2	= 0x46; // Enable Crossbar/weak pups, EMIF on low ports
+
+  /* Configure port functions */
+  P0MDOUT = 0xF5; // Output configuration for P0
+  P1MDOUT = 0x1F; // Output configuration for P1
+  /* Before altering these values, remember that the DM9000 is hooked to the
+   * address and data bus, and changing these values could render the DM9000
+   * unaccessable */
   P2MDOUT = 0xFF; // Output configuration for P2
   P3MDOUT = 0xFF; // Output configuration for P3
   P1MDIN  = 0xFF; // Input configuration for P1
@@ -106,16 +106,12 @@ void config() {
   P74OUT  = 0x00; // Output configuration for P4-7
 #endif
 
-  P0 = 0xe0;
-  P1 = 0xff;
-
-  P2 = 0x00;
-  P3 = 0x00;
-  P4 = 0xFF;
-  P5 = 0xFF;
-  P6 = 0xFF;
-  P7 = 0xFF;
-
+  /* This makes all inputs pulled high and all outputs set to high */
+  P0 = 0xFF;
+  /*
+   * Pull all keyboard inputs high
+   */
+  P1 = 0xFF;
 //-----------------------------------------------------------------------------
 // EMIF_Init
 //-----------------------------------------------------------------------------
