@@ -145,6 +145,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\driver\if_dm9000.h" />
+		<Unit filename="..\driver\pca.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\pca.h" />
 		<Unit filename="..\driver\rtc.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -184,6 +188,10 @@
 			<Option link="0" />
 		</Unit>
 		<Unit filename="..\ip_avenger\util.h" />
+		<Unit filename="..\lib\lightlib.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\lib\lightlib.h" />
 		<Unit filename="..\lib\packet_demux.c">
 			<Option compilerVar="CC" />
 		</Unit>
