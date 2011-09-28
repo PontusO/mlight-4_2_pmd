@@ -39,6 +39,7 @@
 #include "httpd-cgi.h"
 #include "product.h"
 #include "sound.h"
+#include "pca.h"
 
 extern static u16_t half_Sec;
 extern static u16_t ten_Secs;
@@ -77,6 +78,9 @@ void pmd(void) banked
 
   CUart_init(BAUD_115200);  // Set the Uart up for operation
 //  init_i2c();
+
+  /* Initialize LED brightnes controller */
+  init_pca(PCA_MODE_PWM_16, PCA_SYS_CLK);
 
 #ifdef HAVE_SOUND
   init_sound();
