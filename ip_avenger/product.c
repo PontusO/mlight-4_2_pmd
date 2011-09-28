@@ -104,7 +104,7 @@ void pmd(void) banked
 
   A_(printf("\r\n");)
   printf("Invector Embedded Technologies Debug system output v. 1.001\r\n");
-  printf("System: IET9123 mLight 4/2, 20MHz system clock, DM9000E Ethernet Controller\r\n")
+  printf("System: IET9123 mLight 4/2, 20MHz system clock, DM9000E Ethernet Controller\r\n");
   A_(printf("Current Host Settings:\r\n");)
   A_(printf("  IP Address: %d.%d.%d.%d\r\n",
     (u16_t)(htons(uip_hostaddr[0]) >> 8),
