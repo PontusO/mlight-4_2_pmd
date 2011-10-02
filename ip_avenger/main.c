@@ -79,7 +79,6 @@ extern timer_cb timer_cbs[NUMBER_OF_SWTIMERS];
 //-----------------------------------------------------------------------------
 u16_t half_Sec;
 u16_t ten_Secs;
-char digit[2];
 static near u8_t tmcnt;
 
 bit TX_EventPending;	        // the DM9000 hardware receive event
@@ -92,8 +91,9 @@ bit callback_kicker;
 //-----------------------------------------------------------------------------
 void main(void)
 {
-  /* TODO: This sucks as it consumes one stack entry, rewrite */
-  pmd();
+  __asm
+  ljmp _pmd
+  __endasm;
 }
 //-----------------------------------------------------------------------------
 // Received a datagram

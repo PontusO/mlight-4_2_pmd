@@ -43,7 +43,6 @@
 
 extern static u16_t half_Sec;
 extern static u16_t ten_Secs;
-extern char digit[2];
 extern static near u8_t tmcnt;
 
 extern bit TX_EventPending;	          // the DM9000 hardware receive event
