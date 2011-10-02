@@ -37,6 +37,7 @@
 #define BAUD_END BAUD_115200
 
 void uart0_init(u8_t baud) __reentrant;
-void UART1_init(void) __reentrant;
+void uart1_init(u8_t baud) __reentrant;
+void sys_uart_init(u8_t baud) __reentrant;
 
 #endif

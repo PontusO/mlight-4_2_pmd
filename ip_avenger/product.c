@@ -75,7 +75,7 @@ void pmd(void) banked
 
   Timer0_Init();            // 10 mSec interrupt rate
 
-  uart0_init(BAUD_115200);  // Set the Uart up for operation
+  sys_uart_init(BAUD_115200);  // Init the system print uart
 //  init_i2c();
 
   /* Initialize LED brightnes controller */

@@ -106,6 +106,10 @@
 #define INTERRUPT_OFF   0
 #define INTERRUPT_ON    1
 
+/* Define the UART to be used for system prints */
+#define PUTCHAR_UART    1
+#define CONFIG_ENABLE_UART_1
+#undef CONFIG_ENABLE_UART_0
 void putchar(char n);
 
 #ifndef NULL

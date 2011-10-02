@@ -59,12 +59,17 @@ static char cnt;
 char sonar_str[6];
 bit RX_sonar;
 
+#ifdef CONFIG_ENABLE_UART_0
 /*********************************************************************************
 *
 * Function: uart0_init(void)
 *
 *********************************************************************************/
+#if PUTCHAR_UART==0
+void sys_uart_init(u8_t baud) __reentrant
+#else
 void uart0_init(u8_t baud) __reentrant
+#endif
 {
 #if BUILD_TARGET == IET912X
   SFRPAGE = TIMER01_PAGE; // Set the correct SFR page
@@ -91,7 +96,11 @@ void uart0_init(u8_t baud) __reentrant
 * Will override dummy putchar in SDCC libraries.
 *
 *********************************************************************************/
+#if PUTCHAR_UART==0
 void putchar(char a)
+#else
+void putchar0(char a)
+#endif
 {
 #if BUILD_TARGET == IET912X
   SFRPAGE = UART0_PAGE; // Set the correct SFR page
@@ -103,6 +112,7 @@ void putchar(char a)
   SFRPAGE = LEGACY_PAGE; // Reset to legacy SFR page
 #endif
 }
+#endif
 
 #ifdef CONFIG_ENABLE_UART_1
 /*********************************************************************************
@@ -113,11 +123,16 @@ void putchar(char a)
 * and uses Timer 4 as a baudrate generator.
 *
 * The second section of the code is for C8051F12x and uses timer1 as a baudrate
-* generator. It assumes an operating frequency (SYSCLK) of 24.5 MHz.
+* generator. It assumes an operating frequency (SYSCLK) of 20 MHz.
 *
 *********************************************************************************/
-void UART1_init(void) __reentrant
+#if PUTCHAR_UART==1
+void sys_uart_init(u8_t baud) __reentrant
+#else
+void uart1_init(u8_t baud) __reentrant
+#endif
 {
+  baud;
 #if BUILD_TARGET == IET902X
   /* Mode 1, Check Stop Bit */
   SCON1 = 0x50;
@@ -139,15 +154,17 @@ void UART1_init(void) __reentrant
 #else
   /* Setup UART1 as an 8 bit UART */
   SFRPAGE = UART1_PAGE;
-  SCON1 = 0x50;
-  TI1 = 1;
+  SCON1   = 0x50;
+  TI1     = 1;
 
   /* Setup timer one to do 115200 baud */
   SFRPAGE = TIMER01_PAGE;
-  TMOD = 0x20;
-  CKCON = 0x10;
-  TH1 = 0x96;
-  TR1 = 1;
+  /* Timer 1 mode2 */
+  TMOD    = TMOD & 0x0f | 0x20;
+  /* Timer 1 uses sysclk */
+  CKCON   |= 0x10;
+  TH1     = 0xa9;
+  TR1     = 1;
 
 /* Set interrupts below this point */
 #endif
@@ -195,8 +212,13 @@ void UART1_ISR (void) __interrupt UART1_VECTOR
 * Prints a character on uart 1
 *
 *********************************************************************************/
-void putchar_uart1(char chr)
+#if PUTCHAR_UART==1
+void putchar(char chr)
+#else
+void putchar1(char chr)
+#endif
 {
+  return;
   /* First wait for the tx_busy flag to be cleared by the interrupt */
   while (tx_busy);
   /* Send the data */
@@ -205,24 +227,6 @@ void putchar_uart1(char chr)
   tx_busy = 1;
   /* Do we need to do something more ? */
 }
-
-/*********************************************************************************
-*
-* Function: string1
-*
-* Prints a given string to uart 1
-*
-*********************************************************************************/
-u8_t put_string1(char *ptr)
-{
-  u8_t n = 0;
-
-  while (*ptr != '\0') {
-    n++;
-    putchar_uart1(*ptr++);
-  }
-  return n;
-}
-
 #endif
+
 // EOF
