@@ -88,7 +88,7 @@ void config() {
 //-----------------------------------------------------------------------------
 
   // Configure the XBRn Registers
-  XBR0	= 0x24;	// Enable UART0 for debug print, UART1 for external LED control.
+  XBR0	= 0x26;	// Enable I2C for RTC and PWM ctrl, UART1 for RS485
   XBR1	= 0x00;
   XBR2	= 0x46; // Enable Crossbar/weak pups, EMIF on low ports
 

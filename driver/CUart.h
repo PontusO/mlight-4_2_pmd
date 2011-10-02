@@ -36,7 +36,7 @@
 #define BAUD_115200 0x01
 #define BAUD_END BAUD_115200
 
-void CUart_init(u8_t baud) __reentrant;
+void uart0_init(u8_t baud) __reentrant;
 void UART1_init(void) __reentrant;
 
 #endif

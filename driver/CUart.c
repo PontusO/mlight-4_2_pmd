@@ -61,10 +61,10 @@ bit RX_sonar;
 
 /*********************************************************************************
 *
-* Function: CUart_init(void)
+* Function: uart0_init(void)
 *
 *********************************************************************************/
-void CUart_init(u8_t baud) __reentrant
+void uart0_init(u8_t baud) __reentrant
 {
 #if BUILD_TARGET == IET912X
   SFRPAGE = TIMER01_PAGE; // Set the correct SFR page
