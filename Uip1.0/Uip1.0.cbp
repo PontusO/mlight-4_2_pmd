@@ -56,9 +56,7 @@
 			<Add option="-mmcs51" />
 			<Add option="--opt-code-size" />
 			<Add option="--debug" />
-			<Add option="-DHAVE_REMOTE=1" />
 			<Add option="-DCONFIG_BANKED=1" />
-			<Add option="-DHAVE_SOUND=1" />
 			<Add option="-DHAVE_FLASH=1" />
 			<Add directory="..\apps\webserver" />
 			<Add directory="..\uip" />

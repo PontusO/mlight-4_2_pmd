@@ -88,12 +88,12 @@ void config() {
 //-----------------------------------------------------------------------------
 
   // Configure the XBRn Registers
-  XBR0	= 0x26;	// Enable I2C for RTC and PWM ctrl, UART1 for RS485
+  XBR0	= 0x21;	// Enable I2C for RTC and PWM ctrl + CEX0 - CEX3
   XBR1	= 0x00;
-  XBR2	= 0x46; // Enable Crossbar/weak pups, EMIF on low ports
+  XBR2	= 0x46; // Enable Crossbar/weak pups, EMIF on low ports, UART1 for RS485
 
   /* Configure port functions */
-  P0MDOUT = 0xF5; // Output configuration for P0
+  P0MDOUT = 0xF4; // Output configuration for P0
   P1MDOUT = 0x1F; // Output configuration for P1
   /* Before altering these values, remember that the DM9000 is hooked to the
    * address and data bus, and changing these values could render the DM9000

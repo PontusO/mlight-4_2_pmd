@@ -53,11 +53,8 @@
 #include "uip.h"
 #include "CUart.h"
 
-const u8_t baudrates[] = {0xf5};
-static char tx_busy; /* TX Busy flag */
-static char cnt;
-char sonar_str[6];
-bit RX_sonar;
+const u8_t baudrates0[] = {0xf5};
+const u8_t baudrates1[] = {0xa9};
 
 #ifdef CONFIG_ENABLE_UART_0
 /*********************************************************************************
@@ -74,10 +71,10 @@ void uart0_init(u8_t baud) __reentrant
 #if BUILD_TARGET == IET912X
   SFRPAGE = TIMER01_PAGE; // Set the correct SFR page
 #endif
-  if ((baud == BAUD_UNDEFINED) || (baud > BAUD_END))
+  if ((baud == BAUD_UNDEFINED) || (baud >= BAUD_END))
     return; // Return if the wanted baudrate is out of bounds
   TMOD |= 0x20; // TMOD: timer 1, mode 2, 8-bit reload
-  TH1 = baudrates[baud-1]; // set Timer1 reload value for baudrate
+  TH1 = baudrates0[baud-1]; // set Timer1 reload value for baudrate
   TR1 = 1; // start Timer1
   CKCON |= 0x10; // Timer1 uses SYSCLK as time base
 
@@ -132,7 +129,8 @@ void sys_uart_init(u8_t baud) __reentrant
 void uart1_init(u8_t baud) __reentrant
 #endif
 {
-  baud;
+  if ((baud == BAUD_UNDEFINED) || (baud >= BAUD_END))
+    return; // Return if the wanted baudrate is out of bounds
 #if BUILD_TARGET == IET902X
   /* Mode 1, Check Stop Bit */
   SCON1 = 0x50;
@@ -148,61 +146,26 @@ void uart1_init(u8_t baud) __reentrant
 
   /* Enable UART1 interrupts */
   EIE2 |= 0x40;
-
-  tx_busy = 0;
-  cnt = 0;
 #else
+  /* Setup timer one */
+  SFRPAGE = TIMER01_PAGE;
+  /* Timer 1 mode2 */
+  TMOD    |= 0x20;
+  /* set Timer1 reload value for baudrate */
+  TH1     = baudrates1[baud-1];
+  /* Timer 1 uses sysclk */
+  CKCON   |= 0x10;
+  /* Start Timer 1 */
+  TR1     = 1;
+
   /* Setup UART1 as an 8 bit UART */
   SFRPAGE = UART1_PAGE;
   SCON1   = 0x50;
   TI1     = 1;
 
-  /* Setup timer one to do 115200 baud */
-  SFRPAGE = TIMER01_PAGE;
-  /* Timer 1 mode2 */
-  TMOD    = TMOD & 0x0f | 0x20;
-  /* Timer 1 uses sysclk */
-  CKCON   |= 0x10;
-  TH1     = 0xa9;
-  TR1     = 1;
-
 /* Set interrupts below this point */
 #endif
-}
 
-/*********************************************************************************
-*
-* Function: UART1_ISR
-*
-* UART1 interrupt handler
-*
-* FIXME: Rewrite to a more generic ISR
-*
-*********************************************************************************/
-void UART1_ISR (void) __interrupt UART1_VECTOR
-{
-  char sd;
-
-  if (SCON1 & RI1) {
-    SCON1 &= ~RI1;
-    sd = SBUF1;
-    /* For syncronization */
-    if (sd == 'R')
-      cnt = 0;
-    /* translate 0x0d */
-    if (sd == '\n')
-      sd = 0;
-    /* Store in array */
-    sonar_str[cnt] = sd;
-    /* Check for wrap */
-    if (++cnt == 5) {
-      cnt = 0;
-      RX_sonar = 1;
-    }
-  } else if (SCON1 & TI1) {
-    tx_busy = 0;
-    SCON1 &= ~TI1;
-  }
 }
 
 /*********************************************************************************
@@ -218,14 +181,25 @@ void putchar(char chr)
 void putchar1(char chr)
 #endif
 {
-  return;
+  SFRPAGE = UART1_PAGE;
   /* First wait for the tx_busy flag to be cleared by the interrupt */
-  while (tx_busy);
-  /* Send the data */
+  while (TI1 == 0);
   SBUF1 = chr;
-  /* Indicate that a tx is in progress */
-  tx_busy = 1;
-  /* Do we need to do something more ? */
+  TI1   = 0;
+}
+
+/*********************************************************************************
+*
+* Function: UART1_ISR
+*
+* UART1 interrupt handler
+*
+* FIXME: Rewrite to a more generic ISR
+*
+*********************************************************************************/
+void UART1_ISR (void) __interrupt UART1_VECTOR
+{
+
 }
 #endif
 

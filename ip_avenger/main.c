@@ -91,9 +91,7 @@ bit callback_kicker;
 //-----------------------------------------------------------------------------
 void main(void)
 {
-  __asm
-  ljmp _pmd
-  __endasm;
+  pmd();
 }
 //-----------------------------------------------------------------------------
 // Received a datagram
@@ -156,7 +154,6 @@ void Timer0_ISR (void) interrupt TF0_VECTOR using 0
       }
     }
   }
-
   ET0 = TRUE;                           // enable Timer0 interrupts, again
 }
 
