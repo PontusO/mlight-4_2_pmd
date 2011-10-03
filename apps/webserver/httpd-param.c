@@ -38,7 +38,6 @@
 #include "httpd-param.h"
 #include "httpd-cgi.h"
 #include "flash.h"
-#include "sound.h"
 #include "rtc.h"
 #include "iet_debug.h"
 
@@ -584,7 +583,6 @@ static void set_save(char *buffer) __reentrant
 {
   buffer = skip_to_char(buffer, '=');
   if (strncmp("save", buffer, 4) == 0) {
-    beep(5000,2);
     /* Write new configuration to flash */
     write_config_to_flash();
     /* In case we are setting the time manually */

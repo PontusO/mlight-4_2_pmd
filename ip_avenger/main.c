@@ -57,7 +57,6 @@
 #include "i2c.h"
 #include "rtc.h"
 #include "httpd-cgi.h"
-#include "sound.h"
 #include "product.h"
 
 #define SAVE_PSBANK(n)      n = PSBANK

@@ -46,7 +46,6 @@
 #include "uipopt.h"
 #include "uip_arp.h"
 #include "uip-split.h"
-#include "sound.h"
 
 /*
  * Some os-light signal macros

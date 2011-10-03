@@ -31,7 +31,6 @@
 
 #include "system.h"
 #include "rtc.h"
-#include "sound.h"
 #include "psock.h"
 #include "swtimers.h"
 #include "iet_debug.h"
@@ -468,9 +467,7 @@ static PT_THREAD(time_thread(void))
   /* Read the reply from the TIME server */
   PSOCK_READBUF(&s.psock);
 
-  if (PSOCK_DATALEN(&s.psock) != 4)
-    beep (250, 5);
-  else {
+  if (PSOCK_DATALEN(&s.psock) == 4) {
     /* Volatile to make sure the compiler doesn't optimize away
      * the temporary storage.
      */

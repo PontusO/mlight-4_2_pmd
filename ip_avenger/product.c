@@ -41,7 +41,6 @@
 #include "rtc.h"
 #include "httpd-cgi.h"
 #include "product.h"
-#include "sound.h"
 #include "pca.h"
 
 extern static u16_t half_Sec;
@@ -129,8 +128,6 @@ void pmd(void) banked
     (u16_t)uip_ethaddr.addr[3],(u16_t)uip_ethaddr.addr[4],(u16_t)uip_ethaddr.addr[5]);)
 
   init_rtc();               // Initialize the RTC
-
-  beep(4000, 20);
 
   while(1)
   {
@@ -239,7 +236,6 @@ void pmd(void) banked
     /*
      * Schedule system tasks
      */
-    PT_SCHEDULE(handle_sound(&sys_snd));
     PT_SCHEDULE(handle_kicker(&kicker));
     PT_SCHEDULE(handle_time_client(&tc));
   }	// end of 'while (1)'

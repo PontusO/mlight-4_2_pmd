@@ -154,10 +154,6 @@
 		<Unit filename="..\driver\rtc_isr.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\driver\sound.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\driver\sound.h" />
 		<Unit filename="..\driver\swtimers.c">
 			<Option compilerVar="CC" />
 		</Unit>
