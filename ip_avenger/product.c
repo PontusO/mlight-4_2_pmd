@@ -37,11 +37,13 @@
 #include "iet_debug.h"    // Debug macros
 #include "swtimers.h"     // Software timer system
 #include "flash.h"
+#include "adc.h"
 #include "i2c.h"
 #include "rtc.h"
+#include "pca.h"
 #include "httpd-cgi.h"
 #include "product.h"
-#include "pca.h"
+#include "adc_mon.h"
 
 extern static u16_t half_Sec;
 extern static u16_t ten_Secs;
@@ -57,6 +59,11 @@ extern bit callback_kicker;
 void cleanup( void );
 extern void config();
 void Timer0_Init (void);
+
+/*
+ * Protothread instance data
+ */
+struct adc_mon adc_mon;
 
 // ---------------------------------------------------------------------------
 //	pmd()
@@ -83,11 +90,11 @@ void pmd(void) banked
   /* Initialize LED brightnes controller */
   init_pca(PCA_MODE_PWM_16, PCA_SYS_CLK);
 
-#ifdef HAVE_SOUND
-  init_sound();
-#endif
+  /* Initialize the ADC and ADC ISR */
+  adc_init();
 
-  uip_init();               // Initialise the uIP TCP/IP stack.
+  /* Initialise the uIP TCP/IP stack. */
+  uip_init();
 
 #ifdef HAVE_FLASH
   validate_config_flash();  // before we do anything else do this.
@@ -127,7 +134,9 @@ void pmd(void) banked
     (u16_t)uip_ethaddr.addr[0],(u16_t)uip_ethaddr.addr[1],(u16_t)uip_ethaddr.addr[2],
     (u16_t)uip_ethaddr.addr[3],(u16_t)uip_ethaddr.addr[4],(u16_t)uip_ethaddr.addr[5]);)
 
-  init_rtc();               // Initialize the RTC
+  /* Initialize system pthreads */
+  init_rtc();
+  init_adc_mon(&adc_mon);
 
   while(1)
   {
@@ -238,6 +247,7 @@ void pmd(void) banked
      */
     PT_SCHEDULE(handle_kicker(&kicker));
     PT_SCHEDULE(handle_time_client(&tc));
+    PT_SCHEDULE(handle_adc_mon(&adc_mon));
   }	// end of 'while (1)'
 }
 

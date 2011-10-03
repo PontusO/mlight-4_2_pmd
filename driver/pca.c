@@ -46,6 +46,7 @@ void init_pca(unsigned char mode, unsigned char clock)
 
   tmp |= mode;
 
+  SFRPAGE   = PCA0_PAGE;
   PCA0CN    = 0x40;
   PCA0MD    = clock << PCA_CLK_SHIFT;
   PCA0CPM0  = tmp;
@@ -67,6 +68,7 @@ char set_pca_duty (unsigned char channel, unsigned int duty)
     values[channel] = duty;
     PCA_INT_ON();
   } else {
+    SFRPAGE = PCA0_PAGE;
     switch (channel)
     {
       case 0:

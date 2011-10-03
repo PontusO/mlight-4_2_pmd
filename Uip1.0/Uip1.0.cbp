@@ -54,7 +54,6 @@
 		<Compiler>
 			<Add option="--model-large" />
 			<Add option="-mmcs51" />
-			<Add option="--opt-code-size" />
 			<Add option="--debug" />
 			<Add option="-DCONFIG_BANKED=1" />
 			<Add option="-DHAVE_FLASH=1" />
@@ -63,11 +62,8 @@
 			<Add directory="..\unix" />
 			<Add directory="..\ip_avenger" />
 			<Add directory="..\driver" />
-			<Add directory="..\pmd\App" />
 			<Add directory="..\lib" />
-			<Add directory="..\pmd\time_stamp_manager" />
-			<Add directory="..\pmd\remote_trainer" />
-			<Add directory="..\pmd\main" />
+			<Add directory="..\pthreads" />
 		</Compiler>
 		<Linker>
 			<Add option="-Wl-r" />
@@ -127,6 +123,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\driver\CUart.h" />
+		<Unit filename="..\driver\adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\adc.h" />
 		<Unit filename="..\driver\dm9000.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -191,6 +191,10 @@
 		</Unit>
 		<Unit filename="..\lib\packet_demux.h" />
 		<Unit filename="..\pmd\doc\Readme" />
+		<Unit filename="..\pthreads\adc_mon.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\adc_mon.h" />
 		<Unit filename="..\uip\clock.h" />
 		<Unit filename="..\uip\lc-addrlabels.h" />
 		<Unit filename="..\uip\lc-switch.h" />
