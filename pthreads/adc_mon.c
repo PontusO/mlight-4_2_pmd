@@ -47,7 +47,7 @@
 /*
  * Initialize the adc monitor
  */
-void init_adc_mon(struct adc_mon *adc_mon) __reentrant banked
+void init_adc_mon(adc_mon_t *adc_mon) __reentrant banked
 {
   u8_t i;
   memset (adc_mon, 0, sizeof *adc_mon);
@@ -59,27 +59,7 @@ void init_adc_mon(struct adc_mon *adc_mon) __reentrant banked
   init_ledlib();
 }
 
-/*
- * Request a light driver update with absolute value
- */
-extern struct light_driver light_drivers[CFG_NUM_LIGHT_DRIVERS];
-static char ttest (u8_t channel, u16_t value) __reentrant banked
-{
-  printf ("Setting pwm channel %d, value = %04x\n", channel, value);
-  /* Make sure parameters have sensible values */
-  if (channel >= CFG_NUM_LIGHT_DRIVERS)
-    return -1;
-
-  /* the percentage value is 1/655 of max_int. */
-  light_drivers[channel].pwm_percent = value / 655;
-  light_drivers[channel].pwm_ratio = value;
-
-  set_pca_duty (channel, value);
-
-  return 0;
-}
-
-PT_THREAD(handle_adc_mon(struct adc_mon *adc_mon) __reentrant banked)
+PT_THREAD(handle_adc_mon(adc_mon_t *adc_mon) __reentrant banked)
 {
   PT_BEGIN(&adc_mon->pt);
 

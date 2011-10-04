@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Pontus Oldberg.
+ * Copyright (c) 2011, Pontus Oldberg.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,26 +28,42 @@
  *
  */
 
-#ifndef ADC_MON_H_INCLUDED
-#define ADC_MON_H_INCLUDED
+//#define PRINT_A     // Enable A prints
+#include <system.h>
+#include <but_mon.h>
+#include "iet_debug.h"
+#include <string.h>
+#include <stdlib.h>
 
-#include "pt.h"
-
-#define CFG_NUM_POTS    4
+#define   KEY1      0x40
+#define   KEY2      0x20
+#define   ALL_KEYS  (KEY1 | KEY2)
 
 /*
- * Data types used by the adc monitor
+ * Initialize the button monitor
  */
-struct adc_mon_p {
-  struct pt pt;
-  char channel;
-  u16_t pot_val;
-  u16_t prev_pot_val[CFG_NUM_POTS];
-};
+void init_but_mon(but_mon_t *but_mon) __reentrant __banked
+{
+  memset (but_mon, 0, sizeof *but_mon);
+  PT_INIT(&but_mon->pt);
+}
 
-typedef struct adc_mon_p adc_mon_t;
+PT_THREAD(handle_but_mon(but_mon_t *but_mon) __reentrant __banked)
+{
+  PT_BEGIN(&but_mon->pt);
 
-void init_adc_mon(adc_mon_t *adc_mon) __reentrant banked;
-PT_THREAD(handle_adc_mon(adc_mon_t *adc_mon) __reentrant banked);
+  /* Set initial values for LED outputs */
+  P1_4 = !P1_5;
+  P1_3 = !P1_6;
 
-#endif // ADC_MON_H_INCLUDED
+  while (1)
+  {
+    PT_WAIT_UNTIL (&but_mon->pt, (P1 & ALL_KEYS) != but_mon->prev_but_val);
+    but_mon->but_val = P1 & ALL_KEYS;
+    B_(syslog ("Switch changed %d\n", but_mon->but_val);)
+    P1_4 = !P1_5;
+    P1_3 = !P1_6;
+    but_mon->prev_but_val = but_mon->but_val;
+  }
+  PT_END(&but_mon->pt);
+}

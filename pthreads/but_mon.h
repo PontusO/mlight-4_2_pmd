@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Pontus Oldberg.
+ * Copyright (c) 2011, Pontus Oldberg.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,26 +28,21 @@
  *
  */
 
-#ifndef ADC_MON_H_INCLUDED
-#define ADC_MON_H_INCLUDED
-
-#include "pt.h"
-
-#define CFG_NUM_POTS    4
+#ifndef BUT_MON_H_INCLUDED
+#define BUT_MON_H_INCLUDED
 
 /*
- * Data types used by the adc monitor
+ * Data types used by the button monitor
  */
-struct adc_mon_p {
+struct but_mon_p {
   struct pt pt;
-  char channel;
-  u16_t pot_val;
-  u16_t prev_pot_val[CFG_NUM_POTS];
+  char tmr;
+  u8_t but_val;
+  u8_t prev_but_val;
 };
+typedef struct but_mon_p but_mon_t;
 
-typedef struct adc_mon_p adc_mon_t;
+void init_but_mon(but_mon_t *but_mon) __reentrant __banked;
+PT_THREAD(handle_but_mon(but_mon_t *but_mon) __reentrant __banked);
 
-void init_adc_mon(adc_mon_t *adc_mon) __reentrant banked;
-PT_THREAD(handle_adc_mon(adc_mon_t *adc_mon) __reentrant banked);
-
-#endif // ADC_MON_H_INCLUDED
+#endif // BUT_MON_H_INCLUDED

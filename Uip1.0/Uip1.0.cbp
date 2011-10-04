@@ -74,6 +74,7 @@
 			<Add before="perl ..\apps\webserver\makefsdata" />
 			<Add before="perl ..\apps\webserver\makestrings" />
 		</ExtraCommands>
+		<Unit filename="..\.gitignore" />
 		<Unit filename="..\apps\webserver\base64.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -195,6 +196,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pthreads\adc_mon.h" />
+		<Unit filename="..\pthreads\but_mon.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\but_mon.h" />
+		<Unit filename="..\pthreads\ramp_mgr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\ramp_mgr.h" />
 		<Unit filename="..\uip\clock.h" />
 		<Unit filename="..\uip\lc-addrlabels.h" />
 		<Unit filename="..\uip\lc-switch.h" />

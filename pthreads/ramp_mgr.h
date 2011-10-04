@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Pontus Oldberg.
+ * Copyright (c) 2011, Pontus Oldberg.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,27 +27,32 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
-#ifndef ADC_MON_H_INCLUDED
-#define ADC_MON_H_INCLUDED
-
+#ifndef RAMP_MGR_H_INCLUDED
+#define RAMP_MGR_H_INCLUDED
 #include "pt.h"
 
-#define CFG_NUM_POTS    4
+#define RAMP_CMD_RESET  0x00
+#define RAMP_CMD_START  0x01
+#define RAMP_CMD_STOP   0x02
 
 /*
- * Data types used by the adc monitor
+ * Data types used by the ramp manager
  */
-struct adc_mon_p {
+struct ramp_mgr_p {
   struct pt pt;
   char channel;
-  u16_t pot_val;
-  u16_t prev_pot_val[CFG_NUM_POTS];
+  u8_t signal;
+  u8_t rate;
+  u8_t timer;
+  char cnt;
+  char intensity;
+  char rampto;
+  char step;
 };
+typedef struct ramp_mgr_p ramp_mgr_t;
 
-typedef struct adc_mon_p adc_mon_t;
+void init_ramp_mgr(ramp_mgr_t *rmgr, u8_t channel) __reentrant banked;
+ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked;
+PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked);
 
-void init_adc_mon(adc_mon_t *adc_mon) __reentrant banked;
-PT_THREAD(handle_adc_mon(adc_mon_t *adc_mon) __reentrant banked);
-
-#endif // ADC_MON_H_INCLUDED
+#endif // RAMP_MGR_H_INCLUDED

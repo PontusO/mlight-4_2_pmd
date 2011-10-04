@@ -44,6 +44,8 @@
 #include "httpd-cgi.h"
 #include "product.h"
 #include "adc_mon.h"
+#include "but_mon.h"
+#include "ramp_mgr.h"
 
 extern static u16_t half_Sec;
 extern static u16_t ten_Secs;
@@ -63,7 +65,9 @@ void Timer0_Init (void);
 /*
  * Protothread instance data
  */
-struct adc_mon adc_mon;
+adc_mon_t adc_mon;
+but_mon_t but_mon;
+ramp_mgr_t ramp_mgr;
 
 // ---------------------------------------------------------------------------
 //	pmd()
@@ -137,6 +141,8 @@ void pmd(void) banked
   /* Initialize system pthreads */
   init_rtc();
   init_adc_mon(&adc_mon);
+  init_but_mon(&but_mon);
+  init_ramp_mgr(&ramp_mgr, 0);
 
   while(1)
   {
@@ -248,6 +254,8 @@ void pmd(void) banked
     PT_SCHEDULE(handle_kicker(&kicker));
     PT_SCHEDULE(handle_time_client(&tc));
     PT_SCHEDULE(handle_adc_mon(&adc_mon));
+    PT_SCHEDULE(handle_but_mon(&but_mon));
+    PT_SCHEDULE(handle_ramp_mgr(&ramp_mgr));
   }	// end of 'while (1)'
 }
 
