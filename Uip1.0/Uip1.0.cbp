@@ -101,6 +101,7 @@
 		<Unit filename="..\apps\webserver\httpd-fs\header.html" />
 		<Unit filename="..\apps\webserver\httpd-fs\index.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\style.css" />
+		<Unit filename="..\apps\webserver\httpd-fs\timeset.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fsdata.c">
 			<Option compilerVar="CC" />
 			<Option compile="0" />
