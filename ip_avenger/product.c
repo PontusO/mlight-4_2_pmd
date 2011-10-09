@@ -46,6 +46,10 @@
 #include "adc_mon.h"
 #include "but_mon.h"
 #include "ramp_mgr.h"
+#include "absval_mgr.h"
+#include "event_switch.h"
+#include "adc_event.h"
+#include "lightlib.h"
 
 extern static u16_t half_Sec;
 extern static u16_t ten_Secs;
@@ -65,9 +69,13 @@ void Timer0_Init (void);
 /*
  * Protothread instance data
  */
-adc_mon_t adc_mon;
-but_mon_t but_mon;
-ramp_mgr_t ramp_mgr;
+adc_mon_t       adc_mon;
+but_mon_t       but_mon;
+ramp_mgr_t      ramp_mgr;
+event_thread_t  event_thread;
+absval_mgr_t    absval_mgr;
+adc_event_t     adc_event;
+rule_t          test_rule;
 
 // ---------------------------------------------------------------------------
 //	pmd()
@@ -81,6 +89,7 @@ void pmd(void) banked
 
   callback_kicker = 0;
 
+  /* ***************** Initialize HW blocks ********************/
   config();                 // Configure the MCU
 
   half_Sec = UIP_TX_TIMER;
@@ -97,6 +106,7 @@ void pmd(void) banked
   /* Initialize the ADC and ADC ISR */
   adc_init();
 
+  /* ****************** Initialize libraries *******************/
   /* Initialise the uIP TCP/IP stack. */
   uip_init();
 
@@ -112,6 +122,9 @@ void pmd(void) banked
 
   TX_EventPending = FALSE;	// False to poll the DM9000 receive hardware
   ARP_EventPending = FALSE;	// clear the arp timer event flag
+
+  /* Initialize the LED pwm control library */
+  init_ledlib();
 
   EA = TRUE;                // Enable interrupts
 
@@ -138,11 +151,26 @@ void pmd(void) banked
     (u16_t)uip_ethaddr.addr[0],(u16_t)uip_ethaddr.addr[1],(u16_t)uip_ethaddr.addr[2],
     (u16_t)uip_ethaddr.addr[3],(u16_t)uip_ethaddr.addr[4],(u16_t)uip_ethaddr.addr[5]);)
 
-  /* Initialize system pthreads */
+  /* **********************Initialize system pthreads *******************/
   init_rtc();
-  init_adc_mon(&adc_mon);
+//  init_adc_mon(&adc_mon);
   init_but_mon(&but_mon);
   init_ramp_mgr(&ramp_mgr, 0);
+  init_event_switch(&event_thread);
+  /* Initialize all event action managers before the event providers */
+  /* Event action managers */
+  init_absval_mgr(&absval_mgr);
+  /* Event providers */
+  init_adc_event(&adc_event);
+  /* Here's a test rule */
+  test_rule.base.type = EVENT_RULE;
+  test_rule.base.name = "Test Rule";
+  /* Just for testing, this will be the first event provider registered */
+  test_rule.event = 0;
+  /* Just for testing, this will be the first action manager registered */
+  test_rule.action = 0;
+  A_(printf(__FILE__ " Test rule ptr %p", &test_rule);)
+  evnt_register_handle(&test_rule);
 
   while(1)
   {
@@ -253,9 +281,14 @@ void pmd(void) banked
      */
     PT_SCHEDULE(handle_kicker(&kicker));
     PT_SCHEDULE(handle_time_client(&tc));
-    PT_SCHEDULE(handle_adc_mon(&adc_mon));
+//    PT_SCHEDULE(handle_adc_mon(&adc_mon));
     PT_SCHEDULE(handle_but_mon(&but_mon));
     PT_SCHEDULE(handle_ramp_mgr(&ramp_mgr));
+    /* Event action managers */
+    PT_SCHEDULE(handle_absval_mgr(&absval_mgr));
+    /* Event providers */
+    PT_SCHEDULE(handle_adc_event(&adc_event));
+    PT_SCHEDULE(handle_event_switch(&event_thread));
   }	// end of 'while (1)'
 }
 

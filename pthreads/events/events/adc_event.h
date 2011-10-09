@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Pontus Oldberg.
+ * Copyright (c) 2011, Pontus Oldberg.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,24 @@
  *
  */
 
-#ifndef EVENT_SWITCH_H_INCLUDED
-#define EVENT_SWITCH_H_INCLUDED
+#ifndef adc_event_H_INCLUDED
+#define adc_event_H_INCLUDED
 
-#define MAX_NR_ACTION_MGRS      20
-#define MAX_NR_EVENT_PROVDERS   20
-#define MAX_NR_RULES            20
+#include "pt.h"
 
-enum action_properties_e {
-  ACT_PRP_HAS_VALUE = 0x01,
-};
+#define CFG_NUM_POTS    4
 
-struct action_vt_s {
-  void (*stop_action)() __reentrant;
-  void (*trigger_action)(void* action_data) __reentrant;
-};
-
-struct action_mgr_s {
-  void *priv;
-  enum action_properties_e props;
-  struct action_vt_s vt;
-};
-typedef struct action_mgr_s action_mgr_t;
-
-struct event_prv_s {
-  char signal;
-};
-typedef struct event_prv_s event_prv_t;
-
-struct rule_s {
-  char event;
-  char action;
-  void *action_data;
-};
-typedef struct rule_s rule_t;
-
-/* Protothread structure */
-struct event_thread_p {
+/*
+ * Data types used by the adc_event
+ */
+typedef struct adc_event_p {
   struct pt pt;
-  char current_event;
-  char new_action;
-};
-typedef struct event_thread_p event_thread_t;
+  char channel;
+  int pot_val;
+  int prev_pot_val[CFG_NUM_POTS];
+} adc_event_t;
 
-char register_action_mgr(struct action_mgr_s *mgr) __reentrant;
-void init_event_switch(void);
-char register_action_mgr(struct action_mgr_s *mgr) __reentrant;
-char unregister_action_mgr(char entry) __reentrant;
+void init_adc_event(adc_event_t *adc_event) __reentrant banked;
+PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant banked);
 
-#endif // EVENT_SWITCH_H_INCLUDED
+#endif // adc_event_H_INCLUDED

@@ -56,7 +56,6 @@ void init_adc_mon(adc_mon_t *adc_mon) __reentrant banked
   /* This will ensure that the light settings will update on start */
   for (i=0;i<CFG_NUM_POTS;i++)
     adc_mon->prev_pot_val[i] = 100;
-  init_ledlib();
 }
 
 PT_THREAD(handle_adc_mon(adc_mon_t *adc_mon) __reentrant banked)
