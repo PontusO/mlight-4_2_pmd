@@ -70,6 +70,7 @@ enum RTC_STATUS_BITS {
 
 struct time_client {
   struct pt pt;
+  struct i2c rtc_i2c;
   unsigned long update_time;
   u8_t timer;
 };

@@ -28,6 +28,7 @@
  *
  */
 #pragma codeseg  APP_BANK
+#define PRINT_A
 
 #include "system.h"
 #include "rtc.h"
@@ -35,6 +36,7 @@
 #include "swtimers.h"
 #include "iet_debug.h"
 #include "flash.h"
+#include "rtc_i2c.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -411,9 +413,27 @@ static u8_t time_for_update(struct time_client *tc) __reentrant
  *
  ************************************************************************************/
 static char str[10];
+rtc_data_t hw_rtc;
 PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked)
 {
   PT_BEGIN(&tc->pt);
+
+  A_(printf (__FILE__ " Entering time_client !\n");)
+  /* First of all, get the current time from the hw RTC. This may or may not be
+   * the correct time, but this can be corrected later on.
+   */
+  tc->rtc_i2c.device  = I2C_RTC;
+  tc->rtc_i2c.address = 0x02;
+  tc->rtc_i2c.address_size = 1;
+  tc->rtc_i2c.buffer  = &hw_rtc.vl_seconds;
+  tc->rtc_i2c.len     = 7;
+  /* Read out data from hw RTC */
+  PT_SPAWN(&tc->pt, &tc->rtc_i2c.pt, SM_Receive(&tc->rtc_i2c));
+  A_(printf (__FILE__ " Time read %x:%x:%x\n",
+             (int)hw_rtc.hours & 0x3f,
+             (int)hw_rtc.minutes & 0x7f,
+             (int)hw_rtc.vl_seconds & 0x7f);)
+  A_(printf (__FILE__ " I2C returned error code %d\n", tc->rtc_i2c.error);)
 
   while (1) {
     /* Wait for someone to tell us to get the time */
