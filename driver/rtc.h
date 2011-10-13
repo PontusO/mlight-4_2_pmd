@@ -30,6 +30,7 @@
 #ifndef RTC_H_INCLUDED
 #define RTC_H_INCLUDED
 
+#include "rtc_i2c.h"
 /**
  * PMD time structure.
  * This structure represents the time internally in the PMD.
@@ -71,7 +72,9 @@ enum RTC_STATUS_BITS {
 struct time_client {
   struct pt pt;
   struct i2c rtc_i2c;
+  rtc_data_t hw_rtc;
   unsigned long update_time;
+  struct time_param tp;
   u8_t timer;
 };
 
@@ -94,9 +97,11 @@ void set_g_time(struct time_param *tp) __reentrant banked;
 
 void binary_to_dat(struct time_param *tp) __reentrant banked;
 void dat_to_binary(struct time_param *tp) __reentrant banked;
+// void translate_system_rtc (struct time_param *tp, rtc_data_t *hw_rtc) __reentrant banked;
 extern PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked);
 extern PT_THREAD(handle_rtc(struct rtc *rtc) __reentrant banked);
 
 extern bit RTC_GET_TIME_EVENT;
+extern struct time_param *RTC_SET_HW_RTC;
 
 #endif // RTC_H_INCLUDED

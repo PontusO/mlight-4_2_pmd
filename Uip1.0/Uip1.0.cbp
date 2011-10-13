@@ -157,6 +157,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\driver\rtc.h" />
+		<Unit filename="..\driver\rtc_i2c.h" />
 		<Unit filename="..\driver\rtc_isr.c">
 			<Option compilerVar="CC" />
 		</Unit>

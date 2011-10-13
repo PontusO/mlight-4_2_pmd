@@ -31,12 +31,12 @@
 #define PRINT_A
 
 #include "system.h"
-#include "rtc.h"
 #include "psock.h"
 #include "swtimers.h"
 #include "iet_debug.h"
 #include "flash.h"
 #include "rtc_i2c.h"
+#include "rtc.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -51,6 +51,9 @@ extern unsigned long g_time;
 #define RTC_MONTH_FEBRUARY   2
 #define RTC_MONTH_DECEMBER  12
 
+#define bcd2bin(val) ((val)&15) + ((val)>>4)*10
+#define bin2bcd(val) (((val)/10)<<4) + (val)%10
+
 struct time_client tc;
 
 struct time_state {
@@ -61,6 +64,7 @@ struct time_state {
 
 bit RTC_GET_TIME_EVENT;
 bit RTC_GET_FAILED;
+struct time_param *RTC_SET_HW_RTC;
 
 static const u8_t days_in_month[] = {
   31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
@@ -104,6 +108,7 @@ void init_rtc(void) banked
   /* We want to obtain a fresh time right from the start */
   RTC_GET_TIME_EVENT = 1;
   RTC_GET_FAILED = 0;
+  RTC_SET_HW_RTC = 0;
 
   PT_INIT(&tc.pt);
 
@@ -405,6 +410,74 @@ static u8_t time_for_update(struct time_client *tc) __reentrant
 
 /*************************************************************************************
  *
+ * The data received from the hw_rtc (PCF8563) can be dirty, meaning that bits that
+ * are declared as "not relevant" can have a value of 1. This function will clean
+ * those bits out, leaving the time structure clean as a babys bum. You should
+ * call this directly after reading the data from the RTC.
+ *
+ ************************************************************************************/
+static void cleanup_hw_rtc_data (rtc_data_t *rtc) __reentrant
+{
+  /* First separate status bits out from time/date data */
+  rtc->century = rtc->century_months & HWRTC_CENTURY_BIT ? 1 : 0;
+  rtc->low_voltage = rtc->vl_seconds & HWRTC_VOLTAGE_LOW ? 1 : 0;
+  /* Clean up time/date data */
+  rtc->vl_seconds     &= 0x7f;
+  rtc->minutes        &= 0x7f;
+  rtc->hours          &= 0x3f;
+  rtc->days           &= 0x3f;
+  rtc->weekdays       &= 0x07;
+  rtc->century_months &= 0x1f;
+  rtc->hour_alarm     &= 0xbf;
+  rtc->day_alarm      &= 0xbf;
+  rtc->weekday_alarm  &= 0x87;
+  rtc->clkout_control &= 0x83;
+  rtc->timer_control  &= 0x83;
+}
+
+/*************************************************************************************
+ *
+ * Translate from hw_rtc data to the system RTC data format.
+ *
+ ************************************************************************************/
+static void translate_hw_rtc (rtc_data_t *hw_rtc, struct time_param *tp) __reentrant
+{
+  if (hw_rtc->century)
+    tp->time.year = 2100 + bcd2bin(hw_rtc->years);
+  else
+    tp->time.year = 2000 + bcd2bin(hw_rtc->years);
+
+  tp->time.month = bcd2bin(hw_rtc->century_months);
+  tp->time.day = bcd2bin(hw_rtc->days);
+  tp->time.hrs = bcd2bin(hw_rtc->hours);
+  tp->time.min = bcd2bin(hw_rtc->minutes);
+  tp->time.sec = bcd2bin(hw_rtc->vl_seconds);
+  dat_to_binary(tp);
+}
+
+/*************************************************************************************
+ *
+ * We als need to translate from system time to hw RTC time.
+ *
+ ************************************************************************************/
+static void translate_system_rtc (struct time_param *tp, rtc_data_t *hw_rtc) __reentrant
+{
+  if (tp->time.year >= 2100) {
+    hw_rtc->century_months = HWRTC_CENTURY_BIT + bin2bcd(tp->time.month);
+    hw_rtc->years = bin2bcd(tp->time.year - 2100);
+  } else {
+    hw_rtc->century_months = bin2bcd(tp->time.month);
+    hw_rtc->years = bin2bcd(tp->time.year - 2000);
+  }
+  hw_rtc->days = bin2bcd(tp->time.day);
+  hw_rtc->hours = bin2bcd(tp->time.hrs);
+  hw_rtc->minutes = bin2bcd(tp->time.min);
+  /* We always reset the VL flag when writing new time data */
+  hw_rtc->vl_seconds = bin2bcd(tp->time.sec);
+}
+
+/*************************************************************************************
+ *
  * This is the basic time client code.
  *
  * This thread is responsible for responding to RTC_GET_TIME_EVENT's.
@@ -413,32 +486,42 @@ static u8_t time_for_update(struct time_client *tc) __reentrant
  *
  ************************************************************************************/
 static char str[10];
-rtc_data_t hw_rtc;
 PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked)
 {
   PT_BEGIN(&tc->pt);
 
   A_(printf (__FILE__ " Entering time_client !\n");)
+
   /* First of all, get the current time from the hw RTC. This may or may not be
-   * the correct time, but this can be corrected later on.
-   */
+   * the correct time, but this can be corrected later on. */
   tc->rtc_i2c.device  = I2C_RTC;
+  /* This is the register were we will start to read data */
   tc->rtc_i2c.address = 0x02;
+  /* The PCF9563 only wants one address byte */
   tc->rtc_i2c.address_size = 1;
-  tc->rtc_i2c.buffer  = &hw_rtc.vl_seconds;
+  tc->rtc_i2c.buffer  = &tc->hw_rtc.vl_seconds;
+  /* Transfer 7 bytes */
   tc->rtc_i2c.len     = 7;
   /* Read out data from hw RTC */
   PT_SPAWN(&tc->pt, &tc->rtc_i2c.pt, SM_Receive(&tc->rtc_i2c));
+  cleanup_hw_rtc_data (&tc->hw_rtc);
   A_(printf (__FILE__ " Time read %x:%x:%x\n",
-             (int)hw_rtc.hours & 0x3f,
-             (int)hw_rtc.minutes & 0x7f,
-             (int)hw_rtc.vl_seconds & 0x7f);)
-  A_(printf (__FILE__ " I2C returned error code %d\n", tc->rtc_i2c.error);)
+             (int)tc->hw_rtc.hours,
+             (int)tc->hw_rtc.minutes,
+             (int)tc->hw_rtc.vl_seconds);)
+  if (tc->hw_rtc.low_voltage)
+    A_(printf (__FILE__ " Battery voltage is low, RTC data may be compromised !\n");)
+
+  /* Convert the hw rtc data to tp format */
+  translate_hw_rtc (&tc->hw_rtc, &tc->tp);
+  /* Set system rtc value */
+  set_g_time(&tc->tp);
 
   while (1) {
     /* Wait for someone to tell us to get the time */
     PT_WAIT_UNTIL(&tc->pt, RTC_GET_TIME_EVENT ||
                            RTC_GET_FAILED ||
+                           RTC_SET_HW_RTC ||
                            time_for_update(tc));
     print_time_formated(str);
     if (RTC_GET_TIME_EVENT) {
@@ -447,8 +530,27 @@ PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked)
     } else if (RTC_GET_FAILED) {
       A_(printf("Previous attempt to get a time value failed at %s, so we try again\r\n", str);)
       RTC_GET_FAILED = 0;
+    } else if (RTC_SET_HW_RTC) {
+      /* We received a signal to set a new hw rtc time */
+      printf ("%d:%d:%d\n", (int)RTC_SET_HW_RTC->time.hrs, (int)RTC_SET_HW_RTC->time.min, (int)RTC_SET_HW_RTC->time.sec);
+      translate_system_rtc (RTC_SET_HW_RTC, &tc->hw_rtc);
+      printf ("%02x:%02x:%02x\n", (int)tc->hw_rtc.hours, (int)tc->hw_rtc.minutes, (int)tc->hw_rtc.vl_seconds);
+      /* Prepare to talk to the RTC */
+      tc->rtc_i2c.device  = I2C_RTC;
+      /* This is the register were we will start writing */
+      tc->rtc_i2c.address = 0x02;
+      /* The PCF9563 only wants one address byte */
+      tc->rtc_i2c.address_size = 1;
+      tc->rtc_i2c.buffer  = &tc->hw_rtc.vl_seconds;
+      /* Transfer 7 bytes */
+      tc->rtc_i2c.len     = 7;
+      /* Write data to hw RTC */
+      PT_SPAWN(&tc->pt, &tc->rtc_i2c.pt, SM_Send(&tc->rtc_i2c));
+      /* Transfer done */
+      RTC_SET_HW_RTC = 0;
+      A_(printf(__FILE__ " Wrote new data to RTC %s\r\n", str);)
     } else {
-      A_(printf("Scehduled event to get new time at %s\r\n", str);)
+      A_(printf("Scheduled event to get new time at %s\r\n", str);)
     }
 
     /* Wait for 4 seconds before processing request */

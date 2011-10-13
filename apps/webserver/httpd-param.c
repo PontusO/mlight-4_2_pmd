@@ -579,6 +579,7 @@ static void set_channel_channel(char *buffer) __reentrant
 }
 
 /*---------------------------------------------------------------------------*/
+struct time_param tp;
 static void set_save(char *buffer) __reentrant
 {
   buffer = skip_to_char(buffer, '=');
@@ -587,7 +588,6 @@ static void set_save(char *buffer) __reentrant
     write_config_to_flash();
     /* In case we are setting the time manually */
     if (need_time_update) {
-      struct time_param tp;
 
       need_time_update = 0;
       tp.time.year = year;
@@ -598,6 +598,8 @@ static void set_save(char *buffer) __reentrant
       tp.time.sec = 0;
       dat_to_binary(&tp);
       set_g_time(&tp);
+      /* Signal the time client to update the hw rtc */
+      RTC_SET_HW_RTC = &tp;
     }
   }
 }

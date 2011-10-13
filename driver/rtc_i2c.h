@@ -34,7 +34,8 @@
 
 /* This is the slave address of the I2C Rtc */
 #define I2C_RTC      0xA2
-
+#define HWRTC_CENTURY_BIT   0x80
+#define HWRTC_VOLTAGE_LOW   0x80
 /**
  * A data tructure mapping directly to the internal register structure
  * of the PCF8563 RTC chip
@@ -59,6 +60,9 @@ typedef struct {
   /* Timer registers */
   u8_t  timer_control;  /* Register E */
   u8_t  timer;          /* Register F */
+  /* This is data that is separated out from the information above */
+  u8_t  century;
+  u8_t  low_voltage;
 } rtc_data_t;
 
 #endif // RTC_I2C_H_INCLUDED
