@@ -76,6 +76,8 @@ struct time_client {
   unsigned long update_time;
   struct time_param tp;
   u8_t timer;
+  u8_t do_update;
+  u8_t retries;
 };
 
 extern struct rtc rtc;

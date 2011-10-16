@@ -85,17 +85,13 @@ struct i2c i2c;             // Instance data
  */
 void init_i2c(void) banked
 {
-#ifndef USE_UART_INSTEAD_OF_SMB
   /* Initialize the oscillator and SMBus control register */
   SFRPAGE   = SMB0_PAGE;
   SMB0CN    = 0x44;
   SMB0CR    = 0xE9;
-  EIE1 |= 0x02;                    // SMBus interrupt enable
-  SM_BUSY = 0;                     // Free SMBus for first transfer.
-#else
-  /* Make the SMBus always busy when the UART is enabled */
-  SM_BUSY = 1;
-#endif
+  EIE1      |= 0x02;        // SMBus interrupt enable
+  SM_BUSY   = 0;            // Free SMBus for first transfer.
+
   PT_INIT(&i2c.pt);
 }
 
@@ -193,6 +189,19 @@ PT_THREAD(SM_Receive(struct i2c *i2c) banked)
 }
 
 /**
+ * is_smbus_busy
+ *
+ * Returns wether the smbus is busy or not
+ */
+u8_t is_smbus_busy(void) banked
+{
+  if (SM_BUSY)
+    return 1;
+  return 0;
+}
+
+#ifdef CONFIG_ENABLE_NOS_I2C
+/**
  * nos_i2c_write
  *
  * This protothread will write a number of data bytes to the I2C bus
@@ -269,17 +278,6 @@ u8_t nos_i2c_read(struct i2c *i2c) __reentrant banked
 
   return I2cError;
 }
-
-/**
- * is_smbus_busy
- *
- * Returns wether the smbus is busy or not
- */
-u8_t is_smbus_busy(void) banked
-{
-  if (SM_BUSY)
-    return 1;
-  return 0;
-}
+#endif
 
 /* End Of File */

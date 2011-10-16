@@ -189,6 +189,10 @@
 			<Option link="0" />
 		</Unit>
 		<Unit filename="..\ip_avenger\util.h" />
+		<Unit filename="..\lib\cgi_utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\lib\cgi_utils.h" />
 		<Unit filename="..\lib\lightlib.c">
 			<Option compilerVar="CC" />
 		</Unit>

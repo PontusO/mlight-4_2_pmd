@@ -51,6 +51,7 @@ extern unsigned long g_time;
 #define RTC_MONTH_FEBRUARY   2
 #define RTC_MONTH_DECEMBER  12
 
+/* To save .code storage these could be made into functions */
 #define bcd2bin(val) ((val)&15) + ((val)>>4)*10
 #define bin2bcd(val) (((val)/10)<<4) + (val)%10
 
@@ -106,10 +107,11 @@ void init_rtc(void) banked
 #endif
 
   /* We want to obtain a fresh time right from the start */
-  RTC_GET_TIME_EVENT = 1;
+  RTC_GET_TIME_EVENT = 0;
   RTC_GET_FAILED = 0;
   RTC_SET_HW_RTC = 0;
 
+  memset (&tc, 0, sizeof tc);
   PT_INIT(&tc.pt);
 
 }
@@ -524,17 +526,30 @@ PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked)
                            RTC_SET_HW_RTC ||
                            time_for_update(tc));
     print_time_formated(str);
+    /* Default is not to start a new time update */
+    tc->do_update = 0;
     if (RTC_GET_TIME_EVENT) {
-      A_(printf("Another application requested a time update at %s\r\n", str);)
+      A_(printf(__FILE__ " An application requested a time update at %s\r\n", str);)
       RTC_GET_TIME_EVENT = 0;
+      tc->do_update = 1;
+      tc->retries = 0;
     } else if (RTC_GET_FAILED) {
-      A_(printf("Previous attempt to get a time value failed at %s, so we try again\r\n", str);)
       RTC_GET_FAILED = 0;
+      if (tc->retries < 4) {
+        tc->retries++;
+        tc->do_update=1;
+        A_(printf(__FILE__ " Previous attempt to get a time value failed at %s, "
+                  "so we try again. Attempt %d\r\n", str, tc->retries+1);)
+      } else {
+        A_(printf(__FILE__ " Maximum number of retries reached, Error connecting to TIME server !\n");)
+      }
     } else if (RTC_SET_HW_RTC) {
       /* We received a signal to set a new hw rtc time */
-      printf ("%d:%d:%d\n", (int)RTC_SET_HW_RTC->time.hrs, (int)RTC_SET_HW_RTC->time.min, (int)RTC_SET_HW_RTC->time.sec);
       translate_system_rtc (RTC_SET_HW_RTC, &tc->hw_rtc);
-      printf ("%02x:%02x:%02x\n", (int)tc->hw_rtc.hours, (int)tc->hw_rtc.minutes, (int)tc->hw_rtc.vl_seconds);
+      A_(printf (__FILE__ " Setting new hw RTC tim %02x:%02x:%02x\n",
+        (int)tc->hw_rtc.hours,
+        (int)tc->hw_rtc.minutes,
+        (int)tc->hw_rtc.vl_seconds);)
       /* Prepare to talk to the RTC */
       tc->rtc_i2c.device  = I2C_RTC;
       /* This is the register were we will start writing */
@@ -547,25 +562,31 @@ PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked)
       /* Write data to hw RTC */
       PT_SPAWN(&tc->pt, &tc->rtc_i2c.pt, SM_Send(&tc->rtc_i2c));
       /* Transfer done */
+      A_(printf(__FILE__ " Done writing new data to RTC %s\r\n", str);)
       RTC_SET_HW_RTC = 0;
-      A_(printf(__FILE__ " Wrote new data to RTC %s\r\n", str);)
     } else {
-      A_(printf("Scheduled event to get new time at %s\r\n", str);)
+      A_(printf(__FILE__ " Recurring update of the time !\r\n", str);)
+      tc->do_update = 1;
+      tc->retries = 0;
     }
 
-    /* Wait for 4 seconds before processing request */
-    tc->timer = alloc_timer();
-    set_timer(tc->timer, 400, NULL);
-    PT_WAIT_UNTIL(&tc->pt, get_timer(tc->timer) == 0);
-    free_timer(tc->timer);
-    /* Set the address of the time server */
-
     /* Only try to connect the server if the functionality is enabled */
-    if (sys_cfg.enable_time) {
+    if (sys_cfg.enable_time && tc->do_update) {
+      /* Wait for 4 seconds before processing request */
+      tc->timer = alloc_timer();
+      set_timer(tc->timer, 400, NULL);
+      PT_WAIT_UNTIL(&tc->pt, get_timer(tc->timer) == 0);
+      free_timer(tc->timer);
+
       if (uip_connect(&sys_cfg.time_server[0], htons(sys_cfg.time_port)) != NULL) {
+        A_(printf (__FILE__ " Connecting to the time server !\n");)
         /* Connection was successful, proceed with the socket */
         s.connected = 1;
         PSOCK_INIT(&s.psock, s.inputbuffer, sizeof(s.inputbuffer));
+      } else {
+        A_(printf (__FILE__ " Immeditaly failed to connect to the TIME server !\n");)
+        /* Retry to connect to time server */
+        RTC_GET_FAILED = 1;
       }
     }
   }
@@ -590,25 +611,23 @@ static PT_THREAD(time_thread(void))
   PSOCK_READBUF(&s.psock);
 
   if (PSOCK_DATALEN(&s.psock) == 4) {
-    /* Volatile to make sure the compiler doesn't optimize away
-     * the temporary storage.
-     */
-    volatile unsigned long binary;
+    /* To work on the global instance structure is really ugly but will have to do
+     * for now. Needs to be rewritten*/
+    tc.tp.b_time = ((unsigned long)s.inputbuffer[0] << 24) |
+                   ((unsigned long)s.inputbuffer[1] << 16) |
+                   ((unsigned long)s.inputbuffer[2] << 8) |
+                    (unsigned long)s.inputbuffer[3];
 
-    binary = ((unsigned long)s.inputbuffer[0] << 24) |
-             ((unsigned long)s.inputbuffer[1] << 16) |
-             ((unsigned long)s.inputbuffer[2] << 8) |
-             (unsigned long)s.inputbuffer[3];
-    /* Disable timer 3 interrupts momentarily */
-    EIE2 &= ~1;
-    /* transfer new time value */
-    g_time = binary;
+    set_g_time(&tc.tp);
     /* Calculate next time we should do an update */
     tc.update_time = g_time + sys_cfg.update_interval * 3600;
-    /* Enable timer 3 interrupts again */
-    EIE2 |= 1;
+
+    /* Update the hw rtc as well */
+    binary_to_dat(&tc.tp);
+    RTC_SET_HW_RTC = &tc.tp;
+
     print_time_formated(str);
-    A_(printf("Updated real time clock at %s\r\n", str);)
+    A_(printf(__FILE__ " Updated real time clock at %s\r\n", str);)
   }
 
   PSOCK_END(&s.psock);
@@ -624,6 +643,8 @@ static PT_THREAD(time_thread(void))
  ************************************************************************************/
 void time_appcall(void) banked
 {
+  A_(printf(__FILE__ " time_appcall\n");)
+
   if (uip_closed()) {
     s.connected = 0;
     return;
