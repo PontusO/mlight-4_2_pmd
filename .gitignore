@@ -1,0 +1,17 @@
+Uip1.0/Uip1.0.depend
+Uip1.0/Uip1.0.layout
+Uip1.0/bin/Debug/Uip1.cdb
+Uip1.0/bin/Debug/Uip1.hex
+Uip1.0/bin/Debug/Uip1.lnk
+Uip1.0/bin/Debug/Uip1.map
+Uip1.0/bin/Debug/Uip1.mem
+Uip1.0/bin/Debug/uip1_b01.hex
+Uip1.0/bin/Debug/uip1_b2.hex
+Uip1.0/bin/Debug/uip1_b3.hex
+Uip1.0/build.log
+Uip1.0/http-strings.c
+Uip1.0/http-strings.h
+Uip1.0/obj/
+apps/webserver/http-strings.c
+apps/webserver/http-strings.h
+apps/webserver/httpd-fsdata.c

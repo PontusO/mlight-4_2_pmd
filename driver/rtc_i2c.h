@@ -27,93 +27,42 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef RTC_I2C_H_INCLUDED
+#define RTC_I2C_H_INCLUDED
 
-#include "system.h"
-#include "pca.h"
-#include <iet_debug.h>
+#include "i2c.h"
 
-__xdata static unsigned char pcamode;
-__xdata static u16_t values[4];
+/* This is the slave address of the I2C Rtc */
+#define I2C_RTC      0xA2
+#define HWRTC_CENTURY_BIT   0x80
+#define HWRTC_VOLTAGE_LOW   0x80
+/**
+ * A data tructure mapping directly to the internal register structure
+ * of the PCF8563 RTC chip
+ */
+typedef struct {
+  u8_t  ctrl_stat_1;    /* Register 0 */
+  u8_t  ctrl_stat_2;    /* Register 1 */
+  u8_t  vl_seconds;     /* Register 2 */
+  u8_t  minutes;        /* Register 3 */
+  u8_t  hours;          /* Register 4 */
+  u8_t  days;           /* Register 5 */
+  u8_t  weekdays;       /* Register 6 */
+  u8_t  century_months; /* Register 7 */
+  u8_t  years;          /* Register 8 */
+  /* Alarm registers */
+  u8_t  minute_alarm;   /* Register 9 */
+  u8_t  hour_alarm;     /* Register A */
+  u8_t  day_alarm;      /* Register B */
+  u8_t  weekday_alarm;  /* Register C */
+  /* Clock Control register */
+  u8_t  clkout_control; /* Register D */
+  /* Timer registers */
+  u8_t  timer_control;  /* Register E */
+  u8_t  timer;          /* Register F */
+  /* This is data that is separated out from the information above */
+  u8_t  century;
+  u8_t  low_voltage;
+} rtc_data_t;
 
-#define PCA_INT_ON()  EIE1 |= 0x08;
-#define PCA_INT_OFF() EIE1 &= ~0x08;
-
-void init_pca(unsigned char mode, unsigned char clock)
-{
-  unsigned char tmp = 0x4b;
-
-  pcamode = mode;
-
-  tmp |= mode;
-
-  SFRPAGE   = PCA0_PAGE;
-  PCA0CN    = 0x40;
-  PCA0MD    = clock << PCA_CLK_SHIFT;
-  PCA0CPM0  = tmp;
-  PCA0CPM1  = tmp;
-  PCA0CPM2  = tmp;
-  PCA0CPM3  = tmp;
-
-  /* Enable PCA interrupts */
-  PCA_INT_ON();
-}
-
-char set_pca_duty (unsigned char channel, unsigned int duty)
-{
-  if (channel >= PCA_MAX_CHANNELS)
-    return -1;
-
-  if (pcamode & PCA_MODE_PWM_16) {
-    PCA_INT_OFF();
-    values[channel] = duty;
-    PCA_INT_ON();
-  } else {
-    SFRPAGE = PCA0_PAGE;
-    switch (channel)
-    {
-      case 0:
-        PCA0CPH0 = duty;
-        break;
-
-      case 1:
-        PCA0CPH1 = duty;
-        break;
-
-      case 2:
-        PCA0CPH2 = duty;
-        break;
-
-      case 3:
-        PCA0CPH3 = duty;
-        break;
-
-      default:
-        return -1;
-    }
-  }
-
-  return 0;
-}
-
-void PCA_ISR (void) __interrupt PCA_VECTOR __using 2
-{
-  /* Done in accordance with the data sheet */
-  EA = 0;
-  if (PCA0CN & 0x01) {
-    PCA0CP0 = values[0];
-    CCF0 = 0;
-  }
-  if (PCA0CN & 0x02) {
-    PCA0CP1 = values[1];
-    CCF1 = 0;
-  }
-  if (PCA0CN & 0x04) {
-    PCA0CP2 = values[2];
-    CCF2 = 0;
-  }
-  if (PCA0CN & 0x08) {
-    PCA0CP3 = values[3];
-    CCF3 = 0;
-  }
-  EA = 1;
-}
+#endif // RTC_I2C_H_INCLUDED

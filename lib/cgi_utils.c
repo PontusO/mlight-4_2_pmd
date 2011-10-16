@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Pontus Oldberg.
+ * Copyright (c) 2008, Pontus Oldberg.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,44 +27,45 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef LIGHTLIB_H_INCLUDED
-#define LIGHTLIB_H_INCLUDED
+#pragma codeseg   UIP_BANK
 
-/* Configuration constants for the driver block */
-#define CFG_NUM_LIGHT_DRIVERS   6
-#define CFG_NUM_PWM_DRIVERS     4
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-#define MAX_INTENSITY           0xffff
-/*
- * Data types used by the button monitor
- */
-/* Light driver types */
-enum light_driver_type {
-  LIGHT_NONE,
-  LIGHT_PWM,
-  LIGH_ON_OFF
-};
+#include "uip.h"
+#include "cgi_utils.h"
+#include "httpd-param.h"
+#include "flash.h"
 
-/* Declaration of the light driver object */
-struct light_driver {
-  enum light_driver_type driver_type;
-  u8_t pwm_percent;
-  u16_t pwm_ratio;
-  u8_t io_pin;
-};
+static char i;
+static char tstr[32];
 
-struct led_lights {
-  struct light_driver light_drivers[CFG_NUM_LIGHT_DRIVERS];
-};
+PT_THREAD(get_tz_options_util(struct httpd_state *s) __reentrant banked)
+{
+  PSOCK_BEGIN(&s->sout);
 
-/* Prototypes for the lib */
-void init_ledlib(void) __reentrant;
-char ledlib_set_light_abs (u8_t channel, u16_t value) __reentrant;
-char ledlib_set_light_percentage_log (u8_t channel, u8_t value) __reentrant;
-u16_t ledlib_get_light_abs (u8_t channel)  __reentrant;
-u8_t ledlib_get_light_percentage (u8_t channel) __reentrant;
-u8_t ledlib_get_type (u8_t channel) __reentrant;
-char ledlib_decrement_light_abs (u8_t channel, u16_t value) __reentrant;
-char ledlib_increment_light_abs (u8_t channel, u16_t value) __reentrant;
+  for (i = -11 ; i<12 ; i++) {
+    sprintf(uip_appdata, "<option value='%d'", i);
+    /* Mark the selected option */
+    if (i == sys_cfg.time_zone) {
+      sprintf(tstr, " selected>GMT");
+    } else {
+      sprintf(tstr, ">GMT");
+    }
+    strcat(uip_appdata, tstr);
+    /* GMT has no values */
+    if (i == 0)
+      sprintf(tstr, "</option>");
+    else if (i < 0)
+      sprintf(tstr, " %d hrs</option>", i);
+    else
+      sprintf(tstr, " +%d hrs</option>", i);
+    strcat(uip_appdata, tstr);
+    PSOCK_SEND_STR(&s->sout, uip_appdata);
+  }
 
-#endif // LIGHTLIB_H_INCLUDED
+  PSOCK_END(&s->sout);
+}
+
+/* EOF */

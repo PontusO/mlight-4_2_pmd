@@ -32,11 +32,21 @@
 #ifndef _CUART_H_
 #define _CUART_H_
 
-#define BAUD_UNDEFINED 0x00
-#define BAUD_115200 0x01
-#define BAUD_END BAUD_115200
+/*
+ * Add baudrates here and in the respective tables in CUart.c
+ */
+enum baudrate_t {
+  BAUD_UNDEFINED,
+  BAUD_115200,
+  BAUD_END
+};
 
-void CUart_init(u8_t baud) __reentrant;
-void UART1_init(void) __reentrant;
+/*
+ * Currently all uart init function rely on that timer 0 already
+ * have been set up properly.
+ */
+void uart0_init(u8_t baud) __reentrant;
+void uart1_init(u8_t baud) __reentrant;
+void sys_uart_init(u8_t baud) __reentrant;
 
 #endif

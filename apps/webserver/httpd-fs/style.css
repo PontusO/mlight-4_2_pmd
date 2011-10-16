@@ -26,6 +26,22 @@ body {
   font-family:verdana,arial,helvetica;
 }
 div.menubox {
+  width: 14%;
+  border: 0;
+  float: left;
+  text-align: center;
+}
+.footer {
+  margin: 4px;
+  width:97%;
+  padding:2px;
+  border: solid 1px;
+  background-color: #258D92;
+  text-align:left;
+  font-size:9pt;
+  font-family:verdana,arial,helvetica;
+}
+div.footbox {
   width: 33%;
   border: 0;
   float: left;

@@ -28,92 +28,40 @@
  *
  */
 
+/* PTHREAD template code
+ *
+ * This file holds a template that can be used to create pthread
+ * threads. Simple replace all occurances of pthread_template in this
+ * file and in the header file and you have a new pthread.
+ *
+ * Also remember to schedule your pthread somewhere
+ */
+//#pragma codeseg APP_BANK
+//#define PRINT_A     // Enable A prints
+
 #include "system.h"
-#include "pca.h"
-#include <iet_debug.h>
+#include "iet_debug.h"
+#include "pthread_template.h"
 
-__xdata static unsigned char pcamode;
-__xdata static u16_t values[4];
-
-#define PCA_INT_ON()  EIE1 |= 0x08;
-#define PCA_INT_OFF() EIE1 &= ~0x08;
-
-void init_pca(unsigned char mode, unsigned char clock)
+/*
+ * Initialize the pthread_template pthread
+ */
+void init_pthread_template(pthread_template_t *pthread_template) __reentrant banked
 {
-  unsigned char tmp = 0x4b;
-
-  pcamode = mode;
-
-  tmp |= mode;
-
-  SFRPAGE   = PCA0_PAGE;
-  PCA0CN    = 0x40;
-  PCA0MD    = clock << PCA_CLK_SHIFT;
-  PCA0CPM0  = tmp;
-  PCA0CPM1  = tmp;
-  PCA0CPM2  = tmp;
-  PCA0CPM3  = tmp;
-
-  /* Enable PCA interrupts */
-  PCA_INT_ON();
+  PT_INIT(&pthread_template->pt);
 }
 
-char set_pca_duty (unsigned char channel, unsigned int duty)
+PT_THREAD(handle_pthread_template(pthread_template_t *pthread_template) __reentrant banked)
 {
-  if (channel >= PCA_MAX_CHANNELS)
-    return -1;
+  PT_BEGIN(&pthread_template->pt);
 
-  if (pcamode & PCA_MODE_PWM_16) {
-    PCA_INT_OFF();
-    values[channel] = duty;
-    PCA_INT_ON();
-  } else {
-    SFRPAGE = PCA0_PAGE;
-    switch (channel)
-    {
-      case 0:
-        PCA0CPH0 = duty;
-        break;
+  printf ("Starting pthread_template pthread!\n");
 
-      case 1:
-        PCA0CPH1 = duty;
-        break;
-
-      case 2:
-        PCA0CPH2 = duty;
-        break;
-
-      case 3:
-        PCA0CPH3 = duty;
-        break;
-
-      default:
-        return -1;
-    }
+  while (1)
+  {
   }
 
-  return 0;
+  PT_END(&pthread_template->pt);
 }
 
-void PCA_ISR (void) __interrupt PCA_VECTOR __using 2
-{
-  /* Done in accordance with the data sheet */
-  EA = 0;
-  if (PCA0CN & 0x01) {
-    PCA0CP0 = values[0];
-    CCF0 = 0;
-  }
-  if (PCA0CN & 0x02) {
-    PCA0CP1 = values[1];
-    CCF1 = 0;
-  }
-  if (PCA0CN & 0x04) {
-    PCA0CP2 = values[2];
-    CCF2 = 0;
-  }
-  if (PCA0CN & 0x08) {
-    PCA0CP3 = values[3];
-    CCF3 = 0;
-  }
-  EA = 1;
-}
+/* EOF */

@@ -28,92 +28,29 @@
  *
  */
 
-#include "system.h"
-#include "pca.h"
-#include <iet_debug.h>
+#ifndef absval_mgr_H_INCLUDED
+#define absval_mgr_H_INCLUDED
 
-__xdata static unsigned char pcamode;
-__xdata static u16_t values[4];
+#include "pt.h"
 
-#define PCA_INT_ON()  EIE1 |= 0x08;
-#define PCA_INT_OFF() EIE1 &= ~0x08;
+/*
+ * This data structure defines the data required by this action manager.
+ * It should be implemented by the event provider that intends to
+ * communicate with this manager.
+ */
+typedef struct act_absolute_data_s {
+  char channel;
+  int value;
+} act_absolute_data_t;
 
-void init_pca(unsigned char mode, unsigned char clock)
-{
-  unsigned char tmp = 0x4b;
+/*
+ * Data types used by the absval_mgr
+ */
+typedef struct absval_mgr_p {
+  struct pt pt;
+} absval_mgr_t;
 
-  pcamode = mode;
+void init_absval_mgr(absval_mgr_t *absval_mgr) __reentrant banked;
+PT_THREAD(handle_absval_mgr(absval_mgr_t *absval_mgr) __reentrant banked);
 
-  tmp |= mode;
-
-  SFRPAGE   = PCA0_PAGE;
-  PCA0CN    = 0x40;
-  PCA0MD    = clock << PCA_CLK_SHIFT;
-  PCA0CPM0  = tmp;
-  PCA0CPM1  = tmp;
-  PCA0CPM2  = tmp;
-  PCA0CPM3  = tmp;
-
-  /* Enable PCA interrupts */
-  PCA_INT_ON();
-}
-
-char set_pca_duty (unsigned char channel, unsigned int duty)
-{
-  if (channel >= PCA_MAX_CHANNELS)
-    return -1;
-
-  if (pcamode & PCA_MODE_PWM_16) {
-    PCA_INT_OFF();
-    values[channel] = duty;
-    PCA_INT_ON();
-  } else {
-    SFRPAGE = PCA0_PAGE;
-    switch (channel)
-    {
-      case 0:
-        PCA0CPH0 = duty;
-        break;
-
-      case 1:
-        PCA0CPH1 = duty;
-        break;
-
-      case 2:
-        PCA0CPH2 = duty;
-        break;
-
-      case 3:
-        PCA0CPH3 = duty;
-        break;
-
-      default:
-        return -1;
-    }
-  }
-
-  return 0;
-}
-
-void PCA_ISR (void) __interrupt PCA_VECTOR __using 2
-{
-  /* Done in accordance with the data sheet */
-  EA = 0;
-  if (PCA0CN & 0x01) {
-    PCA0CP0 = values[0];
-    CCF0 = 0;
-  }
-  if (PCA0CN & 0x02) {
-    PCA0CP1 = values[1];
-    CCF1 = 0;
-  }
-  if (PCA0CN & 0x04) {
-    PCA0CP2 = values[2];
-    CCF2 = 0;
-  }
-  if (PCA0CN & 0x08) {
-    PCA0CP3 = values[3];
-    CCF3 = 0;
-  }
-  EA = 1;
-}
+#endif // absval_mgr_H_INCLUDED

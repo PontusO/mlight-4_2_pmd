@@ -57,7 +57,6 @@
 #include "i2c.h"
 #include "rtc.h"
 #include "httpd-cgi.h"
-#include "sound.h"
 #include "product.h"
 
 #define SAVE_PSBANK(n)      n = PSBANK
@@ -71,6 +70,8 @@
 void Timer0_ISR (void) interrupt TF0_VECTOR;
 extern void SMBus_ISR (void) interrupt SMB0_VECTOR;
 extern void rtc_isr(void) interrupt TF3_VECTOR;
+void ADC_ISR (void) __interrupt AD0INT_VECTOR __using 2;
+void PCA_ISR (void) __interrupt PCA_VECTOR __using 2;
 
 extern timer_cb timer_cbs[NUMBER_OF_SWTIMERS];
 
@@ -79,7 +80,6 @@ extern timer_cb timer_cbs[NUMBER_OF_SWTIMERS];
 //-----------------------------------------------------------------------------
 u16_t half_Sec;
 u16_t ten_Secs;
-char digit[2];
 static near u8_t tmcnt;
 
 bit TX_EventPending;	        // the DM9000 hardware receive event
@@ -92,7 +92,6 @@ bit callback_kicker;
 //-----------------------------------------------------------------------------
 void main(void)
 {
-  /* TODO: This sucks as it consumes one stack entry, rewrite */
   pmd();
 }
 //-----------------------------------------------------------------------------
@@ -156,7 +155,6 @@ void Timer0_ISR (void) interrupt TF0_VECTOR using 0
       }
     }
   }
-
   ET0 = TRUE;                           // enable Timer0 interrupts, again
 }
 

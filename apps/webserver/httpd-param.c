@@ -38,7 +38,6 @@
 #include "httpd-param.h"
 #include "httpd-cgi.h"
 #include "flash.h"
-#include "sound.h"
 #include "rtc.h"
 #include "iet_debug.h"
 
@@ -580,16 +579,15 @@ static void set_channel_channel(char *buffer) __reentrant
 }
 
 /*---------------------------------------------------------------------------*/
+struct time_param tp;
 static void set_save(char *buffer) __reentrant
 {
   buffer = skip_to_char(buffer, '=');
   if (strncmp("save", buffer, 4) == 0) {
-    beep(5000,2);
     /* Write new configuration to flash */
     write_config_to_flash();
     /* In case we are setting the time manually */
     if (need_time_update) {
-      struct time_param tp;
 
       need_time_update = 0;
       tp.time.year = year;
@@ -600,6 +598,8 @@ static void set_save(char *buffer) __reentrant
       tp.time.sec = 0;
       dat_to_binary(&tp);
       set_g_time(&tp);
+      /* Signal the time client to update the hw rtc */
+      RTC_SET_HW_RTC = &tp;
     }
   }
 }

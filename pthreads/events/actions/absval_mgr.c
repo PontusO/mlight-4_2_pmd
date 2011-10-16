@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Pontus Oldberg.
+ * Copyright (c) 2011, Pontus Oldberg.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,35 +27,65 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef SOUND_H_INCLUDED
-#define SOUND_H_INCLUDED
+#pragma codeseg APP_BANK
+#define PRINT_A     // Enable A prints
+
+#include "system.h"
+#include "iet_debug.h"
+#include "absval_mgr.h"
+#include "event_switch.h"
+#include "lightlib.h"
+
+/* Function prototypes */
+void absval_stop (void);
+void absval_trigger (void *ldata);
+
+/* The action manager handle */
+static action_mgr_t  absvalmgr;
+static const char *absval_name = "Set absolute light level";
 
 /*
- * Data types used by the sound module
+ * Initialize the absval_mgr pthread
  */
-enum sound_commands {
-  PLAY_SOUND = 0x01,
-  LOOP_SOUND = 0x02,
-  STOP_SOUND = 0x03,
-};
+void init_absval_mgr(absval_mgr_t *absval_mgr) __reentrant banked
+{
+  PT_INIT(&absval_mgr->pt);
 
-struct sound {
-  struct pt sound_pt;
-  u16_t timeout;
-  u16_t frequency;
-  enum sound_commands command;
-  char timer;
-};
+  absvalmgr.base.type = EVENT_ACTION_MANAGER;
+  absvalmgr.base.name = absval_name;
+  absvalmgr.props = ACT_PRP_ABSOLUTE_VALUE;
+  absvalmgr.vt.stop_action = absval_stop;
+  absvalmgr.vt.trigger_action = absval_trigger;
+}
 
-/*
- * Required by the main loop
- */
-extern struct sound sys_snd;
+/* No thread (yet) to interupt so we don't do anything here */
+void absval_stop (void)
+{
+}
 
-#define FREQUENCY(n)  ((-1 * (SYSCLK / (2 * n))) + 65536)
+/* Set new data */
+void absval_trigger (void *input)
+{
+  act_absolute_data_t *absdata = (act_absolute_data_t *)input;
+  A_(printf(__FILE__ " Channel %d, Value %04x\n",
+          (int)absdata->channel,
+          absdata->value);)
+  ledlib_set_light_abs (absdata->channel, absdata->value);
+}
 
-void init_sound(void) banked;
-void beep(u16_t freq, u16_t time) banked;
-PT_THREAD(handle_sound(struct sound *snd) banked);
+PT_THREAD(handle_absval_mgr(absval_mgr_t *absval_mgr) __reentrant banked)
+{
+  PT_BEGIN(&absval_mgr->pt);
 
-#endif // SOUND_H_INCLUDED
+  evnt_register_handle(&absvalmgr);
+  A_(printf(__FILE__ " Starting absval_mgr pthread!\n");)
+
+  while (1)
+  {
+    PT_YIELD(&absval_mgr->pt);
+  }
+
+  PT_END(&absval_mgr->pt);
+}
+
+/* EOF */

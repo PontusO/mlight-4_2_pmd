@@ -43,7 +43,6 @@
 
 #include "system.h"                 // SFR declarations
 #include "i2c.h"
-#include "sound.h"
 
 //-----------------------------------------------------------------------------------
 //Global VARIABLES
@@ -86,17 +85,13 @@ struct i2c i2c;             // Instance data
  */
 void init_i2c(void) banked
 {
-#ifndef USE_UART_INSTEAD_OF_SMB
   /* Initialize the oscillator and SMBus control register */
   SFRPAGE   = SMB0_PAGE;
   SMB0CN    = 0x44;
   SMB0CR    = 0xE9;
-  EIE1 |= 0x02;                    // SMBus interrupt enable
-  SM_BUSY = 0;                     // Free SMBus for first transfer.
-#else
-  /* Make the SMBus always busy when the UART is enabled */
-  SM_BUSY = 1;
-#endif
+  EIE1      |= 0x02;        // SMBus interrupt enable
+  SM_BUSY   = 0;            // Free SMBus for first transfer.
+
   PT_INIT(&i2c.pt);
 }
 
@@ -121,10 +116,14 @@ PT_THREAD(SM_Send(struct i2c *i2c) banked)
   SMB0CN = 0x44;                                          // SMBus enabled,
   // ACK on acknowledge cycle
 
-  I2cByteNumber = 2;                                      // 2 address bytes
-  I2cCommand = (i2c->device | WRITE);                     // Chip select + WRITE
-  I2cHighAdd = (unsigned char)(i2c->address >> 8);        // Upper 8 address bits
-  I2cLowAdd = (unsigned char)(i2c->address & 0x00FF);     // Lower 8 address bits
+  I2cCommand = (i2c->device | I2C_WRITE);                 // Chip select + WRITE
+  I2cByteNumber = i2c->address_size;                      // 2 address bytes
+  if (I2cByteNumber == 2) {
+    I2cHighAdd = (unsigned char)(i2c->address >> 8);      // Upper 8 address bits
+    I2cLowAdd = (unsigned char)(i2c->address & 0x00FF);   // Lower 8 address bits
+  } else {
+    I2cHighAdd = (unsigned char)(i2c->address & 0x00FF);  // Use only lower 8 bits in this case
+  }
   I2cDataLen = i2c->len;                                  // Tell the driver how much data
   I2cPtr = 0;                                             // Start writing from the beginning
   I2cError = 0;
@@ -163,10 +162,14 @@ PT_THREAD(SM_Receive(struct i2c *i2c) banked)
   SFRPAGE = SMB0_PAGE;
   SMB0CN = 0x44;                                          // SMBus enabled, ACK on acknowledge cycle
 
-  I2cByteNumber = 2;                                      // 2 address bytes
-  I2cCommand = (i2c->device | READ);                      // Chip select + READ
-  I2cHighAdd = (unsigned char)(i2c->address >> 8);        // Upper 8 address bits
-  I2cLowAdd = (unsigned char)(i2c->address & 0x00FF);     // Lower 8 address bits
+  I2cCommand = (i2c->device | I2C_READ);                  // Chip select + READ
+  I2cByteNumber = i2c->address_size;                      // 2 address bytes
+  if (I2cByteNumber == 2) {
+    I2cHighAdd = (unsigned char)(i2c->address >> 8);      // Upper 8 address bits
+    I2cLowAdd = (unsigned char)(i2c->address & 0x00FF);   // Lower 8 address bits
+  } else {
+    I2cHighAdd = (unsigned char)(i2c->address & 0x00FF);  // Use only lower 8 bits in this case
+  }
   I2cDataLen = i2c->len;                                  // Tell the driver how much data
   I2cPtr = 0;                                             // Start writing from the beginning
   I2cError = 0;
@@ -185,6 +188,19 @@ PT_THREAD(SM_Receive(struct i2c *i2c) banked)
   PT_END(&i2c->pt);
 }
 
+/**
+ * is_smbus_busy
+ *
+ * Returns wether the smbus is busy or not
+ */
+u8_t is_smbus_busy(void) banked
+{
+  if (SM_BUSY)
+    return 1;
+  return 0;
+}
+
+#ifdef CONFIG_ENABLE_NOS_I2C
 /**
  * nos_i2c_write
  *
@@ -205,7 +221,7 @@ u8_t nos_i2c_write(struct i2c *i2c) __reentrant banked
   // ACK on acknowledge cycle
 
   I2cByteNumber = 2;                                      // 2 address bytes
-  I2cCommand = (i2c->device | WRITE);                     // Chip select + WRITE
+  I2cCommand = (i2c->device | I2C_WRITE);                 // Chip select + WRITE
   I2cHighAdd = (unsigned char)(i2c->address >> 8);        // Upper 8 address bits
   I2cLowAdd = (unsigned char)(i2c->address & 0x00FF);     // Lower 8 address bits
   I2cDataLen = i2c->len;                                  // Tell the driver how much data
@@ -243,7 +259,7 @@ u8_t nos_i2c_read(struct i2c *i2c) __reentrant banked
   SMB0CN = 0x44;                                          // SMBus enabled, ACK on acknowledge cycle
 
   I2cByteNumber = 2;                                      // 2 address bytes
-  I2cCommand = (i2c->device | READ);                      // Chip select + READ
+  I2cCommand = (i2c->device | I2C_READ);                  // Chip select + READ
   I2cHighAdd = (unsigned char)(i2c->address >> 8);        // Upper 8 address bits
   I2cLowAdd = (unsigned char)(i2c->address & 0x00FF);     // Lower 8 address bits
   I2cDataLen = i2c->len;                                  // Tell the driver how much data
@@ -262,17 +278,6 @@ u8_t nos_i2c_read(struct i2c *i2c) __reentrant banked
 
   return I2cError;
 }
-
-/**
- * is_smbus_busy
- *
- * Returns wether the smbus is busy or not
- */
-u8_t is_smbus_busy(void) banked
-{
-  if (SM_BUSY)
-    return 1;
-  return 0;
-}
+#endif
 
 /* End Of File */

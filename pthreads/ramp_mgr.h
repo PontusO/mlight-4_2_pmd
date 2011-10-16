@@ -27,93 +27,32 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef RAMP_MGR_H_INCLUDED
+#define RAMP_MGR_H_INCLUDED
+#include "pt.h"
 
-#include "system.h"
-#include "pca.h"
-#include <iet_debug.h>
+#define RAMP_CMD_RESET  0x00
+#define RAMP_CMD_START  0x01
+#define RAMP_CMD_STOP   0x02
 
-__xdata static unsigned char pcamode;
-__xdata static u16_t values[4];
+/*
+ * Data types used by the ramp manager
+ */
+struct ramp_mgr_p {
+  struct pt pt;
+  char channel;
+  u8_t signal;
+  u8_t rate;
+  u8_t timer;
+  char cnt;
+  char intensity;
+  char rampto;
+  char step;
+};
+typedef struct ramp_mgr_p ramp_mgr_t;
 
-#define PCA_INT_ON()  EIE1 |= 0x08;
-#define PCA_INT_OFF() EIE1 &= ~0x08;
+void init_ramp_mgr(ramp_mgr_t *rmgr, u8_t channel) __reentrant banked;
+ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked;
+PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked);
 
-void init_pca(unsigned char mode, unsigned char clock)
-{
-  unsigned char tmp = 0x4b;
-
-  pcamode = mode;
-
-  tmp |= mode;
-
-  SFRPAGE   = PCA0_PAGE;
-  PCA0CN    = 0x40;
-  PCA0MD    = clock << PCA_CLK_SHIFT;
-  PCA0CPM0  = tmp;
-  PCA0CPM1  = tmp;
-  PCA0CPM2  = tmp;
-  PCA0CPM3  = tmp;
-
-  /* Enable PCA interrupts */
-  PCA_INT_ON();
-}
-
-char set_pca_duty (unsigned char channel, unsigned int duty)
-{
-  if (channel >= PCA_MAX_CHANNELS)
-    return -1;
-
-  if (pcamode & PCA_MODE_PWM_16) {
-    PCA_INT_OFF();
-    values[channel] = duty;
-    PCA_INT_ON();
-  } else {
-    SFRPAGE = PCA0_PAGE;
-    switch (channel)
-    {
-      case 0:
-        PCA0CPH0 = duty;
-        break;
-
-      case 1:
-        PCA0CPH1 = duty;
-        break;
-
-      case 2:
-        PCA0CPH2 = duty;
-        break;
-
-      case 3:
-        PCA0CPH3 = duty;
-        break;
-
-      default:
-        return -1;
-    }
-  }
-
-  return 0;
-}
-
-void PCA_ISR (void) __interrupt PCA_VECTOR __using 2
-{
-  /* Done in accordance with the data sheet */
-  EA = 0;
-  if (PCA0CN & 0x01) {
-    PCA0CP0 = values[0];
-    CCF0 = 0;
-  }
-  if (PCA0CN & 0x02) {
-    PCA0CP1 = values[1];
-    CCF1 = 0;
-  }
-  if (PCA0CN & 0x04) {
-    PCA0CP2 = values[2];
-    CCF2 = 0;
-  }
-  if (PCA0CN & 0x08) {
-    PCA0CP3 = values[3];
-    CCF3 = 0;
-  }
-  EA = 1;
-}
+#endif // RAMP_MGR_H_INCLUDED

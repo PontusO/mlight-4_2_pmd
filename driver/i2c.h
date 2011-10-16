@@ -37,6 +37,7 @@ struct i2c {
   struct pt pt;
   u8_t device;
   u16_t address;
+  u8_t address_size;
   u8_t *buffer;
   u8_t len;
   u8_t ptr;
@@ -50,11 +51,11 @@ extern struct i2c i2c;
 // Global CONSTANTS
 //------------------------------------------------------------------------------------
 
-#define WRITE 0x00                  // SMBus WRITE command
-#define READ  0x01                  // SMBus READ command
+#define I2C_WRITE   0x00            // SMBus WRITE command
+#define I2C_READ    0x01            // SMBus READ command
 
-#define EEPROM1 0xA0
-#define EEPROM2 0xA1
+#define EEPROM1     0xA0
+#define EEPROM2     0xA1
 
 // I2C buss errors
 enum I2cBussError {

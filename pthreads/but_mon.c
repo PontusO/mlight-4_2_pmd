@@ -28,92 +28,42 @@
  *
  */
 
-#include "system.h"
-#include "pca.h"
-#include <iet_debug.h>
+//#define PRINT_A     // Enable A prints
+#include <system.h>
+#include <but_mon.h>
+#include "iet_debug.h"
+#include <string.h>
+#include <stdlib.h>
 
-__xdata static unsigned char pcamode;
-__xdata static u16_t values[4];
+#define   KEY1      0x40
+#define   KEY2      0x20
+#define   ALL_KEYS  (KEY1 | KEY2)
 
-#define PCA_INT_ON()  EIE1 |= 0x08;
-#define PCA_INT_OFF() EIE1 &= ~0x08;
-
-void init_pca(unsigned char mode, unsigned char clock)
+/*
+ * Initialize the button monitor
+ */
+void init_but_mon(but_mon_t *but_mon) __reentrant __banked
 {
-  unsigned char tmp = 0x4b;
-
-  pcamode = mode;
-
-  tmp |= mode;
-
-  SFRPAGE   = PCA0_PAGE;
-  PCA0CN    = 0x40;
-  PCA0MD    = clock << PCA_CLK_SHIFT;
-  PCA0CPM0  = tmp;
-  PCA0CPM1  = tmp;
-  PCA0CPM2  = tmp;
-  PCA0CPM3  = tmp;
-
-  /* Enable PCA interrupts */
-  PCA_INT_ON();
+  memset (but_mon, 0, sizeof *but_mon);
+  PT_INIT(&but_mon->pt);
 }
 
-char set_pca_duty (unsigned char channel, unsigned int duty)
+PT_THREAD(handle_but_mon(but_mon_t *but_mon) __reentrant __banked)
 {
-  if (channel >= PCA_MAX_CHANNELS)
-    return -1;
+  PT_BEGIN(&but_mon->pt);
 
-  if (pcamode & PCA_MODE_PWM_16) {
-    PCA_INT_OFF();
-    values[channel] = duty;
-    PCA_INT_ON();
-  } else {
-    SFRPAGE = PCA0_PAGE;
-    switch (channel)
-    {
-      case 0:
-        PCA0CPH0 = duty;
-        break;
+  /* Set initial values for LED outputs */
+  P1_4 = !P1_5;
+  P1_3 = !P1_6;
 
-      case 1:
-        PCA0CPH1 = duty;
-        break;
-
-      case 2:
-        PCA0CPH2 = duty;
-        break;
-
-      case 3:
-        PCA0CPH3 = duty;
-        break;
-
-      default:
-        return -1;
-    }
+  while (1)
+  {
+    PT_WAIT_UNTIL (&but_mon->pt, (P1 & ALL_KEYS) != but_mon->prev_but_val);
+    but_mon->but_val = P1 & ALL_KEYS;
+    B_(syslog ("Switch changed %d\n", but_mon->but_val);)
+    P1_4 = !P1_5;
+    P1_3 = !P1_6;
+    but_mon->prev_but_val = but_mon->but_val;
   }
-
-  return 0;
-}
-
-void PCA_ISR (void) __interrupt PCA_VECTOR __using 2
-{
-  /* Done in accordance with the data sheet */
-  EA = 0;
-  if (PCA0CN & 0x01) {
-    PCA0CP0 = values[0];
-    CCF0 = 0;
-  }
-  if (PCA0CN & 0x02) {
-    PCA0CP1 = values[1];
-    CCF1 = 0;
-  }
-  if (PCA0CN & 0x04) {
-    PCA0CP2 = values[2];
-    CCF2 = 0;
-  }
-  if (PCA0CN & 0x08) {
-    PCA0CP3 = values[3];
-    CCF3 = 0;
-  }
-  EA = 1;
+  PT_END(&but_mon->pt);
 }

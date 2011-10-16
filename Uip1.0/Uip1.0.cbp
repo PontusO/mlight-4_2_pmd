@@ -54,22 +54,19 @@
 		<Compiler>
 			<Add option="--model-large" />
 			<Add option="-mmcs51" />
-			<Add option="--opt-code-size" />
 			<Add option="--debug" />
-			<Add option="-DHAVE_REMOTE=1" />
 			<Add option="-DCONFIG_BANKED=1" />
-			<Add option="-DHAVE_SOUND=1" />
 			<Add option="-DHAVE_FLASH=1" />
 			<Add directory="..\apps\webserver" />
 			<Add directory="..\uip" />
 			<Add directory="..\unix" />
 			<Add directory="..\ip_avenger" />
 			<Add directory="..\driver" />
-			<Add directory="..\pmd\App" />
 			<Add directory="..\lib" />
-			<Add directory="..\pmd\time_stamp_manager" />
-			<Add directory="..\pmd\remote_trainer" />
-			<Add directory="..\pmd\main" />
+			<Add directory="..\pthreads" />
+			<Add directory="..\pthreads\events\core" />
+			<Add directory="..\pthreads\events\actions" />
+			<Add directory="..\pthreads\events\events" />
 		</Compiler>
 		<Linker>
 			<Add option="-Wl-r" />
@@ -80,6 +77,8 @@
 			<Add before="perl ..\apps\webserver\makefsdata" />
 			<Add before="perl ..\apps\webserver\makestrings" />
 		</ExtraCommands>
+		<Unit filename="..\.gitignore" />
+		<Unit filename="..\README" />
 		<Unit filename="..\apps\webserver\base64.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -106,6 +105,7 @@
 		<Unit filename="..\apps\webserver\httpd-fs\header.html" />
 		<Unit filename="..\apps\webserver\httpd-fs\index.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\style.css" />
+		<Unit filename="..\apps\webserver\httpd-fs\timeset.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fsdata.c">
 			<Option compilerVar="CC" />
 			<Option compile="0" />
@@ -129,6 +129,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\driver\CUart.h" />
+		<Unit filename="..\driver\adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\adc.h" />
 		<Unit filename="..\driver\dm9000.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -153,13 +157,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\driver\rtc.h" />
+		<Unit filename="..\driver\rtc_i2c.h" />
 		<Unit filename="..\driver\rtc_isr.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\driver\sound.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\driver\sound.h" />
 		<Unit filename="..\driver\swtimers.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -188,6 +189,10 @@
 			<Option link="0" />
 		</Unit>
 		<Unit filename="..\ip_avenger\util.h" />
+		<Unit filename="..\lib\cgi_utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\lib\cgi_utils.h" />
 		<Unit filename="..\lib\lightlib.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -197,6 +202,36 @@
 		</Unit>
 		<Unit filename="..\lib\packet_demux.h" />
 		<Unit filename="..\pmd\doc\Readme" />
+		<Unit filename="..\pthreads\adc_mon.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\adc_mon.h" />
+		<Unit filename="..\pthreads\but_mon.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\but_mon.h" />
+		<Unit filename="..\pthreads\events\actions\absval_mgr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\events\actions\absval_mgr.h" />
+		<Unit filename="..\pthreads\events\core\event_switch.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\events\core\event_switch.h" />
+		<Unit filename="..\pthreads\events\events\adc_event.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\events\events\adc_event.h" />
+		<Unit filename="..\pthreads\ramp_mgr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\ramp_mgr.h" />
+		<Unit filename="..\pthreads\template\pthread_template.c">
+			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
+		<Unit filename="..\pthreads\template\pthread_template.h" />
 		<Unit filename="..\uip\clock.h" />
 		<Unit filename="..\uip\lc-addrlabels.h" />
 		<Unit filename="..\uip\lc-switch.h" />
@@ -230,6 +265,7 @@
 		<Extensions>
 			<code_completion />
 			<debugger />
+			<envvars />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

@@ -49,6 +49,7 @@
 #include "psock.h"
 #include "httpd.h"
 #include "httpd-cgi.h"
+#include "cgi_utils.h"
 #include "httpd-param.h"
 #include "httpd-fs.h"
 #include "flash.h"
@@ -264,6 +265,7 @@ PT_THREAD(get_tz_options(struct httpd_state *s, char *ptr) __reentrant)
 {
   PT_BEGIN(&s->utilpt);
   IDENTIFIER_NOT_USED(ptr);
+  PT_WAIT_THREAD(&s->utilpt, get_tz_options_util(s));
   PT_END(&s->utilpt);
 }
 

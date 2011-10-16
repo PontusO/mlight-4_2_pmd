@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Pontus Oldberg.
+ * Copyright (c) 2008, Pontus Oldberg.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,44 +27,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef LIGHTLIB_H_INCLUDED
-#define LIGHTLIB_H_INCLUDED
+#ifndef CGI_UTILS_H_INCLUDED
+#define CGI_UTILS_H_INCLUDED
 
-/* Configuration constants for the driver block */
-#define CFG_NUM_LIGHT_DRIVERS   6
-#define CFG_NUM_PWM_DRIVERS     4
+#include "httpd.h"
 
-#define MAX_INTENSITY           0xffff
-/*
- * Data types used by the button monitor
- */
-/* Light driver types */
-enum light_driver_type {
-  LIGHT_NONE,
-  LIGHT_PWM,
-  LIGH_ON_OFF
-};
+PT_THREAD(get_tz_options_util(struct httpd_state *s) __reentrant banked);
 
-/* Declaration of the light driver object */
-struct light_driver {
-  enum light_driver_type driver_type;
-  u8_t pwm_percent;
-  u16_t pwm_ratio;
-  u8_t io_pin;
-};
-
-struct led_lights {
-  struct light_driver light_drivers[CFG_NUM_LIGHT_DRIVERS];
-};
-
-/* Prototypes for the lib */
-void init_ledlib(void) __reentrant;
-char ledlib_set_light_abs (u8_t channel, u16_t value) __reentrant;
-char ledlib_set_light_percentage_log (u8_t channel, u8_t value) __reentrant;
-u16_t ledlib_get_light_abs (u8_t channel)  __reentrant;
-u8_t ledlib_get_light_percentage (u8_t channel) __reentrant;
-u8_t ledlib_get_type (u8_t channel) __reentrant;
-char ledlib_decrement_light_abs (u8_t channel, u16_t value) __reentrant;
-char ledlib_increment_light_abs (u8_t channel, u16_t value) __reentrant;
-
-#endif // LIGHTLIB_H_INCLUDED
+#endif // CGI_UTILS_H_INCLUDED

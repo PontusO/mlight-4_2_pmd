@@ -46,7 +46,6 @@
 #include "uipopt.h"
 #include "uip_arp.h"
 #include "uip-split.h"
-#include "sound.h"
 
 /*
  * Some os-light signal macros
@@ -106,8 +105,21 @@
 #define INTERRUPT_OFF   0
 #define INTERRUPT_ON    1
 
+/* Define the UART to be used for system prints */
+#define PUTCHAR_UART    1
+#define CONFIG_ENABLE_UART_1
+#undef CONFIG_ENABLE_UART_0
 void putchar(char n);
 
+/*
+ * Enable this flag if the system needs I2C functionality without
+ * pthread support.
+ */
+#undef CONFIG_ENABLE_NOS_I2C
+
+/*
+ * Some generic macros.
+ */
 #ifndef NULL
 #define NULL (void*)0
 #endif
