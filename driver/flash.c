@@ -46,6 +46,7 @@ const struct sys_config default_cfg = {
   {192, 168, 0, 11},                      /* The IP address of the node */
   {255, 255, 255, 0},                     /* The network mask of the node */
   {192, 168, 0, 1},                       /* The default gateway of the node */
+  80,
   1,                                      /* The Timer server is enabled per default */
   {192, 168, 0, 45},                      /* Time protocol server */
   37,                                     /* Time protocol server port */

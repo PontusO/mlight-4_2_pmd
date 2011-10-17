@@ -50,11 +50,6 @@ struct parameter_table {
   void (*function)(char *buffer) __reentrant;
 };
 
-/*---------------------- Local function prototypes --------------------------*/
-static void set_ip(char *buffer) __reentrant;
-static void set_netmask(char *buffer) __reentrant;
-static void set_gateway(char *buffer) __reentrant;
-
 /*---------------------- Local data ----------------------------------------*/
 /* Form parameters that needs to be parsed */
 static const struct parameter_table parmtab[] = {
@@ -85,6 +80,10 @@ static const struct parameter_table parmtab[] = {
     {
         "gateway",
         set_gateway
+    },
+    {
+        "webport",
+        set_webport
     },
     {
         "resettime",
@@ -118,106 +117,12 @@ static const struct parameter_table parmtab[] = {
         "tz",
         set_timezone
     },
-    {
-        "rdrt",   /* Remote detect repeat timeout*/
-        set_rdrt
-    },
-    {
-        "rdrr",   /* Remote repeat rate */
-        set_rdrr
-    },
-    {
-        "discr",  /* Channel commitment time */
-        set_discr
-    },
-    {
-        "red",  /* Channel commitment time */
-        set_red
-    },
-    {
-        "green",  /* Channel commitment time */
-        set_green
-    },
-    {
-        "yellow",  /* Channel commitment time */
-        set_yellow
-    },
-    {
-        "blue",  /* Channel commitment time */
-        set_blue
-    },
-    {
-        "chlock",  /* Channel commitment time */
-        set_chlock
-    },
-    {
-        "loginto",  /* Channel commitment time */
-        set_loginto
-    },
-    {
-        "loginend",  /* Channel commitment time */
-        set_loginend
-    },
-    {
-        "logintime",  /* Channel commitment time */
-        set_logintime
-    },
-    {
-        "enableup",  /* Channel commitment time */
-        set_enable_upgrade
-    },
-    {
-        "resetup",  /* Channel commitment time */
-        set_reset_upgrade
-    },
-    {
-        "mcast-ip",  /* Multi cast address */
-        set_mcast_ip
-    },
-    {
-        "reload",   /* Reload parameter for the channels.shtml page */
-        set_reload
-    },
-    {
-        "interval",   /* Reload parameter for the channels.shtml page */
-        set_channel_interval
-    },
-    {
-        "channel",    /* Channel field, used by get-chan-map.cgi */
-        set_channel_channel
-    },
-    {
-        "button",    /* Button field, used by get-button-map-cgi cgi */
-        set_button
-    },
-
-    {
-        "ch",         /* Channel field, used by channels.shtml */
-        set_channel_ch
-    },
     /* This is the last parameter in the list of html parameters.
      * It's used to trigger the real flash save function
      */
     {
         "submit",
         set_save
-    },
-    /* This entry is only used by the channels page due to a conflict with
-     * the objects on the webpage. */
-    {
-        "send",
-        set_save
-    },
-    /*
-     * Below are cgi parameters
-     */
-    {
-        "start",
-        cgi_start
-    },
-    {
-        "end",
-        cgi_end
     },
     {
         "*",
@@ -316,6 +221,13 @@ static void set_gateway(char *buffer) __reentrant
   sys_cfg.gw_addr[1] = htons(ip[0]) & 0xff;
   sys_cfg.gw_addr[2] = htons(ip[1]) >> 8;
   sys_cfg.gw_addr[3] = htons(ip[1]) & 0xff;
+}
+/*---------------------------------------------------------------------------*/
+static void set_webport(char *buffer) __reentrant
+{
+  buffer = skip_to_char(buffer, '=');
+  if (*buffer != ISO_and)
+    sys_cfg.time_port = atoi(buffer);
 }
 /*---------------------------------------------------------------------------*/
 static void reset_time(char *buffer) __reentrant
@@ -421,164 +333,6 @@ static void set_timezone(char *buffer) __reentrant
   sys_cfg.time_zone = tz;
 }
 /*---------------------------------------------------------------------------*/
-static void set_rdrt(char *buffer) __reentrant
-{
-  static u8_t rdrt;
-
-  buffer = skip_to_char(buffer, '=');
-  rdrt = atoi(buffer);
-
-  sys_cfg.remote_repeat_time = rdrt;
-}
-/*---------------------------------------------------------------------------*/
-static void set_rdrr(char *buffer) __reentrant
-{
-  static u8_t rdrr;
-
-  buffer = skip_to_char(buffer, '=');
-  rdrr = atoi(buffer);
-
-  sys_cfg.remote_repeat_rate = rdrr;
-}
-/*---------------------------------------------------------------------------*/
-static void set_discr(char *buffer) __reentrant
-{
-  static u16_t discr;
-
-  buffer = skip_to_char(buffer, '=');
-  discr = atoi(buffer);
-
-  sys_cfg.discr_time = discr;
-}
-/*---------------------------------------------------------------------------*/
-static void set_red(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  sys_cfg.color_key_map[0] = atoi(buffer);
-}
-/*---------------------------------------------------------------------------*/
-static void set_green(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  sys_cfg.color_key_map[1] = atoi(buffer);
-}
-/*---------------------------------------------------------------------------*/
-static void set_yellow(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  sys_cfg.color_key_map[2] = atoi(buffer);
-}
-/*---------------------------------------------------------------------------*/
-static void set_blue(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  sys_cfg.color_key_map[3] = atoi(buffer);
-}
-/*---------------------------------------------------------------------------*/
-static void set_chlock(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  sys_cfg.channel_lock = atoi(buffer);
-}
-/*---------------------------------------------------------------------------*/
-static void set_loginto(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  sys_cfg.login_time_out = atoi(buffer);
-}
-/*---------------------------------------------------------------------------*/
-static void set_loginend(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  sys_cfg.login_allow = atoi(buffer);
-}
-/*---------------------------------------------------------------------------*/
-static void set_logintime(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  sys_cfg.login_time = atoi(buffer);
-}
-/*---------------------------------------------------------------------------*/
-static void set_reset_upgrade(char *buffer) __reentrant
-{
-  IDENTIFIER_NOT_USED(buffer);
-  sys_cfg.enable_upgrades = 0;
-}
-/*---------------------------------------------------------------------------*/
-static void set_enable_upgrade(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  if (strncmp(buffer, "on", 2) == 0) {
-    sys_cfg.enable_upgrades = 1;
-  } else if (strncmp(buffer, "off", 3) == 0) {
-    sys_cfg.enable_upgrades = 0;
-  }
-}
-/*---------------------------------------------------------------------------*/
-static void set_mcast_ip(char *buffer) __reentrant
-{
-  static uip_ipaddr_t ip;
-
-  parse_ip(buffer, &ip);
-
-  /* Pack the result in the global parameter structure */
-  sys_cfg.multicast_group[0] = htons(ip[0]) >> 8;
-  sys_cfg.multicast_group[1] = htons(ip[0]) & 0xff;
-  sys_cfg.multicast_group[2] = htons(ip[1]) >> 8;
-  sys_cfg.multicast_group[3] = htons(ip[1]) & 0xff;
-}
-
-u8_t channels_reload;
-/*---------------------------------------------------------------------------*/
-static void set_reload(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  channels_reload = atoi(buffer);
-}
-
-u8_t channels_interval;
-/*---------------------------------------------------------------------------*/
-static void set_channel_interval(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  channels_interval = atoi(buffer);
-}
-
-u8_t cgi_button;
-/*---------------------------------------------------------------------------*/
-static void set_button(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  cgi_button = atoi(buffer);
-}
-
-/*---------------------------------------------------------------------------*/
-static void set_channel_ch(char *buffer) __reentrant
-{
-  u8_t ch, val;
-
-  /* Only update the when we are doing a real save */
-  if (!channels_reload) {
-    /* Get the channel number from the field ID */
-    ch = atoi(buffer) + (channels_interval * 10);
-    buffer = skip_to_char(buffer, '=');
-    /* Get mapped channel value that we should store */
-    val = atoi(buffer);
-    sys_cfg.channelmap[ch] = val;
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-static void set_channel_channel(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  gcgi_channel = atoi(buffer);
-  /* Check limits */
-  if (gcgi_channel > 99)
-    gcgi_channel = 99;
-}
-
-/*---------------------------------------------------------------------------*/
 struct time_param tp;
 static void set_save(char *buffer) __reentrant
 {
@@ -588,7 +342,6 @@ static void set_save(char *buffer) __reentrant
     write_config_to_flash();
     /* In case we are setting the time manually */
     if (need_time_update) {
-
       need_time_update = 0;
       tp.time.year = year;
       tp.time.month = month;
@@ -602,20 +355,6 @@ static void set_save(char *buffer) __reentrant
       RTC_SET_HW_RTC = &tp;
     }
   }
-}
-
-/*---------------------------------------------------------------------------*/
-static void cgi_start(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  gcgi_start = atoi(buffer);
-}
-
-/*---------------------------------------------------------------------------*/
-static void cgi_end(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  gcgi_end = atoi(buffer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -634,35 +373,6 @@ static u8_t parse_expr(char *buf)
     tptr++;
   }
   return 0;
-}
-/*---------------------------------------------------------------------------*/
-void parse_input(char *buf) banked
-{
-  static char token[128];
-  char *tok;
-
-  /* Search for query or end of line */
-  while (*buf != ISO_query &&
-         *buf != ISO_nl &&
-         *buf != ISO_space)
-    buf++;
-
-  /* Return if no query is present */
-  if (*buf != ISO_query)
-    return;
-
-  while (*buf != ISO_space)
-  {
-    buf++;
-    tok = token;
-    while (*buf != ISO_space && *buf != ISO_and)
-      *tok++ = *buf++;
-    *tok = 0;
-    /* Here we simply try to parse the tokenized parameter
-     * If the parameter does not exist, we simply discard it silently */
-    A_(printf("Parsing token %s\r\n", token);)
-    parse_expr(token);
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -693,6 +403,36 @@ static void set_password(char *buffer) __reentrant
     i--;
   }
   *buffer = 0x00;
+}
+
+/*---------------------------------------------------------------------------*/
+void parse_input(char *buf) banked
+{
+  static char token[128];
+  char *tok;
+
+  /* Search for query or end of line */
+  while (*buf != ISO_query &&
+         *buf != ISO_nl &&
+         *buf != ISO_space)
+    buf++;
+
+  /* Return if no query is present */
+  if (*buf != ISO_query)
+    return;
+
+  while (*buf != ISO_space)
+  {
+    buf++;
+    tok = token;
+    while (*buf != ISO_space && *buf != ISO_and)
+      *tok++ = *buf++;
+    *tok = 0;
+    /* Here we simply try to parse the tokenized parameter
+     * If the parameter does not exist, we simply discard it silently */
+    A_(printf("Parsing token %s\n", token);)
+    parse_expr(token);
+  }
 }
 
 /* End of File */

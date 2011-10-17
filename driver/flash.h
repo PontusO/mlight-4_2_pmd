@@ -45,6 +45,7 @@ struct sys_config
   u8_t ip_addr[4];                /* IP address of the node */
   u8_t netmask[4];                /* network mask of the node */
   u8_t gw_addr[4];                /* the default gateway of the node */
+  u16_t http_port;                /* Port for the webserver */
   u8_t enable_time;               /* 0 = Do not use time server, 1 = Use time server */
   u8_t time_server[4];            /* The systems time server address */
   u16_t time_port;                /* The port of the time server */

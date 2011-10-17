@@ -61,12 +61,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-/* Network CGI's */
-HTTPD_CGI_CALL(L_get_device_id, "get-id", get_device_id);
-HTTPD_CGI_CALL(L_get_tv_id, "get-tv", get_tv_id);
-HTTPD_CGI_CALL(L_get_ip, "get-ip", get_ip);
-HTTPD_CGI_CALL(L_get_mask, "get-mask", get_mask);
-HTTPD_CGI_CALL(L_get_router, "get-router", get_router);
 /* Time CGI's */
 HTTPD_CGI_CALL(L_get_time_ena, "get-time-ena", get_time_ena);
 HTTPD_CGI_CALL(L_get_time_ip, "get-time-ip", get_time_ip);
@@ -77,40 +71,21 @@ HTTPD_CGI_CALL(L_get_current_date, "get-cur-date", get_current_date);
 HTTPD_CGI_CALL(L_get_tz_options, "get-tz-opt", get_tz_options);
 HTTPD_CGI_CALL(L_get_time_tz, "get-time-tz", get_time_tz);
 HTTPD_CGI_CALL(L_get_rtc, "get-rtc", get_rtc);
-/* UI Settings */
-HTTPD_CGI_CALL(L_get_ch_lock, "get-ch-lock", get_ch_lock);
-HTTPD_CGI_CALL(L_get_login_to, "get-login-to", get_login_to);
-HTTPD_CGI_CALL(L_get_login_end, "get-login-end", get_login_end);
-HTTPD_CGI_CALL(L_get_login_time, "get-login-time", get_login_time);
-/* System Settings cgi calls */
-HTTPD_CGI_CALL(L_get_rpt_tim, "get-rpt-tim", get_rpt_tim);
-HTTPD_CGI_CALL(L_get_rpt_rte, "get-rpt-rte", get_rpt_rte);
-HTTPD_CGI_CALL(L_get_discr_tim, "get-discr-tim", get_discr_tim);
-HTTPD_CGI_CALL(L_get_button_map, "get-button-map", get_button_map);
-HTTPD_CGI_CALL(L_get_user_name, "get-user-name", get_user_name);
-HTTPD_CGI_CALL(L_get_password, "get-password", get_password);
-/* Upgrade settings */
-HTTPD_CGI_CALL(L_get_upgrade_ena, "get-upgrade-ena", get_upgrade_ena);
-HTTPD_CGI_CALL(L_get_upgrade_ip, "get-upgrade-ip", get_upgrade_ip);
-/* Channel Mapping */
-HTTPD_CGI_CALL(L_get_channel,         "get-channel", get_channel);
-HTTPD_CGI_CALL(L_get_chan_sel,        "get-chan-sel", get_chan_sel);
-/* File wrapped cgi calls */
-HTTPD_CGI_CALL(L_clear_entries,       "clear-entries", clear_entries);
-HTTPD_CGI_CALL(L_get_chan_map,        "get-chan-map", get_chan_map);
-HTTPD_CGI_CALL(L_get_time_ena_cgi,    "get-tim-en-cgi", get_time_ena_cgi);
-HTTPD_CGI_CALL(L_get_upgrade_ena_cgi, "cgi-get-upgrade-ena", get_upgrade_ena_cgi);
-HTTPD_CGI_CALL(L_get_button_map_cgi,  "cgi-get-button-map", get_button_map_cgi);
-
 /* Other */
 HTTPD_CGI_CALL(L_set_param, "set-param", set_param);
+/* Generic data type CGI's */
+HTTPD_CGI_CALL(f_get_ip_num, "get-ip-num", get_ip_num);
+HTTPD_CGI_CALL(f_get_temp, "get-temp", get_temp);
+HTTPD_CGI_CALL(f_get_check_box, "get-check", get_check_box);
+HTTPD_CGI_CALL(f_get_string, "get-string", get_string);
+HTTPD_CGI_CALL(f_get_int, "get-int", get_int);
 
 static const struct httpd_cgi_call *calls[] = {
-  &L_get_device_id,
-  &L_get_tv_id,
-  &L_get_ip,
-  &L_get_mask,
-  &L_get_router,
+  &f_get_ip_num,
+  &f_get_temp,
+  &f_get_check_box,
+  &f_get_string,
+  &f_get_int,
   &L_get_time_ena,
   &L_get_time_ip,
   &L_get_timeport,
@@ -120,46 +95,12 @@ static const struct httpd_cgi_call *calls[] = {
   &L_get_tz_options,
   &L_get_time_tz,
   &L_get_rtc,
-  &L_get_ch_lock,
-  &L_get_login_to,
-  &L_get_login_end,
-  &L_get_login_time,
-  &L_get_rpt_tim,
-  &L_get_rpt_rte,
-  &L_get_discr_tim,
-  &L_get_button_map,
-  &L_get_upgrade_ena,
-  &L_get_upgrade_ip,
-  &L_get_channel,
-  &L_get_chan_sel,
-  &L_get_user_name,
-  &L_get_password,
-  /* File wrapped cgi calls */
-  &L_clear_entries,
-  &L_get_chan_map,
-  &L_get_time_ena_cgi,
-  &L_get_upgrade_ena_cgi,
-  &L_get_button_map_cgi,
   &L_set_param,
   NULL
 };
 
-/*
- * Definition of parameters that are passed in the URL
- */
-u16_t gcgi_start;
-u16_t gcgi_end;
-u8_t  gcgi_channel;
-
-static int i;
-static int gi;
-
-static const char *ip_string = "%d.%d.%d.%d";
-
-/*
- * Error codes
- */
-static char *error = "Error %u";
+static char *ip_format = "%d.%d.%d.%d";
+static char *error_string = "<ERROR ";
 
 /*---------------------------------------------------------------------------*/
 static
@@ -206,32 +147,6 @@ PT_THREAD(get_rtc(struct httpd_state *s, char *ptr) __reentrant)
 }
 #endif
 /* ***************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_device_id(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, "%s", sys_cfg.device_id);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_tv_id(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, "%d", sys_cfg.tv_number);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
 
 /*---------------------------------------------------------------------------*/
 static
@@ -283,51 +198,6 @@ PT_THREAD(get_rtc(struct httpd_state *s, char *ptr) __reentrant)
 }
 /*---------------------------------------------------------------------------*/
 static
-PT_THREAD(get_ip(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf((char *)uip_appdata, ip_string,
-          sys_cfg.ip_addr[0], sys_cfg.ip_addr[1],
-          sys_cfg.ip_addr[2], sys_cfg.ip_addr[3]);
-
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_mask(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf((char *)uip_appdata, ip_string,
-          sys_cfg.netmask[0], sys_cfg.netmask[1],
-          sys_cfg.netmask[2], sys_cfg.netmask[3]);
-
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_router(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf((char *)uip_appdata, ip_string,
-          sys_cfg.gw_addr[0], sys_cfg.gw_addr[1],
-          sys_cfg.gw_addr[2], sys_cfg.gw_addr[3]);
-
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-/*---------------------------------------------------------------------------*/
-static
 PT_THREAD(get_time_ena(struct httpd_state *s, char *ptr) __reentrant)
 {
   PSOCK_BEGIN(&s->sout);
@@ -365,7 +235,7 @@ PT_THREAD(get_time_ip(struct httpd_state *s, char *ptr) __reentrant)
   PSOCK_BEGIN(&s->sout);
   IDENTIFIER_NOT_USED(ptr);
 
-  sprintf((char *)uip_appdata, ip_string,
+  sprintf((char *)uip_appdata, ip_format,
           sys_cfg.time_server[0], sys_cfg.time_server[1],
           sys_cfg.time_server[2], sys_cfg.time_server[3]);
 
@@ -396,245 +266,6 @@ PT_THREAD(get_interval(struct httpd_state *s, char *ptr) __reentrant)
 
   sprintf((char *)uip_appdata, "%u", (u16_t)sys_cfg.update_interval);
 
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(clear_entries(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-
-  IDENTIFIER_NOT_USED(ptr);
-
-  PSOCK_SEND_STR(&s->sout, "<OK>");
-
-  PSOCK_END(&s->sout);
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_rpt_tim(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, "%d", sys_cfg.remote_repeat_time);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_rpt_rte(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, "%d", sys_cfg.remote_repeat_rate);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_discr_tim(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, "%d", sys_cfg.discr_time);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-u8_t color_index;
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_button_map(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PT_BEGIN(&s->utilpt);
-
-  while (*ptr != ISO_space)
-    ptr++;
-  ptr++;
-  /* The index of the color is in the webpage, go get it */
-  color_index = atoi(ptr)-1;
-   PT_END(&s->utilpt);
-}
-
-extern u8_t cgi_button;
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_button_map_cgi(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  /* The index of the color is specified in the cgi call (?button=0) */
-  if (cgi_button >= 4)
-    sprintf(uip_appdata, error, 304);
-  else
-    sprintf(uip_appdata, "%u", sys_cfg.color_key_map[cgi_button]);
-
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_ch_lock(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, "%d", sys_cfg.channel_lock);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_login_to(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, "%u", sys_cfg.login_time_out);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_login_end(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, "%u", sys_cfg.login_allow);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_login_time(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, "%u", sys_cfg.login_time);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_upgrade_ena(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  if (sys_cfg.enable_upgrades) {
-    sprintf((char *)uip_appdata, "checked");
-    PSOCK_SEND_STR(&s->sout, uip_appdata);
-  }
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_upgrade_ena_cgi(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  if (sys_cfg.enable_upgrades)
-    sprintf((char *)uip_appdata, "on");
-  else
-    sprintf((char *)uip_appdata, "off");
-
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_upgrade_ip(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf((char *)uip_appdata, ip_string,
-          sys_cfg.multicast_group[0], sys_cfg.multicast_group[1],
-          sys_cfg.multicast_group[2], sys_cfg.multicast_group[3]);
-
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_channel(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-
-  {
-    u8_t chn;
-
-    while (*ptr != ISO_space)
-      ptr++;
-    ptr++;
-
-    /* Index of channel that we need to get */
-    chn = atoi(ptr);
-    /* Check if we are changing channel interval from the web page */
-    chn = channels_interval * 10 + chn;
-    sprintf(uip_appdata, "%02d", 100);
-  }
-
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-  PSOCK_END(&s->sout);
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_chan_sel(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  /* Create the option list */
-  for (i=0;i<10;i++) {
-    sprintf(uip_appdata, "<option value='%d'", i);
-    PSOCK_SEND_STR(&s->sout, uip_appdata);
-    if (channels_interval == i)
-      sprintf(uip_appdata, " selected>%d0-%d9</option>", i, i);
-    else
-      sprintf(uip_appdata, ">%d0-%d9</option>", i, i);
-    PSOCK_SEND_STR(&s->sout, uip_appdata);
-  }
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_chan_map(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, "%d", sys_cfg.channelmap[gcgi_channel]);
   PSOCK_SEND_STR(&s->sout, uip_appdata);
 
   PSOCK_END(&s->sout);
@@ -698,4 +329,194 @@ PT_THREAD(get_password(struct httpd_state *s, char *ptr) __reentrant)
 
   PSOCK_END(&s->sout);
 }
+
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(get_temp(struct httpd_state *s, char *ptr) __reentrant)
+{
+  int temp = 0;
+  int channel;
+
+  PSOCK_BEGIN(&s->sout);
+
+  while (*ptr != ' ')
+    ptr++;
+  ptr++;
+  channel = atoi(ptr);
+
+  switch (channel)
+  {
+    case 0:
+    case 1:
+    case 2:
+//      temp = get_angle(channel);
+      break;
+  }
+
+  sprintf((char *)uip_appdata, "%d.%d", temp / 100, abs(temp % 100));
+
+  PSOCK_SEND_STR(&s->sout, uip_appdata);
+  PSOCK_END(&s->sout);
+}
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(get_ip_num(struct httpd_state *s, char *ptr) __reentrant)
+{
+  char ip_group;
+
+  PSOCK_BEGIN(&s->sout);
+
+  while (*ptr != ' ')
+    ptr++;
+  ptr++;
+  ip_group = atoi(ptr);
+
+  switch(ip_group)
+  {
+    case 1:
+      /* Host IP */
+      sprintf((char *)uip_appdata, ip_format,
+        sys_cfg.ip_addr[0], sys_cfg.ip_addr[1],
+        sys_cfg.ip_addr[2], sys_cfg.ip_addr[3]);
+      break;
+
+    case 2:
+      /* Netmask */
+      sprintf((char *)uip_appdata, ip_format,
+        sys_cfg.netmask[0], sys_cfg.netmask[1],
+        sys_cfg.netmask[2], sys_cfg.netmask[3]);
+      break;
+
+    case 3:
+      /* Deafult router */
+      sprintf((char *)uip_appdata, ip_format,
+        sys_cfg.gw_addr[0], sys_cfg.gw_addr[1],
+        sys_cfg.gw_addr[2], sys_cfg.gw_addr[3]);
+      break;
+
+    case 5:
+      /* HTTP Port */
+      sprintf((char *)uip_appdata, "%u", sys_cfg.http_port);
+      break;
+
+    default:
+      sprintf((char *)uip_appdata, "Invalid IP group !");
+      break;
+  }
+
+  PSOCK_SEND_STR(&s->sout, uip_appdata);
+
+  PSOCK_END(&s->sout);
+}
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(get_check_box(struct httpd_state *s, char *ptr) __reentrant)
+{
+  char check_box;
+
+  PSOCK_BEGIN(&s->sout);
+
+  while (*ptr != ' ')
+    ptr++;
+  ptr++;
+  check_box = atoi(ptr);
+
+  switch(check_box)
+  {
+#if 0
+    case 0:
+      check_box = sys_cfg.authenabled;
+      break;
+
+    case 1:
+      check_box = sys_cfg.enable_stop_larm;
+      break;
+
+    case 2:
+      check_box = sys_cfg.enable_fall_tube_alarm;
+      break;
+
+    case 3:
+      check_box = sys_cfg.enable_sonar_larm;
+      break;
+#endif
+    default:
+      check_box = 0;
+      break;
+  }
+
+  if (check_box)
+    sprintf((char *)uip_appdata, "checked");
+  else
+    sprintf((char *)uip_appdata, " ");
+
+  PSOCK_SEND_STR(&s->sout, uip_appdata);
+  PSOCK_END(&s->sout);
+}
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
+{
+  char intno;
+  int myint = 0;
+
+  PSOCK_BEGIN(&s->sout);
+
+  while (*ptr != ' ')
+    ptr++;
+  ptr++;
+  intno = atoi(ptr);
+
+  switch(intno)
+  {
+    /* emergency stop pin status */
+    case 1:
+//      myint = EMERGENCY_STOP;
+      break;
+
+    /* Handles the larm level on the pellets level alarm */
+    case 2:
+//      myint = sys_cfg.sonar_larm;
+      break;
+
+    /* Handles the bottom level value for the pellet container */
+    case 3:
+//      myint = sys_cfg.sonar_bottom;
+      break;
+  }
+
+  sprintf((char *)uip_appdata, "%d", myint);
+
+  PSOCK_SEND_STR(&s->sout, uip_appdata);
+  PSOCK_END(&s->sout);
+}
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(get_string(struct httpd_state *s, char *ptr) __reentrant)
+{
+  char stringno;
+  char *string = NULL;
+
+  PSOCK_BEGIN(&s->sout);
+
+  while (*ptr != ' ')
+    ptr++;
+  ptr++;
+  stringno = atoi(ptr);
+
+  switch(stringno)
+  {
+    /* Node Name */
+    case 1:
+      string = sys_cfg.device_id;
+      break;
+  }
+
+  if (string)
+    sprintf((char *)uip_appdata, "%s", string);
+
+  PSOCK_SEND_STR(&s->sout, uip_appdata);
+  PSOCK_END(&s->sout);
+}
+
 /** @} */
