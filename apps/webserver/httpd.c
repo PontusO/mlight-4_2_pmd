@@ -210,7 +210,8 @@ PT_THREAD(send_headers(struct httpd_state *s,
   PSOCK_SEND_STR(&s->sout, statushdr);
 
   if (dofil) {
-    ptr = strrchr(s->filename, ISO_period);
+    printf (__FILE__ " Filename '%s' !\n", s->filename);
+    ptr = strchr(s->filename, ISO_period);
     if (ptr == NULL) {
       PSOCK_SEND_STR(&s->sout, http_content_type_binary);
     } else if (strncmp(http_html, ptr, 5) == 0 ||
