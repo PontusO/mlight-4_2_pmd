@@ -6,13 +6,22 @@
 		<Option pch_mode="2" />
 		<Option compiler="sdcc" />
 		<Build>
-			<Target title="Build and run">
+			<Target title="Build and Flash (Serial)">
 				<Option output="bin\Debug\Uip1.hex" prefix_auto="1" extension_auto="0" />
 				<Option object_output="obj\Debug\" />
 				<Option type="1" />
 				<Option compiler="sdcc" />
 				<ExtraCommands>
 					<Add after="bin\debug\flash_serial.bat" />
+				</ExtraCommands>
+			</Target>
+			<Target title="Build and Flash (USB)">
+				<Option output="bin\Debug\Uip1.hex" prefix_auto="1" extension_auto="0" />
+				<Option object_output="obj\Debug\" />
+				<Option type="1" />
+				<Option compiler="sdcc" />
+				<ExtraCommands>
+					<Add after="bin\debug\flash_usb.bat" />
 				</ExtraCommands>
 			</Target>
 			<Target title="Build">
@@ -26,29 +35,6 @@
 				<Option object_output="obj\Release\" />
 				<Option type="1" />
 				<Option compiler="sdcc" />
-			</Target>
-			<Target title="Build and run with UART">
-				<Option output="bin\Debug\Uip1.hex" prefix_auto="1" extension_auto="0" />
-				<Option object_output="obj\Debug\" />
-				<Option type="1" />
-				<Option compiler="sdcc" />
-				<Compiler>
-					<Add option="-DUSE_UART_INSTEAD_OF_SMB=1" />
-					<Add option="-DPRINT_A=1" />
-				</Compiler>
-				<ExtraCommands>
-					<Add after="bin\debug\flash_serial.bat" />
-				</ExtraCommands>
-			</Target>
-			<Target title="Build with UART">
-				<Option output="bin\Debug\Uip1.hex" prefix_auto="1" extension_auto="0" />
-				<Option object_output="obj\Debug\" />
-				<Option type="1" />
-				<Option compiler="sdcc" />
-				<Compiler>
-					<Add option="-DUSE_UART_INSTEAD_OF_SMB=1" />
-					<Add option="-DPRINT_A=1" />
-				</Compiler>
 			</Target>
 		</Build>
 		<Compiler>
