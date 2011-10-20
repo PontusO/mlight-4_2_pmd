@@ -41,7 +41,6 @@ struct sys_config
 {
   struct uip_eth_addr mac_addr;   /* MAC address of the node */
   char device_id[8];              /* Device ID, allocate 8 bytes for this */
-  char tv_number;                 /* Which device in a household */
   u8_t ip_addr[4];                /* IP address of the node */
   u8_t netmask[4];                /* network mask of the node */
   u8_t gw_addr[4];                /* the default gateway of the node */
@@ -50,19 +49,7 @@ struct sys_config
   u8_t time_server[4];            /* The systems time server address */
   u16_t time_port;                /* The port of the time server */
   u16_t update_interval;          /* number of hours between rtc updates */
-  char time_zone;                 /* The offset from GMT for our displayed time */
-  u8_t remote_repeat_time;        /* A timeout used to determine remote key repeat */
-  u8_t remote_repeat_rate;        /* How fast the repeat function is */
-  u16_t channel_lock;             /* Timeout before a channel selection locks */
-  u16_t login_time_out;           /* Time before the PMD starts to request login */
-  u16_t login_allow;              /* Time allowed for the user to login */
-  u16_t login_time;               /* How long the user shall be logged in */
-  u16_t discr_time;               /* Timeout used to qualify a valid channel selection */
-  u8_t color_key_map[4];          /* Mapping of color keys */
-  u8_t enable_upgrades;           /* Determines wether automtic upgrades are enabled or not */
-  u8_t multicast_group[4];        /* This holds the current multicast group */
-  u8_t channelmap[100];           /* Array that holds the channel map */
-  u8_t remote_long_press;         /* Time out for detecting long presses on a remote button */
+  char time_zone;                 /* The offset from GMT for our system time */
   char username[9];               /* Authentication user name */
   char password[9];               /* Authentication password */
 };

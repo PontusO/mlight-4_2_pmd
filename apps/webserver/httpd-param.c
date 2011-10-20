@@ -66,10 +66,6 @@ static const struct parameter_table parmtab[] = {
         set_device_id
     },
     {
-        "tvid",
-        set_tv_id
-    },
-    {
         "hostip",
         set_ip
     },
@@ -170,16 +166,6 @@ static void set_device_id(char *buffer) __reentrant
     i--;
   }
   *buffer = 0x00;
-}
-
-/*---------------------------------------------------------------------------*/
-static void set_tv_id(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-
-  sys_cfg.tv_number = atoi(buffer);
-  if (sys_cfg.tv_number > 5)
-    sys_cfg.tv_number  = 5;
 }
 
 /*---------------------------------------------------------------------------*/

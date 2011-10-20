@@ -42,38 +42,15 @@
 const struct sys_config default_cfg = {
   {{0x00, 0x3F, 0xB2, 0xC9, 0x0A, 0x00}}, /* The MAC address of the node */
   {0x30, 0x30, 0x30, 0x30, 0, 0, 0, 0},   /* String with "0000" */
-  1,                                      /* Default is the first TV in the house */
   {192, 168, 0, 11},                      /* The IP address of the node */
   {255, 255, 255, 0},                     /* The network mask of the node */
   {192, 168, 0, 1},                       /* The default gateway of the node */
-  80,
+  80,                                     /* Default Web server port */
   1,                                      /* The Timer server is enabled per default */
   {192, 168, 0, 45},                      /* Time protocol server */
   37,                                     /* Time protocol server port */
   48,                                     /* Defult update interval = 48 hours */
   2,                                      /* Default time zone */
-  10,                                     /* Default repeat timeout */
-  5,                                      /* Default repeat rate */
-  150,                                    /* default channel select time out */
-  450,                                    /* Default we start requesting the user after 4.5 seconds */
-  30,                                     /* And we will allow a 30 second window for the user to log in */
-  1,                                      /* user stays logged in for this per default */
-  50,                                     /* Default channel selection discriminator time */
-  { 0, 1, 2, 5 },                         /* Default color key mapping */
-  1,                                      /* Upgrades are enabled */
-  {224, 10, 1, 0 },                       /* Our default multicast address */
-  { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,         /* Default channel map */
-    10,11,12,13,14,15,16,17,18,19,
-    20,21,22,23,24,25,26,27,28,29,
-    30,31,32,33,34,35,36,37,38,39,
-    40,41,42,43,44,45,46,47,48,49,
-    50,51,52,53,54,55,56,57,58,59,
-    60,61,62,63,64,65,66,67,68,69,
-    70,71,72,73,74,75,76,77,78,79,
-    80,81,82,83,84,85,86,87,88,89,
-    90,91,92,93,94,95,96,97,98,99
-  },
-  10,                                     /* Default time out for long presses */
   { "admin", 0, 0, 0, 0 },                /* Default user name and password */
   { "pass", 0, 0, 0, 0, 0 }
 };
@@ -321,7 +298,6 @@ void load_network_params(void)
 
   uip_setethaddr(sys_cfg.mac_addr);
   /* A special setting that allows multiple units to be on the same network */
-  uip_ethaddr.addr[5] = sys_cfg.tv_number;
 
   uip_ipaddr(&addr, sys_cfg.ip_addr[0],
              sys_cfg.ip_addr[1],
