@@ -27,7 +27,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#pragma codeseg APP_BANK
 
 #include "system.h"
 #include "swtimers.h"
@@ -50,7 +49,7 @@ static u8_t count = 0;
  * This function must be executed before timer 0 interrupts
  * are enabled.
  */
-void init_swtimers(void) banked
+void init_swtimers(void)
 {
   u8_t i;
 
@@ -70,13 +69,12 @@ void init_swtimers(void) banked
  * Allocate a timer, can range from 0-127.
  * Negative number are error codes.
  */
-char alloc_timer(void) banked
+char alloc_timer(void)
 {
   u8_t i;
 #ifdef DEBUG_SWTIMERS
   u8_t j;
 #endif
-
   ET0 = INTERRUPT_OFF;
   for (i=0 ; i<NUMBER_OF_SWTIMERS ; i++)
   {
@@ -127,11 +125,16 @@ char alloc_timer(void) banked
 /*
  * Free a timer
  */
-u8_t free_timer(u8_t timer) banked
+u8_t free_timer(u8_t timer)
 {
 #ifdef DEBUG_SWTIMERS
   u8_t j;
 #endif
+  if (timer >= NUMBER_OF_SWTIMERS) {
+    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    return 0;
+  }
+
   ET0 = INTERRUPT_OFF;
   if (timer_table[timer] != TMR_FREE) {
     timer_table[timer] = TMR_FREE;
@@ -176,8 +179,13 @@ u8_t free_timer(u8_t timer) banked
  * If callbacks are not to be used, this must be set to NULL
  * The timer is started immediatly before returning
  */
-void set_timer(u8_t timer, u16_t time, timer_cb cb) banked
+void set_timer(u8_t timer, u16_t time, timer_cb cb)
 {
+  if (timer >= NUMBER_OF_SWTIMERS) {
+    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    return;
+  }
+
   ET0 = INTERRUPT_OFF;
   swtimer[timer] = time;
   timer_cbs[timer] = cb;
@@ -188,8 +196,12 @@ void set_timer(u8_t timer, u16_t time, timer_cb cb) banked
 /*
  * Renews the timer counter
  */
-void set_timer_cnt(u8_t timer, u16_t time) banked
+void set_timer_cnt(u8_t timer, u16_t time)
 {
+  if (timer >= NUMBER_OF_SWTIMERS) {
+    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    return;
+  }
   ET0 = INTERRUPT_OFF;
   swtimer[timer] = time;
   ET0 = INTERRUPT_ON;
@@ -198,9 +210,14 @@ void set_timer_cnt(u8_t timer, u16_t time) banked
 /*
  * Get the value of a specific timer
  */
-u16_t get_timer(u8_t timer) banked
+u16_t get_timer(u8_t timer)
 {
   u16_t value;
+
+  if (timer >= NUMBER_OF_SWTIMERS) {
+    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    return 0;
+  }
 
   ET0 = INTERRUPT_OFF;
   value = swtimer[timer];
@@ -212,16 +229,25 @@ u16_t get_timer(u8_t timer) banked
 /*
  * Get the status of a specified timer
  */
-u8_t get_timer_status(u8_t timer) banked
+u8_t get_timer_status(u8_t timer)
 {
+  if (timer >= NUMBER_OF_SWTIMERS) {
+    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    return TMR_ERROR;
+  }
   return timer_table[timer];
 }
 
 /*
  * Stop the timer from counting down
  */
-void stop_timer(u8_t timer) banked
+void stop_timer(u8_t timer)
 {
+  if (timer >= NUMBER_OF_SWTIMERS) {
+    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    return;
+  }
+
   ET0 = INTERRUPT_OFF;
   timer_table[timer] = TMR_STOPPED;
   ET0 = INTERRUPT_ON;
@@ -230,8 +256,13 @@ void stop_timer(u8_t timer) banked
 /*
  * Start the timer counting
  */
-void start_timer(u8_t timer) banked
+void start_timer(u8_t timer)
 {
+  if (timer >= NUMBER_OF_SWTIMERS) {
+    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    return;
+  }
+
   ET0 = INTERRUPT_OFF;
   timer_table[timer] = TMR_RUNNING;
   ET0 = INTERRUPT_ON;
@@ -244,7 +275,7 @@ void start_timer(u8_t timer) banked
  * This functionality was broken out of the timer 0 interrupt routine
  * as it was severely instable.
  */
-PT_THREAD(handle_kicker(struct kicker *Kicker) banked)
+PT_THREAD(handle_kicker(struct kicker *Kicker) )
 {
   PT_BEGIN(&Kicker->pt);
 

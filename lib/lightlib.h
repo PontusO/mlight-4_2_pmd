@@ -47,22 +47,18 @@ enum light_driver_type {
 
 /* Declaration of the light driver object */
 struct light_driver {
-  enum light_driver_type driver_type;
+  u8_t driver_type;
   u8_t pwm_percent;
   u16_t pwm_ratio;
   u8_t io_pin;
 };
 
-struct led_lights {
-  struct light_driver light_drivers[CFG_NUM_LIGHT_DRIVERS];
-};
-
 /* Prototypes for the lib */
 void init_ledlib(void) __reentrant;
-char ledlib_set_light_abs (u8_t channel, u16_t value) __reentrant;
 char ledlib_set_light_percentage_log (u8_t channel, u8_t value) __reentrant;
-u16_t ledlib_get_light_abs (u8_t channel)  __reentrant;
 u8_t ledlib_get_light_percentage (u8_t channel) __reentrant;
+char ledlib_set_light_abs (u8_t channel, u16_t value) __reentrant;
+u16_t ledlib_get_light_abs (u8_t channel)  __reentrant;
 u8_t ledlib_get_type (u8_t channel) __reentrant;
 char ledlib_decrement_light_abs (u8_t channel, u16_t value) __reentrant;
 char ledlib_increment_light_abs (u8_t channel, u16_t value) __reentrant;

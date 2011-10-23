@@ -113,6 +113,27 @@ static const struct parameter_table parmtab[] = {
         "tz",
         set_timezone
     },
+	/* Parameters used in xcgi commands */
+	{
+        "channel",
+        cgi_set_channel
+    },
+    {
+        "level",
+        cgi_set_level
+    },
+    {
+        "rampto",
+        cgi_set_rampto
+    },
+    {
+        "rate",
+        cgi_set_rate
+    },
+    {
+        "step",
+        cgi_set_step
+    },
     /* This is the last parameter in the list of html parameters.
      * It's used to trigger the real flash save function
      */
@@ -344,23 +365,45 @@ static void set_save(char *buffer) __reentrant
 }
 
 /*---------------------------------------------------------------------------*/
-static u8_t parse_expr(char *buf)
+static void cgi_set_channel(char *buffer) __reentrant
 {
-  struct parameter_table *tptr = parmtab;
-
-  while (*tptr->param != '*')
-  {
-    if (strncmp(buf, tptr->param, strlen(tptr->param)) == 0)
-    {
-      /* Call the setter */
-      tptr->function(buf);
-      return 1;
-    }
-    tptr++;
-  }
-  return 0;
+  buffer = skip_to_char(buffer, '=');
+  cgi_parms_ctrl.channel = atoi(buffer);
+  cgi_parms_ctrl.channel_updated = 1;
+  cgi_parms_ctrl.num_parms++;
 }
-
+/*---------------------------------------------------------------------------*/
+static void cgi_set_level(char *buffer) __reentrant
+{
+  buffer = skip_to_char(buffer, '=');
+  cgi_parms_ctrl.level = atoi(buffer);
+  cgi_parms_ctrl.level_updated = 1;
+  cgi_parms_ctrl.num_parms++;
+}
+/*---------------------------------------------------------------------------*/
+static void cgi_set_rampto(char *buffer) __reentrant
+{
+  buffer = skip_to_char(buffer, '=');
+  cgi_parms_ctrl.rampto = atoi(buffer);
+  cgi_parms_ctrl.rampto_updated = 1;
+  cgi_parms_ctrl.num_parms++;
+}
+/*---------------------------------------------------------------------------*/
+static void cgi_set_rate(char *buffer) __reentrant
+{
+  buffer = skip_to_char(buffer, '=');
+  cgi_parms_ctrl.rate = atoi(buffer);
+  cgi_parms_ctrl.rate_updated = 1;
+  cgi_parms_ctrl.num_parms++;
+}
+/*---------------------------------------------------------------------------*/
+static void cgi_set_step(char *buffer) __reentrant
+{
+  buffer = skip_to_char(buffer, '=');
+  cgi_parms_ctrl.step = atoi(buffer);
+  cgi_parms_ctrl.step_updated = 1;
+  cgi_parms_ctrl.num_parms++;
+}
 /*---------------------------------------------------------------------------*/
 static void set_username(char *buffer) __reentrant
 {
@@ -392,6 +435,23 @@ static void set_password(char *buffer) __reentrant
 }
 
 /*---------------------------------------------------------------------------*/
+static u8_t parse_expr(char *buf)
+{
+  struct parameter_table *tptr = (struct parameter_table *)parmtab;
+
+  while (*tptr->param != '*')
+  {
+    if ((buf[strlen(tptr->param)] == '=') &&
+       (strncmp(buf, tptr->param, strlen(tptr->param)) == 0))
+    {
+      /* Call the parameter set function */
+      tptr->function(buf);
+      return 1;
+    }
+    tptr++;
+  }
+  return 0;
+}/*---------------------------------------------------------------------------*/
 void parse_input(char *buf) banked
 {
   static char token[128];
@@ -404,8 +464,11 @@ void parse_input(char *buf) banked
     buf++;
 
   /* Return if no query is present */
-  if (*buf != ISO_query)
+  if (*buf == ISO_nl || *buf == ISO_space)
     return;
+
+  /* Clear the cgi control parameter structure */
+  memset (&cgi_parms_ctrl, 0, sizeof cgi_parms_ctrl);
 
   while (*buf != ISO_space)
   {

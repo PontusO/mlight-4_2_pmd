@@ -27,7 +27,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-//#define PRINT_A     // Enable A prints
+
+#define PRINT_A     // Enable A prints
+//#define PRINT_B     // Spam prints
+
 #include <system.h>
 #include "iet_debug.h"
 #include <string.h>
@@ -234,9 +237,12 @@ char ledlib_set_light_percentage_log (u8_t channel, u8_t value) __reentrant
   /* Make sure parameters have sensible values */
   if (channel >= CFG_NUM_LIGHT_DRIVERS || value > 100)
     return -1;
+  else
+    B_(printf (__FILE__ " Channel: %d, value %d\n", channel, value);)
 
   light_drivers[channel].pwm_percent = value;
   if (light_drivers[channel].driver_type == LIGHT_PWM) {
+//    light_drivers[channel].pwm_ratio = (u16_t)value * 655;
     light_drivers[channel].pwm_ratio = calc_pwm (value);
     set_pca_duty (channel, light_drivers[channel].pwm_ratio);
   }  else

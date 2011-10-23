@@ -29,6 +29,7 @@
  */
 #ifndef RAMP_MGR_H_INCLUDED
 #define RAMP_MGR_H_INCLUDED
+
 #include "pt.h"
 
 #define RAMP_CMD_RESET  0x00
@@ -38,20 +39,31 @@
 /*
  * Data types used by the ramp manager
  */
-struct ramp_mgr_p {
+typedef struct {
   struct pt pt;
-  char channel;
   u8_t signal;
-  u8_t rate;
+  u8_t channel;
+  u16_t rate;
+  char rampto;
+  char intensity;
+  char step;
   u8_t timer;
+} ramp_t;
+
+typedef struct {
+  struct pt pt;
+  ramp_t ramp;
+  u8_t channel;
+  u8_t signal;
+  u8_t sig;
+  u16_t rate;
   char cnt;
   char intensity;
   char rampto;
   char step;
-};
-typedef struct ramp_mgr_p ramp_mgr_t;
+} ramp_mgr_t;
 
-void init_ramp_mgr(ramp_mgr_t *rmgr, u8_t channel) __reentrant banked;
+void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked;
 ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked;
 PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked);
 

@@ -155,7 +155,8 @@ void pmd(void) banked
   init_rtc();
 //  init_adc_mon(&adc_mon);
   init_but_mon(&but_mon);
-  init_ramp_mgr(&ramp_mgr, 0);
+  ramp_mgr.channel = 0;
+  init_ramp_mgr(&ramp_mgr);
   init_event_switch(&event_thread);
   /* Initialize all event action managers before the event providers */
   /* Event action managers */

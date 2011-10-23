@@ -62,20 +62,22 @@ struct httpd_cgi_call {
   const httpd_cgifunction function;
 };
 
-struct cgi_data {
-  struct pt pt;
+/*
+ * A parameter structure for transfering parameters to xcgi commands */
+struct cgi_parameters {
+  u8_t channel;
+  u8_t channel_updated;
+  u8_t level;
+  u8_t level_updated;
+  u8_t rampto;
+  u8_t rampto_updated;
+  u16_t rate;
+  u8_t rate_updated;
+  u8_t step;
+  u8_t step_updated;
+  u8_t num_parms;
 };
-extern struct cgi_data cgi_data;
-
-enum CGI_CMD {
-  CGI_CMD_NO_COMMAND = 0x00,
-  CGI_CMD_GET_NO_ENTRIES,
-  CGI_CMD_GET_ENTRY,
-};
-
-extern u16_t gcgi_start;
-extern u16_t gcgi_end;
-extern u8_t  gcgi_channel;
+extern struct cgi_parameters cgi_parms_ctrl;
 
 /**
  * \brief      HTTPD CGI function declaration
@@ -94,7 +96,6 @@ static PT_THREAD(function(struct httpd_state *, char *) __reentrant); \
 static const struct httpd_cgi_call name = {str, function}
 
 void httpd_cgi_init(void);
-PT_THREAD(handle_cgi(struct cgi_data *cd) __reentrant);
 
 #endif /* __HTTPD_CGI_H__ */
 

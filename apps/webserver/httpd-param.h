@@ -47,9 +47,6 @@
 #define ISO_query   '?'
 #define ISO_equal   '='
 
-extern u8_t channels_reload;
-extern u8_t channels_interval;
-
 void parse_input(char *buf) banked;
 
 #endif /*HTTPDPARAM_H_*/

@@ -29,15 +29,16 @@
  */
 #pragma codeseg APP_BANK
 
-//#define PRINT_A     // Enable A prints
-#include <system.h>
+#define PRINT_A     // Enable A prints
+
+#include "system.h"
 #include "iet_debug.h"
-#include <ramp_mgr.h>
-#include <pca.h>
-#include <string.h>
-#include <stdlib.h>
-#include <lightlib.h>
-#include <swtimers.h>
+#include "ramp_mgr.h"
+#include "pca.h"
+#include "string.h"
+#include "stdlib.h"
+#include "lightlib.h"
+#include "swtimers.h"
 
 /*
  * Locally used data
@@ -48,9 +49,13 @@ static u8_t num_mgrs = 0;
 /*
  * Initialize the ramp manager
  */
-void init_ramp_mgr(ramp_mgr_t *rmgr, u8_t channel) __reentrant banked
+void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked
 {
+  u8_t channel = rmgr->channel;
+
   if (channel < CFG_NUM_PWM_DRIVERS) {
+    A_(printf (__FILE__ " Initializing ramp mgr %p on channel %d\n",
+               rmgr, channel);)
     memset (rmgr, 0, sizeof *rmgr);
     PT_INIT(&rmgr->pt);
     rmgr->channel = channel;
@@ -58,7 +63,7 @@ void init_ramp_mgr(ramp_mgr_t *rmgr, u8_t channel) __reentrant banked
     ramp_mgr_tab[channel] = rmgr;
     num_mgrs++;
   } else {
-    A_(printf ("Incorrect channel !\n");)
+    A_(printf ("Incorrect channel %d!\n", channel);)
   }
 }
 
@@ -70,39 +75,99 @@ ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked
   return ramp_mgr_tab[channel];
 }
 
+/* Debug lines for catching compiler generated failures.
+ * If you think that values are being trashed in this function
+ * during runtime, this macro can be enabled and trace the required
+ * variable.
+ */
+#define TMR_GUARD if (ramp->timer != tmptim) { A_(printf (__FILE__ " Timer Error line %d: expected %d found %d, %p\n", __LINE__, (int)tmptim, (int)ramp->timer, ramp);) ; goto exit; }
+//#define TMR_GUARD
+
+static u8_t tmptim;
+PT_THREAD(do_ramp(ramp_t *ramp) __reentrant)
+{
+  PT_BEGIN (&ramp->pt);
+  {
+    ramp->timer = alloc_timer();
+    tmptim = ramp->timer;
+    ramp->signal = RAMP_CMD_RESET;
+
+    A_(printf (__FILE__ " allocated timer %d for ramp manager %p\n", ramp->timer, ramp);)
+
+    do {
+      TMR_GUARD
+      set_timer (ramp->timer, ramp->rate, NULL);
+
+      TMR_GUARD
+      if (ramp->step >= 0) {
+        TMR_GUARD
+        if (ramp->intensity > ramp->rampto) {
+          TMR_GUARD
+          ramp->intensity = ramp->rampto;
+        }
+      } else {
+        TMR_GUARD
+        if (ramp->intensity < ramp->rampto) {
+          TMR_GUARD
+          ramp->intensity = ramp->rampto;
+        }
+      }
+
+      TMR_GUARD
+      ledlib_set_light_percentage_log (ramp->channel, ramp->intensity);
+      TMR_GUARD
+      PT_WAIT_UNTIL (&ramp->pt, (get_timer(ramp->timer) == 0) ||
+                                 ramp->signal == RAMP_CMD_STOP);
+      TMR_GUARD
+      ramp->intensity += ramp->step;
+      TMR_GUARD
+    } while ((ramp->intensity != ramp->rampto) &&
+             (ramp->signal == RAMP_CMD_RESET));
+
+    if (ramp->signal == RAMP_CMD_RESET) {
+      A_(printf (__FILE__ " Set light: channel %d, intensity %d, target %d\n",
+                (int)ramp->channel, (int)ramp->intensity, (int)ramp->rampto);)
+      ledlib_set_light_percentage_log (ramp->channel, ramp->intensity);
+    }
+exit:
+    free_timer(ramp->timer);
+  }
+  PT_END (&ramp->pt);
+}
+
 PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked)
 {
-
   PT_BEGIN(&rmgr->pt);
-
-  rmgr->timer = alloc_timer();
 
   while (1)
   {
     /* Wait for a ramp command to arrive */
     PT_WAIT_UNTIL (&rmgr->pt, rmgr->signal);
     if (rmgr->signal == RAMP_CMD_START) {
+      A_(printf (__FILE__ " Received a start ramp request on channel %d\n",
+                 rmgr->channel);)
       /* Reset the signal */
       rmgr->signal = RAMP_CMD_RESET;
       /* Setup and start a ramp job */
       /* Get current light intensity */
       rmgr->intensity = ledlib_get_light_percentage(rmgr->channel);
+      A_(printf (__FILE__ " Start intensity %d\n", rmgr->intensity);)
       /* Check difference between new and current */
       rmgr->cnt = rmgr->rampto - rmgr->intensity;
+      A_(printf (__FILE__ " Ramping to %d\n", rmgr->rampto);)
+
       if (rmgr->cnt < 0) {
-        rmgr->step = -1;
-        rmgr->cnt *= -1;
-      } else
-        rmgr->step = 1;
-
-      while (rmgr->cnt) {
-        ledlib_set_light_percentage_log (rmgr->channel, rmgr->intensity);
-        set_timer (rmgr->timer, rmgr->rate, NULL);
-
-        PT_WAIT_UNTIL (&rmgr->pt, (get_timer(rmgr->timer) == 0));
-        rmgr->intensity = rmgr->intensity + rmgr->step;
-        rmgr->cnt = rmgr->cnt - 1;
+        rmgr->step *= -1;
+        rmgr->cnt = abs(rmgr->cnt);
       }
+
+      rmgr->ramp.channel = rmgr->channel;
+      rmgr->ramp.intensity = rmgr->intensity;
+      rmgr->ramp.rate = rmgr->rate;
+      rmgr->ramp.step = rmgr->step;
+      rmgr->ramp.rampto = rmgr->rampto;
+
+      PT_SPAWN (&rmgr->pt, &rmgr->ramp.pt, do_ramp(&rmgr->ramp));
     }
   }
 

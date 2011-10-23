@@ -28,7 +28,8 @@
  *
  */
 #pragma codeseg  APP_BANK
-#define PRINT_A
+
+//#define PRINT_A
 
 #include "system.h"
 #include "psock.h"

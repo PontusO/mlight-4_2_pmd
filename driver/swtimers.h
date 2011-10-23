@@ -46,6 +46,7 @@ enum timer_stat {
   TMR_STOPPED,
   TMR_KICK,
   TMR_ENDED,
+  TMR_ERROR,
 };
 
 struct kicker {
@@ -58,16 +59,16 @@ extern struct kicker kicker;
 extern u16_t swtimer[NUMBER_OF_SWTIMERS];
 extern u8_t  timer_table[NUMBER_OF_SWTIMERS];
 
-void init_swtimers(void) banked;
-void set_timer(u8_t timer, u16_t time, timer_cb cb) banked;
-void set_timer_cnt(u8_t timer, u16_t time) banked;
-u16_t get_timer(u8_t timer) banked;
-u8_t get_timer_status(u8_t timer) banked;
-char alloc_timer(void) banked;
-u8_t free_timer(u8_t timer) banked;
-void stop_timer(u8_t timer) banked;
-void start_timer(u8_t timer) banked;
-void init_kicker(void) banked;
-PT_THREAD(handle_kicker(struct kicker *kick) banked);
+void init_swtimers(void) ;
+void set_timer(u8_t timer, u16_t time, timer_cb cb) ;
+void set_timer_cnt(u8_t timer, u16_t time) ;
+u16_t get_timer(u8_t timer) ;
+u8_t get_timer_status(u8_t timer) ;
+char alloc_timer(void) ;
+u8_t free_timer(u8_t timer) ;
+void stop_timer(u8_t timer) ;
+void start_timer(u8_t timer) ;
+void init_kicker(void) ;
+PT_THREAD(handle_kicker(struct kicker *kick) );
 
 #endif // SWTIMERS_H_INCLUDED

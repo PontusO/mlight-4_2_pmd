@@ -44,6 +44,7 @@
  * $Id: httpd-cgi.c,v 1.2 2006/06/11 21:46:37 adam Exp $
  *
  */
+#define PRINT_A
 
 #include "uip.h"
 #include "psock.h"
@@ -56,6 +57,9 @@
 #include "rtc.h"
 #include "i2c.h"
 #include "iet_debug.h"
+
+#include "lightlib.h"
+#include "ramp_mgr.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -79,6 +83,10 @@ HTTPD_CGI_CALL(f_get_temp, "get-temp", get_temp);
 HTTPD_CGI_CALL(f_get_check_box, "get-check", get_check_box);
 HTTPD_CGI_CALL(f_get_string, "get-string", get_string);
 HTTPD_CGI_CALL(f_get_int, "get-int", get_int);
+HTTPD_CGI_CALL(f_set_level, "set-level", set_level);
+HTTPD_CGI_CALL(f_get_level, "get-level", get_level);
+HTTPD_CGI_CALL(f_start_ramp, "start-ramp", start_ramp);
+HTTPD_CGI_CALL(f_stop_ramp, "stop-ramp", stop_ramp);
 
 static const struct httpd_cgi_call *calls[] = {
   &f_get_ip_num,
@@ -96,12 +104,133 @@ static const struct httpd_cgi_call *calls[] = {
   &L_get_time_tz,
   &L_get_rtc,
   &L_set_param,
+  &f_set_level,
+  &f_get_level,
+  &f_start_ramp,
+  &f_stop_ramp,
   NULL
 };
 
 static char *ip_format = "%d.%d.%d.%d";
 static char *error_string = "<ERROR ";
 
+struct cgi_parameters cgi_parms_ctrl;
+
+static
+PT_THREAD(set_level(struct httpd_state *s, char *ptr) __reentrant)
+{
+  IDENTIFIER_NOT_USED(ptr);
+
+  PSOCK_BEGIN(&s->sout);
+  /* Make sure only 2 parameters were passed to this cgi */
+  if (cgi_parms_ctrl.num_parms == 2) {
+    /* Make sure only the correct parameters were passed */
+    if (cgi_parms_ctrl.channel_updated && cgi_parms_ctrl.level_updated) {
+      /* Validate parameters */
+      if (cgi_parms_ctrl.channel < CFG_NUM_LIGHT_DRIVERS &&
+          cgi_parms_ctrl.level <= 100) {
+        ledlib_set_light_percentage_log (cgi_parms_ctrl.channel, cgi_parms_ctrl.level);
+        sprintf((char *)uip_appdata, "<OK>");
+      } else {
+        sprintf((char *)uip_appdata, "%s01>", error_string);
+      }
+    } else {
+      sprintf((char *)uip_appdata, "%s02>", error_string);
+    }
+  } else {
+      sprintf((char *)uip_appdata, "%s03>", error_string);
+  }
+  PSOCK_SEND_STR(&s->sout, uip_appdata);
+  PSOCK_END(&s->sout);
+}
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(get_level(struct httpd_state *s, char *ptr) __reentrant)
+{
+  IDENTIFIER_NOT_USED(ptr);
+
+  PSOCK_BEGIN(&s->sout);
+  /* Make sure only 1 parameter was passed to this cgi */
+  if (cgi_parms_ctrl.num_parms == 1) {
+    /* Make sure only the correct parameters were passed */
+    if (cgi_parms_ctrl.channel_updated) {
+      /* Validate parameters */
+      if (cgi_parms_ctrl.channel < CFG_NUM_LIGHT_DRIVERS) {
+        u8_t val = ledlib_get_light_percentage (cgi_parms_ctrl.channel);
+        sprintf((char *)uip_appdata, "<%d>", val);
+      } else {
+        sprintf((char *)uip_appdata, "%s01>", error_string);
+      }
+    } else {
+      sprintf((char *)uip_appdata, "%s02>", error_string);
+    }
+  } else {
+      sprintf((char *)uip_appdata, "%s03>", error_string);
+  }
+  PSOCK_SEND_STR(&s->sout, uip_appdata);
+  PSOCK_END(&s->sout);
+}
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(start_ramp(struct httpd_state *s, char *ptr) __reentrant)
+{
+  IDENTIFIER_NOT_USED(ptr);
+
+  PSOCK_BEGIN(&s->sout);
+  {
+    /* Make sure we have at least 3 parameters
+     * channel, rate and rampto are mandatory parameters.
+     * step is optional
+     */
+    if (cgi_parms_ctrl.num_parms >= 3 &&
+        cgi_parms_ctrl.channel_updated &&
+        cgi_parms_ctrl.rate_updated &&
+        cgi_parms_ctrl.rampto_updated)
+    {
+      ramp_mgr_t *rmptr = get_ramp_mgr (cgi_parms_ctrl.channel);
+      /* Assert a signal to the ramp manager to start a ramp */
+      A_(printf (__FILE__ " Starting ramp (%p) on channel %d\n",
+                 rmptr, (int)cgi_parms_ctrl.channel);)
+      rmptr->rate = cgi_parms_ctrl.rate;
+      if (!cgi_parms_ctrl.step_updated)
+        rmptr->step = 1;
+      else
+        rmptr->step = cgi_parms_ctrl.step;
+      rmptr->rampto = cgi_parms_ctrl.rampto;
+      rmptr->signal = RAMP_CMD_START;
+      /* Return Ok status to the web client */
+      sprintf((char *)uip_appdata, "<OK>");
+    } else {
+      sprintf((char *)uip_appdata, "%s03>", error_string);
+    }
+    PSOCK_SEND_STR(&s->sout, uip_appdata);
+  }
+  PSOCK_END(&s->sout);
+}
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(stop_ramp(struct httpd_state *s, char *ptr) __reentrant)
+{
+  IDENTIFIER_NOT_USED(ptr);
+
+  PSOCK_BEGIN(&s->sout);
+  {
+    if (cgi_parms_ctrl.num_parms == 1 &&
+        cgi_parms_ctrl.channel_updated) {
+      ramp_mgr_t *rmptr = get_ramp_mgr (cgi_parms_ctrl.channel);
+      /* Assert a signal to the ramp manager to start a ramp */
+      A_(printf (__FILE__ " Stopping ramp (%p) on channel %d\n",
+                rmptr, (int)cgi_parms_ctrl.channel);)
+      rmptr->ramp.signal = RAMP_CMD_STOP;
+      /* For now, this will always return OK status */
+      sprintf((char *)uip_appdata, "<OK>");
+    } else {
+      sprintf((char *)uip_appdata, "%s03>", error_string);
+    }
+    PSOCK_SEND_STR(&s->sout, uip_appdata);
+  }
+  PSOCK_END(&s->sout);
+}
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(nullfunction(struct httpd_state *s, char *ptr) __reentrant)
