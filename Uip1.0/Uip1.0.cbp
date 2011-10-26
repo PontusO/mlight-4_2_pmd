@@ -43,6 +43,7 @@
 			<Add option="--debug" />
 			<Add option="-DCONFIG_BANKED=1" />
 			<Add option="-DHAVE_FLASH=1" />
+			<Add option="-DINCLUDE_PSOCK_GEN_SEND=1" />
 			<Add directory="..\apps\webserver" />
 			<Add directory="..\uip" />
 			<Add directory="..\unix" />

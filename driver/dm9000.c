@@ -387,7 +387,7 @@ void DM9000_transmit(void)
   // write high_byte of the transmitted data length into MDRAH (reg_FDh)
   write_nicreg(DM9000_TXPLH,(u8_t)(i >> 8));
   // write low_byte of the transmitted data length into MDRAL (reg_FCh)
-  write_nicreg(DM9000_TXPLL,(u8_t)(i));
+  write_nicreg(DM9000_TXPLL,(u8_t)(i & 0xff));
 
   //Step 4: start to transmit a packet
   // Issue command for DM9000 to transmit packet from TX SRAM.

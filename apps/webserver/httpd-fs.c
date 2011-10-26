@@ -86,7 +86,6 @@ httpd_fs_open(const char *name, struct httpd_fs_file *file) __reentrant
     if(httpd_fs_strcmp(name, f->name) == 0) {
       file->fsdata = f->fsdata;
       file->len = f->len;
-      printf (__FILE__ " Opening file %s\n", f->name);
 #if HTTPD_FS_STATISTICS
       ++count[i];
 #endif /* HTTPD_FS_STATISTICS */
