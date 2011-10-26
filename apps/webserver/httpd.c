@@ -107,9 +107,7 @@ PT_THREAD(send_file(struct httpd_state *s) __reentrant)
   PSOCK_BEGIN(&s->sout);
 
   do {
-    generate_part_of_file(s);
-    PSOCK_SEND_STR(&s->sout, uip_appdata);
-//    PSOCK_GENERATOR_SEND(&s->sout, generate_part_of_file, s);
+    PSOCK_GENERATOR_SEND(&s->sout, generate_part_of_file, s);
     s->file.len -= s->len;
     s->file.fsdata += s->len;
   } while (s->file.len > 0);
