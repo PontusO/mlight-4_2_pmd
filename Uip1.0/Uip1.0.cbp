@@ -92,9 +92,12 @@
 		<Unit filename="..\apps\webserver\httpd-fs\footer.html" />
 		<Unit filename="..\apps\webserver\httpd-fs\header.html" />
 		<Unit filename="..\apps\webserver\httpd-fs\index.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\logo.png" />
 		<Unit filename="..\apps\webserver\httpd-fs\map.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\netset.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\settings.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\slider.css" />
+		<Unit filename="..\apps\webserver\httpd-fs\slider.js" />
 		<Unit filename="..\apps\webserver\httpd-fs\style.css" />
 		<Unit filename="..\apps\webserver\httpd-fs\timeset.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fsdata.c">

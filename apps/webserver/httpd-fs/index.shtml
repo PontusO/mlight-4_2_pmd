@@ -1,13 +1,74 @@
-%!: /header.html
-<meta http-equiv="refresh" content="1">
-<center>
-<h1>LED Status</h1><hr color="#258D92" size="4" width="75%">
-<table width="75%" class="mytab">
-<tr><th>LED Channel</th><th>Intensity</th><th>Status</th></tr>
-<tr><td>1</td><td>25%</td><td>Increasing</td></tr>
-<tr><td>2</td><td>80%</td><td>Steady</td></tr>
-<tr><td>3</td><td>100%</td><td>Steady</td></tr>
-<tr><td>4</td><td>10%</td><td>Decreasing</td></tr>
-</table><hr color="#258D92" size="4" width="75%"><br><br>
-</center>
-%!: /footer.html
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<title>AK2 AB LED Demo</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+
+	<link rel="stylesheet" type="text/css" href="slider.css" />
+	<style type="text/css">
+.slider {
+	width: 600px;
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 12px;
+}
+	</style>
+	<script type="text/javascript" src="slider.js"></script>
+	<script type="text/javascript">
+window.onload = function()
+{
+	new Slider('slider_1', {
+		animation_callback: function(value) {
+			setlight("192.168.0.11", 0, value);
+		}
+	});
+	new Slider('slider_2', {
+		animation_callback: function(value) {
+			setlight("192.168.0.11", 1, value);
+		}
+	});
+	new Slider('slider_3', {
+		animation_callback: function(value) {
+			setlight("192.168.0.11", 2, value);
+		}
+	});
+	new Slider('slider_4', {
+		animation_callback: function(value) {
+			setlight("192.168.0.11", 3, value);
+		}
+	});
+}
+
+function setlight(IP, channel, level)
+{
+    var xmlHttp = null;
+    level = level * 100;
+    var theURL = "http://" + IP + "/cgi/set_level.cgi?channel=" + channel + "&level=" + level;
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theURL, false );
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+}
+	</script>
+</head>
+<body bgcolor="Black">
+      <div style="margin-bottom: 0px; margin-left: auto; margin-right: auto; margin-top: 0px; overflow: hidden; position: relative; word-wrap: break-word;  text-align: center; width: 700px; " id="body_content">
+     <font size="5" face="arial" color="white" >LED Demo power by </font><img src="logo.png" alt="AK2 AB"/></h2>
+    <br/>
+	<div id="slider_1" class="slider">
+		<div class="handle">Varmvit</div>
+	</div>
+	<br/>
+	<div id="slider_2" class="slider">
+		<div class="handle">Neutral</div>
+	</div>
+	<br/>
+	<div id="slider_3" class="slider">
+		<div class="handle">Kallvit</div>
+	</div>
+	<br/>
+	<div id="slider_4" class="slider">
+		<div class="handle">Blå</div>
+	</div>
+	</div>
+</body>
+</html>
