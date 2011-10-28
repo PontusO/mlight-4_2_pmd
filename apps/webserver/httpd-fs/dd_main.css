@@ -1,0 +1,184 @@
+
+/* Corners */
+
+.rounded-cornered,
+.rounded-cornered .handle {
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+}
+
+/* DRAGDEALER DEMOS */
+
+.dragdealer {
+	width: auto;
+	
+}
+	.dragdealer .handle {
+	
+	}
+
+/* Simple slider */
+
+#simple-slider {
+	
+}
+
+/* Scroll bar */
+
+#scroll-bar {
+	width: 22px;
+	height: 160px;
+}
+	#scroll-bar .handle {
+		width: 22px;
+		height: 54px;
+	}
+	
+#scroll-mask {
+	width: 566px;
+	height: 158px;
+	border: 1px solid #CCC;
+	background: #F8F8F8;
+	overflow: hidden;
+}
+#scroll-content {
+	padding: 10px;
+}
+
+/* Magnifier */
+
+#magnifying-text {
+	padding: 10px;
+	border: 1px solid #CCC;
+	background: #F8F8F8;
+	font-family: Georgia, serif;
+	font-size: 12px;
+	line-height: normal;
+}
+
+#maginifier {
+	
+}
+
+/* Slideshow */
+
+#slideshow-menu-wrapper {
+	position: relative;
+}
+#slideshow-menu-wrapper .cursor {
+	position: absolute;
+	width: 182px;
+	height: 63px;
+	border: 3px solid #444;
+}
+
+ul#slideshow-menu {
+	width: 190px;
+}
+
+ul#slideshow-menu li {
+	margin: 0;
+}
+	ul#slideshow-menu li a {
+		display: block;
+		margin: 3px;
+		padding: 10px;
+		background: #EEE;
+		
+		border-radius: 3px;
+		-moz-border-radius: 3px;
+		-webkit-border-radius: 3px;
+	}
+		ul#slideshow-menu li a .title {
+			display: block;
+			margin: 1px 0 7px 0;
+			color: #000;
+			font-size: 24px;
+			font-weight: bold;
+			line-height: 24px;
+			letter-spacing: -1px;
+		}
+		ul#slideshow-menu li a .description {
+			display: block;
+			color: #444;
+			font-size: 11px;
+			line-height: 11px;
+			text-transform: uppercase;
+		}
+	ul#slideshow-menu li a:hover {
+		background: #E1E1E1;
+		text-decoration: none;
+	}
+		ul#slideshow-menu li a:hover .title {
+			
+		}
+
+#slideshow {
+	width: 400px;
+	height: 267px;
+	overflow: hidden;
+}
+	#slideshow .handle {
+		width: 1600px;
+		height: 267px;
+	}
+		#slideshow .handle .slide {
+			float: left;
+			width: 400px;
+			height: 267px;
+		}
+		#slideshow .handle .img1 {
+			background: url('../img/dragdealer/slide1.jpg') no-repeat 0 0;
+		}
+		#slideshow .handle .img2 {
+			background: url('../img/dragdealer/slide2.jpg') no-repeat 0 0;
+		}
+		#slideshow .handle .img3 {
+			background: url('../img/dragdealer/slide3.jpg') no-repeat 0 0;
+		}
+		#slideshow .handle .img4 {
+			background: url('../img/dragdealer/slide4.jpg') no-repeat 0 0;
+		}
+
+/* Canvas mask */
+
+#canvas-mask {
+	width: 600px;
+	height: 300px;
+	overflow: hidden;
+}
+	#canvas-mask .handle {
+		width: 1200px;
+		height: 600px;
+		background: url('../img/dragdealer/canvas.jpg') no-repeat 0 0;
+	}
+		#canvas-mask .handle .slide {
+			position: relative;
+			float: left;
+			width: 600px;
+			height: 300px;
+		}
+			#canvas-mask .handle .slide .bar {
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				padding: 12px;
+				background: url('../img/dragdealer/overlay.png') repeat 0 0;
+				color: #FFF;
+			}
+				#canvas-mask .handle .slide .bar .title {
+					display: block;
+					margin: 0 0 6px 0;
+					font-size: 26px;
+					font-weight: bold;
+					line-height: 26px;
+					letter-spacing: -1px;
+				}
+				#canvas-mask .handle .slide .bar .description {
+					display: block;
+					color: #EEE;
+					font-size: 12px;
+					line-height: 12px;
+					text-transform: uppercase;
+				}

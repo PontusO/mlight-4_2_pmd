@@ -4,7 +4,11 @@
 	<title>AK2 AB LED Demo</title>
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 
-	<link rel="stylesheet" type="text/css" href="slider.css" />
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="dragdealer.css" />
+	<link rel="stylesheet" type="text/css" href="dd_main.css" />
+	<script type="text/javascript" src="dragdealer.js"></script>
+	<script type="text/javascript" src="dd_main.js"></script>
 	<style type="text/css">
 .slider {
 	width: 600px;
@@ -12,63 +16,39 @@
 	font-size: 12px;
 }
 	</style>
-	<script type="text/javascript" src="slider.js"></script>
-	<script type="text/javascript">
-window.onload = function()
-{
-	new Slider('slider_1', {
-		animation_callback: function(value) {
-			setlight("192.168.0.11", 0, value);
-		}
-	});
-	new Slider('slider_2', {
-		animation_callback: function(value) {
-			setlight("192.168.0.11", 1, value);
-		}
-	});
-	new Slider('slider_3', {
-		animation_callback: function(value) {
-			setlight("192.168.0.11", 2, value);
-		}
-	});
-	new Slider('slider_4', {
-		animation_callback: function(value) {
-			setlight("192.168.0.11", 3, value);
-		}
-	});
-}
 
-function setlight(IP, channel, level)
-{
-    var xmlHttp = null;
-    level = level * 100;
-    var theURL = "http://" + IP + "/cgi/set_level.cgi?channel=" + channel + "&level=" + level;
-    xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", theURL, false );
-    xmlHttp.send( null );
-    return xmlHttp.responseText;
-}
-	</script>
+
 </head>
-<body bgcolor="Black">
+<body style="background: rgb(255, 255, 255) url(bg.jpg)">
       <div style="margin-bottom: 0px; margin-left: auto; margin-right: auto; margin-top: 0px; overflow: hidden; position: relative; word-wrap: break-word;  text-align: center; width: 700px; " id="body_content">
-     <font size="5" face="arial" color="white" >LED Demo power by </font><img src="logo.png" alt="AK2 AB"/></h2>
+<img src="rosoku.png" alt="rosoku"/>
     <br/>
-	<div id="slider_1" class="slider">
-		<div class="handle">Varmvit</div>
-	</div>
-	<br/>
-	<div id="slider_2" class="slider">
-		<div class="handle">Neutral</div>
-	</div>
-	<br/>
-	<div id="slider_3" class="slider">
-		<div class="handle">Kallvit</div>
-	</div>
-	<br/>
-	<div id="slider_4" class="slider">
-		<div class="handle">Blå</div>
-	</div>
-	</div>
+
+
+					<div class="top-spaced">
+						<div id="slider_1" class="dragdealer rounded-cornered">
+							<div class="red-bar handle">Varmvit</div>
+						</div>
+					</div>
+						</br>
+					<div class="top-spaced">
+						<div id="slider_2" class="dragdealer rounded-cornered">
+							<div class="red-bar handle">Neutral</div>
+						</div>
+					</div>
+					</br>
+					<div class="top-spaced">
+						<div id="slider_3" class="dragdealer rounded-cornered">
+							<div class="red-bar handle">Kallvit</div>
+						</div>
+					</div>
+					</br>
+					<div class="top-spaced">
+						<div id="slider_4" class="dragdealer rounded-cornered">
+							<div class="red-bar handle">Blå</div>
+						</div>
+					</div>
+</br>
+<font face="arial" color="white" >Led demo powered by </font><img src="logo.png" alt="AK2 AB"/>
 </body>
 </html>
