@@ -59,6 +59,7 @@
 #include "uip.h"
 #include "httpd.h"
 #include "flash.h"
+#include "base64.h"
 #include "httpd-fs.h"
 #include "httpd-cgi.h"
 #include "httpd-param.h"
@@ -83,9 +84,7 @@
 #define USERNAME_LENGTH   8
 #define PASSWORD_LENGTH   8
 
-
 char auth_password[16] = "dolk";
-extern void encode64( const char *instr, char *outstr);
 
 /*---------------------------------------------------------------------------*/
 static unsigned short

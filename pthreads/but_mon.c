@@ -27,6 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#pragma codeseg APP_BANK
 
 //#define PRINT_A     // Enable A prints
 #include <system.h>

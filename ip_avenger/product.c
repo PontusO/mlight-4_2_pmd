@@ -43,7 +43,6 @@
 #include "pca.h"
 #include "httpd-cgi.h"
 #include "product.h"
-#include "adc_mon.h"
 #include "but_mon.h"
 #include "ramp_mgr.h"
 #include "absval_mgr.h"
@@ -69,7 +68,6 @@ void Timer0_Init (void);
 /*
  * Protothread instance data
  */
-adc_mon_t       adc_mon;
 but_mon_t       but_mon;
 ramp_mgr_t      ramp_mgr;
 event_thread_t  event_thread;
@@ -153,7 +151,6 @@ void pmd(void) banked
 
   /* **********************Initialize system pthreads *******************/
   init_rtc();
-//  init_adc_mon(&adc_mon);
   init_but_mon(&but_mon);
   ramp_mgr.channel = 0;
   init_ramp_mgr(&ramp_mgr);
@@ -282,7 +279,6 @@ void pmd(void) banked
      */
     PT_SCHEDULE(handle_kicker(&kicker));
     PT_SCHEDULE(handle_time_client(&tc));
-//    PT_SCHEDULE(handle_adc_mon(&adc_mon));
     PT_SCHEDULE(handle_but_mon(&but_mon));
     PT_SCHEDULE(handle_ramp_mgr(&ramp_mgr));
     /* Event action managers */

@@ -114,7 +114,9 @@ PT_THREAD(do_ramp(ramp_t *ramp) __reentrant)
       }
 
       TMR_GUARD
-      ledlib_set_light_percentage_log (ramp->channel, ramp->intensity);
+      ramp->lp.channel = ramp->channel;
+      ramp->lp.level_percent = ramp->intensity;
+      ledlib_set_light_percentage_log (&ramp->lp);
       TMR_GUARD
       PT_WAIT_UNTIL (&ramp->pt, (get_timer(ramp->timer) == 0) ||
                                  ramp->signal == RAMP_CMD_STOP);
@@ -127,7 +129,9 @@ PT_THREAD(do_ramp(ramp_t *ramp) __reentrant)
     if (ramp->signal == RAMP_CMD_RESET) {
       A_(printf (__FILE__ " Set light: channel %d, intensity %d, target %d\n",
                 (int)ramp->channel, (int)ramp->intensity, (int)ramp->rampto);)
-      ledlib_set_light_percentage_log (ramp->channel, ramp->intensity);
+      ramp->lp.channel = ramp->channel;
+      ramp->lp.level_percent = ramp->intensity;
+      ledlib_set_light_percentage_log (&ramp->lp);
     }
 exit:
     free_timer(ramp->timer);

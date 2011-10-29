@@ -27,6 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#pragma codeseg APP_BANK
 
 #define PRINT_A     // Enable A prints
 //#define PRINT_B     // Spam prints
@@ -68,7 +69,7 @@ long ilog(long x)
 }
 #endif
 
-static long iexp(long x) // __reentrant
+static long iexp(long x)
 {
   __xdata static long t, y;
 
@@ -157,7 +158,7 @@ static u16_t calc_pwm (u8_t value) __reentrant
 /*
  * Initialize the light driver
  */
-void init_ledlib(void) __reentrant
+void init_ledlib(void) __reentrant __banked
 {
   u8_t i, j=0;
 
@@ -211,8 +212,10 @@ static void set_ledbit (u8_t ledbit, u8_t value) __reentrant
 /*
  * Request a light driver update with absolute value
  */
-char ledlib_set_light_abs (u8_t channel, u16_t value) __reentrant
+char ledlib_set_light_abs (ld_param_t *params) __reentrant __banked
 {
+  u8_t channel = params->channel;
+  u16_t value = params->level_absolute;
   /* Make sure parameters have sensible values */
   if (channel >= CFG_NUM_LIGHT_DRIVERS)
     return -1;
@@ -232,8 +235,10 @@ char ledlib_set_light_abs (u8_t channel, u16_t value) __reentrant
 /*
  * Request a light driver update with a percentage value
  */
-char ledlib_set_light_percentage_log (u8_t channel, u8_t value) __reentrant
+char ledlib_set_light_percentage_log (ld_param_t *params) __reentrant __banked
 {
+  u8_t channel = params->channel;
+  u8_t value = params->level_percent;
   /* Make sure parameters have sensible values */
   if (channel >= CFG_NUM_LIGHT_DRIVERS || value > 100)
     return -1;
@@ -251,40 +256,7 @@ char ledlib_set_light_percentage_log (u8_t channel, u8_t value) __reentrant
   return 0;
 }
 
-char ledlib_decrement_light_abs (u8_t channel, u16_t value) __reentrant
-{
-  /* For now, only pwm channels are supported */
-  if (light_drivers[channel].driver_type == LIGHT_PWM) {
-    if (light_drivers[channel].pwm_percent >= value)
-      light_drivers[channel].pwm_percent -= value;
-    else
-      light_drivers[channel].pwm_percent = 0;
-    light_drivers[channel].pwm_ratio = calc_pwm (light_drivers[channel].pwm_percent);
-    set_pca_duty (channel, light_drivers[channel].pwm_ratio);
-  } else {
-    return -1;
-  }
-  return 0;
-}
-
-char ledlib_increment_light_abs (u8_t channel, u16_t value) __reentrant
-{
-  /* For now, only pwm channels are supported */
-  if (light_drivers[channel].driver_type == LIGHT_PWM) {
-    if (light_drivers[channel].pwm_percent <= 100)
-      light_drivers[channel].pwm_ratio += value;
-    if (light_drivers[channel].pwm_percent > 100)
-      light_drivers[channel].pwm_percent = 100;
-    light_drivers[channel].pwm_ratio =
-      calc_pwm(light_drivers[channel].pwm_percent);
-    set_pca_duty (channel, light_drivers[channel].pwm_ratio);
-  } else {
-    return -1;
-  }
-  return 0;
-}
-
-u16_t ledlib_get_light_abs (u8_t channel) __reentrant
+u16_t ledlib_get_light_abs (u8_t channel) __reentrant __banked
 {
   if (light_drivers[channel].driver_type == LIGHT_PWM)
     return light_drivers[channel].pwm_ratio;
@@ -292,7 +264,7 @@ u16_t ledlib_get_light_abs (u8_t channel) __reentrant
     return light_drivers[channel].pwm_ratio ? 1 : 0;
 }
 
-u8_t ledlib_get_light_percentage (u8_t channel) __reentrant
+u8_t ledlib_get_light_percentage (u8_t channel) __reentrant __banked
 {
   if (light_drivers[channel].driver_type == LIGHT_PWM)
     return light_drivers[channel].pwm_percent;
@@ -300,7 +272,7 @@ u8_t ledlib_get_light_percentage (u8_t channel) __reentrant
     return light_drivers[channel].pwm_percent ? 100 : 0;
 }
 
-u8_t ledlib_get_type (u8_t channel) __reentrant
+u8_t ledlib_get_type (u8_t channel) __reentrant __banked
 {
   return light_drivers[channel].driver_type;
 }

@@ -129,7 +129,10 @@ PT_THREAD(set_level(struct httpd_state *s, char *ptr) __reentrant)
       /* Validate parameters */
       if (cgi_parms_ctrl.channel < CFG_NUM_LIGHT_DRIVERS &&
           cgi_parms_ctrl.level <= 100) {
-        ledlib_set_light_percentage_log (cgi_parms_ctrl.channel, cgi_parms_ctrl.level);
+        ld_param_t led_params;
+        led_params.channel = cgi_parms_ctrl.channel;
+        led_params.level_percent = cgi_parms_ctrl.level;
+        ledlib_set_light_percentage_log (&led_params);
         sprintf((char *)uip_appdata, "<OK>");
       } else {
         sprintf((char *)uip_appdata, "%s01>", error_string);

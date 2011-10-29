@@ -27,44 +27,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef LIGHTLIB_H_INCLUDED
-#define LIGHTLIB_H_INCLUDED
+#ifndef BASE64_H_INCLUDED
+#define BASE64_H_INCLUDED
 
-/* Configuration constants for the driver block */
-#define CFG_NUM_LIGHT_DRIVERS   6
-#define CFG_NUM_PWM_DRIVERS     4
+void encode64( const char *instr, char *outstr); //banked;
 
-#define MAX_INTENSITY           0xffff
-/*
- * Data types used by the button monitor
- */
-/* Light driver types */
-enum light_driver_type {
-  LIGHT_NONE,
-  LIGHT_PWM,
-  LIGH_ON_OFF
-};
-
-/* Declaration of the light driver object */
-struct light_driver {
-  u8_t driver_type;
-  u8_t pwm_percent;
-  u16_t pwm_ratio;
-  u8_t io_pin;
-};
-
-typedef struct {
-  u8_t channel;
-  u8_t level_percent;
-  u16_t level_absolute;
-} ld_param_t;
-
-/* Prototypes for the lib */
-void init_ledlib(void) __reentrant __banked;
-char ledlib_set_light_percentage_log (ld_param_t *) __reentrant __banked;
-u8_t ledlib_get_light_percentage (u8_t channel) __reentrant __banked;
-char ledlib_set_light_abs (ld_param_t *) __reentrant  __banked;
-u16_t ledlib_get_light_abs (u8_t channel)  __reentrant __banked;
-u8_t ledlib_get_type (u8_t channel) __reentrant __banked;
-
-#endif // LIGHTLIB_H_INCLUDED
+#endif // BASE64_H_INCLUDED

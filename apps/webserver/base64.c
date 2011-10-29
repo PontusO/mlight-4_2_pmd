@@ -55,22 +55,22 @@ DESCRIPTION:
                 table has been created to avoid string scans.
 
 DESIGN GOALS:	Specifically:
-		Code is a stand-alone utility to perform base64 
-		encoding/decoding. It should be genuinely useful 
-		when the need arises and it meets a need that is 
-		likely to occur for some users.  
-		Code acts as sample code to show the author's 
-		design and coding style.  
+		Code is a stand-alone utility to perform base64
+		encoding/decoding. It should be genuinely useful
+		when the need arises and it meets a need that is
+		likely to occur for some users.
+		Code acts as sample code to show the author's
+		design and coding style.
 
-		Generally: 
+		Generally:
 		This program is designed to survive:
 		Everything you need is in a single source file.
 		It compiles cleanly using a vanilla ANSI C compiler.
-		It does its job correctly with a minimum of fuss.  
-		The code is not overly clever, not overly simplistic 
-		and not overly verbose. 
-		Access is 'cut and paste' from a web page.  
-		Terms of use are reasonable.  
+		It does its job correctly with a minimum of fuss.
+		The code is not overly clever, not overly simplistic
+		and not overly verbose.
+		Access is 'cut and paste' from a web page.
+		Terms of use are reasonable.
 
 VALIDATION:     Non-trivial code is never without errors.  This
                 file likely has some problems, since it has only
@@ -197,6 +197,8 @@ VERSION HISTORY:
                 Bob Trower 08/04/01 -- Create Version 0.00.00B
 
 \******************************************************************* */
+//#pragma codeseg UIP_BANK
+//#pragma constseg UIP_BANK
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -229,7 +231,7 @@ void encodeblock64( unsigned char in[3], unsigned char out[4], int len )
 **
 ** base64 encode a stream adding padding and line breaks as per spec.
 */
-void encode64( const char *instr, char *outstr)
+void encode64( const char *instr, char *outstr) // banked
 {
     unsigned char in[3], out[4];
     int i, len;

@@ -40,7 +40,6 @@
 		<Compiler>
 			<Add option="--model-large" />
 			<Add option="-mmcs51" />
-			<Add option="--debug" />
 			<Add option="-DCONFIG_BANKED=1" />
 			<Add option="-DHAVE_FLASH=1" />
 			<Add option="-DINCLUDE_PSOCK_GEN_SEND=1" />
@@ -69,6 +68,7 @@
 		<Unit filename="..\apps\webserver\base64.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="..\apps\webserver\base64.h" />
 		<Unit filename="..\apps\webserver\http-strings" />
 		<Unit filename="..\apps\webserver\http-strings.c">
 			<Option compilerVar="CC" />
@@ -82,25 +82,18 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\apps\webserver\httpd-fs.h" />
-		<Unit filename="..\apps\webserver\httpd-fs\401.html" />
-		<Unit filename="..\apps\webserver\httpd-fs\404.html" />
-		<Unit filename="..\apps\webserver\httpd-fs\actions.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\bg.jpg" />
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_level.cgi" />
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\set_level.cgi" />
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\start_ramp.cgi" />
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\stop_ramp.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\events.shtml" />
-		<Unit filename="..\apps\webserver\httpd-fs\footer.html" />
-		<Unit filename="..\apps\webserver\httpd-fs\header.html" />
+		<Unit filename="..\apps\webserver\httpd-fs\dd_main.css" />
+		<Unit filename="..\apps\webserver\httpd-fs\dd_main.js" />
+		<Unit filename="..\apps\webserver\httpd-fs\dragdealer.css" />
+		<Unit filename="..\apps\webserver\httpd-fs\dragdealer.js" />
 		<Unit filename="..\apps\webserver\httpd-fs\index.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\logo.png" />
-		<Unit filename="..\apps\webserver\httpd-fs\map.shtml" />
-		<Unit filename="..\apps\webserver\httpd-fs\netset.shtml" />
-		<Unit filename="..\apps\webserver\httpd-fs\settings.shtml" />
-		<Unit filename="..\apps\webserver\httpd-fs\slider.css" />
-		<Unit filename="..\apps\webserver\httpd-fs\slider.js" />
-		<Unit filename="..\apps\webserver\httpd-fs\style.css" />
-		<Unit filename="..\apps\webserver\httpd-fs\timeset.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\rosoku.png" />
 		<Unit filename="..\apps\webserver\httpd-fsdata.c">
 			<Option compilerVar="CC" />
 			<Option compile="0" />
@@ -197,10 +190,6 @@
 		</Unit>
 		<Unit filename="..\lib\packet_demux.h" />
 		<Unit filename="..\pmd\doc\Readme" />
-		<Unit filename="..\pthreads\adc_mon.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\pthreads\adc_mon.h" />
 		<Unit filename="..\pthreads\but_mon.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -27,6 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#pragma codeseg APP_BANK
 
 #include "system.h"
 #include "swtimers.h"
