@@ -31,6 +31,7 @@
 #define RAMP_MGR_H_INCLUDED
 
 #include "pt.h"
+#include "lightlib.h"
 
 #define RAMP_CMD_RESET  0x00
 #define RAMP_CMD_START  0x01
@@ -48,6 +49,7 @@ typedef struct {
   char intensity;
   char step;
   u8_t timer;
+  ld_param_t lp;
 } ramp_t;
 
 typedef struct {

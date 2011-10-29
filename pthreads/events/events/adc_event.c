@@ -103,8 +103,7 @@ PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant banked)
       /* Make sure maximum value is maxed out */
       if (adc_event->pot_val >= 0xff00)
         adc_event->pot_val = 0xffff;
-      if (!adc_event->channel)
-        A_(printf (__FILE__ "pot_val = %04x\n", adc_event->pot_val);)
+      A_(printf (__FILE__ " pot_val = %04x\n", adc_event->pot_val);)
       /* Update event data and signal */
       abs_data.channel = adc_event->channel;
       abs_data.value = adc_event->pot_val;

@@ -40,7 +40,6 @@
 		<Compiler>
 			<Add option="--model-large" />
 			<Add option="-mmcs51" />
-			<Add option="--debug" />
 			<Add option="-DCONFIG_BANKED=1" />
 			<Add option="-DHAVE_FLASH=1" />
 			<Add option="-DINCLUDE_PSOCK_GEN_SEND=1" />
@@ -69,6 +68,7 @@
 		<Unit filename="..\apps\webserver\base64.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="..\apps\webserver\base64.h" />
 		<Unit filename="..\apps\webserver\http-strings" />
 		<Unit filename="..\apps\webserver\http-strings.c">
 			<Option compilerVar="CC" />
@@ -81,17 +81,11 @@
 		<Unit filename="..\apps\webserver\httpd-fs.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\apps\webserver\httpd-fs.h" />
-		<Unit filename="..\apps\webserver\httpd-fs\401.html" />
-		<Unit filename="..\apps\webserver\httpd-fs\404.html" />
-		<Unit filename="..\apps\webserver\httpd-fs\actions.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\bg.jpg" />
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_level.cgi" />
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\set_level.cgi" />
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\start_ramp.cgi" />
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\stop_ramp.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\events.shtml" />
-		<Unit filename="..\apps\webserver\httpd-fs\footer.html" />
-		<Unit filename="..\apps\webserver\httpd-fs\header.html" />
 		<Unit filename="..\apps\webserver\httpd-fs\index.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\map.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\netset.shtml" />

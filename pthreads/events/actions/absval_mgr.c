@@ -66,11 +66,15 @@ void absval_stop (void)
 /* Set new data */
 void absval_trigger (void *input)
 {
+  ld_param_t led_params;
   act_absolute_data_t *absdata = (act_absolute_data_t *)input;
+
   A_(printf(__FILE__ " Channel %d, Value %04x\n",
           (int)absdata->channel,
           absdata->value);)
-  ledlib_set_light_abs (absdata->channel, absdata->value);
+  led_params.channel = absdata->channel;
+  led_params.level_absolute = absdata->value;
+  ledlib_set_light_abs (&led_params);
 }
 
 PT_THREAD(handle_absval_mgr(absval_mgr_t *absval_mgr) __reentrant banked)
