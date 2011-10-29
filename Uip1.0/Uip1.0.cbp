@@ -194,10 +194,6 @@
 		</Unit>
 		<Unit filename="..\lib\packet_demux.h" />
 		<Unit filename="..\pmd\doc\Readme" />
-		<Unit filename="..\pthreads\adc_mon.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\pthreads\adc_mon.h" />
 		<Unit filename="..\pthreads\but_mon.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -188,20 +188,25 @@ PT_THREAD(start_ramp(struct httpd_state *s, char *ptr) __reentrant)
         cgi_parms_ctrl.rampto_updated)
     {
       ramp_mgr_t *rmptr = get_ramp_mgr (cgi_parms_ctrl.channel);
-      /* Assert a signal to the ramp manager to start a ramp */
-      A_(printf (__FILE__ " Starting ramp (%p) on channel %d\n",
-                 rmptr, (int)cgi_parms_ctrl.channel);)
-      rmptr->rate = cgi_parms_ctrl.rate;
-      if (!cgi_parms_ctrl.step_updated)
-        rmptr->step = 1;
-      else
-        rmptr->step = cgi_parms_ctrl.step;
-      rmptr->rampto = cgi_parms_ctrl.rampto;
-      rmptr->signal = RAMP_CMD_START;
-      /* Return Ok status to the web client */
-      sprintf((char *)uip_appdata, "<OK>");
+      if (!rmptr) {
+        A_(printf (__FILE__ " %p is not a valid ramp manager !\n", rmptr);)
+        sprintf((char *)uip_appdata, "%s04>", error_string);
+      } else {
+        /* Assert a signal to the ramp manager to start a ramp */
+        A_(printf (__FILE__ " Starting ramp (%p) on channel %d\n",
+                   rmptr, (int)cgi_parms_ctrl.channel);)
+        rmptr->rate = cgi_parms_ctrl.rate;
+        if (!cgi_parms_ctrl.step_updated)
+          rmptr->step = 1;
+        else
+          rmptr->step = cgi_parms_ctrl.step;
+        rmptr->rampto = cgi_parms_ctrl.rampto;
+        rmptr->signal = RAMP_CMD_START;
+        /* Return Ok status to the web client */
+        sprintf((char *)uip_appdata, "<OK>");
+      }
     } else {
-      sprintf((char *)uip_appdata, "%s03>", error_string);
+      sprintf((char *)uip_appdata, "%s01>", error_string);
     }
     PSOCK_SEND_STR(&s->sout, uip_appdata);
   }

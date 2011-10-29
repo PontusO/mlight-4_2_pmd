@@ -69,10 +69,16 @@ void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked
 
 ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked
 {
+  ramp_mgr_t *ptr;
+
   if (channel >= CFG_NUM_PWM_DRIVERS)
     return NULL;
 
-  return ramp_mgr_tab[channel];
+  ptr = ramp_mgr_tab[channel];
+  A_(printf (__FILE__ " Returning requested ramp manager for channel %d @ %p\n",
+             ptr->channel, ptr);)
+
+  return ptr;
 }
 
 /* Debug lines for catching compiler generated failures.
@@ -138,6 +144,9 @@ exit:
 PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked)
 {
   PT_BEGIN(&rmgr->pt);
+
+  A_(printf (__FILE__ " Starting rampmanager %p on channel %d\n",
+             rmgr, rmgr->channel);)
 
   while (1)
   {
