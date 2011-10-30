@@ -13,7 +13,7 @@
 "></td></tr>
 <tr><td>HTTP port</td><td><input type="text" name="webport" size="5" maxlength="5" value="%! get-ip-num 5
 "></td></tr>
-</table><p>The unit will be reset when you click Save, Enter the new network address in the browser to reach the unit again.</p>
+</table><p>The unit will be reset when you click Save, Enter the new network address in the browser to connect the unit again.</p>
 <br>
 <input type="submit" name="submit" value="save">
 <input type="reset" name="reset" value="Reset">

@@ -10,7 +10,7 @@ Current Date: %! get-rtc
 "></td></tr>
 <tr><td>Time Server port</td><td><input type="text" name="timprt" size="6" maxlength="10" align="right" value="%! get-tim-port
 "></td></tr>
-<tr><td>Update Interval (hrs)</td><td><input type="text" name="intrvl" size="6" maxlength="3" align="right" value="%! get-interval
+<tr><td>Update Interval (hrs)</td><td><input type="text" name="intrvl" size="6" maxlength="3" align="right" value="%! get-int 1
 "></td></tr>
 <tr><td>Enter Time (ex. 21:50)</td><td><input type="text" name="timval" size="6" maxlength="5" value="%! get-cur-tim
 "></td></tr>

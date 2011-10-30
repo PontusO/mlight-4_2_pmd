@@ -33,6 +33,8 @@
  */
 #pragma codeseg UIP_BANK
 
+//#define PRINT_A
+
 #include "system.h"
 #include "uip.h"
 #include "httpd-param.h"
@@ -62,7 +64,7 @@ static const struct parameter_table parmtab[] = {
         set_password
     },
     {
-        "devid",
+        "node",
         set_device_id
     },
     {
@@ -147,6 +149,14 @@ static const struct parameter_table parmtab[] = {
     }
 };
 
+static u16_t year;
+static u8_t month;
+static u8_t day;
+static u8_t hrs;
+static u8_t min;
+static bit need_time_update = FALSE;
+static bit need_reset = FALSE;
+
 /*---------------------------------------------------------------------------*/
 static char *skip_to_char(char *buf, char chr) __reentrant
 {
@@ -201,6 +211,7 @@ static void set_ip(char *buffer) __reentrant
   sys_cfg.ip_addr[1] = htons(ip[0]) & 0xff;
   sys_cfg.ip_addr[2] = htons(ip[1]) >> 8;
   sys_cfg.ip_addr[3] = htons(ip[1]) & 0xff;
+  need_reset = TRUE;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -215,6 +226,7 @@ static void set_netmask(char *buffer) __reentrant
   sys_cfg.netmask[1] = htons(ip[0]) & 0xff;
   sys_cfg.netmask[2] = htons(ip[1]) >> 8;
   sys_cfg.netmask[3] = htons(ip[1]) & 0xff;
+  need_reset = TRUE;
 }
 /*---------------------------------------------------------------------------*/
 static void set_gateway(char *buffer) __reentrant
@@ -228,13 +240,20 @@ static void set_gateway(char *buffer) __reentrant
   sys_cfg.gw_addr[1] = htons(ip[0]) & 0xff;
   sys_cfg.gw_addr[2] = htons(ip[1]) >> 8;
   sys_cfg.gw_addr[3] = htons(ip[1]) & 0xff;
+  need_reset = TRUE;
 }
 /*---------------------------------------------------------------------------*/
 static void set_webport(char *buffer) __reentrant
 {
   buffer = skip_to_char(buffer, '=');
-  if (*buffer != ISO_and)
-    sys_cfg.time_port = atoi(buffer);
+  if (*buffer != ISO_and) {
+    sys_cfg.http_port = atoi(buffer);
+    /* Block non http ports below 80 */
+    if (sys_cfg.http_port < 80) {
+      sys_cfg.http_port = 80;
+    }
+    need_reset = TRUE;
+  }
 }
 /*---------------------------------------------------------------------------*/
 static void reset_time(char *buffer) __reentrant
@@ -279,13 +298,14 @@ static void set_timeport(char *buffer) __reentrant
 static void set_interval(char *buffer) __reentrant
 {
   buffer = skip_to_char(buffer, '=');
-  if (*buffer != ISO_and)
+  if (*buffer != ISO_and) {
     sys_cfg.update_interval = atoi(buffer);
+    /* Update Interval can never be 0, so adjust */
+    if (!sys_cfg.update_interval)
+      sys_cfg.update_interval = 1;
+  }
 }
 /*---------------------------------------------------------------------------*/
-static u8_t hrs;
-static u8_t min;
-static bit  need_time_update = FALSE;
 static void set_timevalue(char* buffer) __reentrant
 {
   /* Here we need to parse the time value and store it before creating a 32 bit
@@ -307,9 +327,6 @@ static void set_timevalue(char* buffer) __reentrant
     }
   }
 }
-static u16_t year;
-static u8_t month;
-static u8_t day;
 /*---------------------------------------------------------------------------*/
 static void set_datevalue(char* buffer) __reentrant
 {
@@ -360,6 +377,10 @@ static void set_save(char *buffer) __reentrant
       set_g_time(&tp);
       /* Signal the time client to update the hw rtc */
       RTC_SET_HW_RTC = &tp;
+    }
+    if (need_reset) {
+      A_(printf (__FILE__ " Performing a planned software reset !\n");)
+      RSTSRC |= 0x10; // Force a software reset
     }
   }
 }

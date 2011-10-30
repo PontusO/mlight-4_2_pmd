@@ -30,6 +30,7 @@
 #pragma codeseg  APP_BANK
 
 //#define PRINT_A
+//#define PRINT_B
 
 #include "system.h"
 #include "psock.h"
@@ -68,9 +69,10 @@ bit RTC_GET_TIME_EVENT;
 bit RTC_GET_FAILED;
 struct time_param *RTC_SET_HW_RTC;
 
-static const u8_t days_in_month[] = {
-  31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-};
+static const u8_t days_in_month[] =
+  {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+static char *weekdays[] =
+  {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 
 void binary_to_dat(struct time_param *tp) __reentrant banked;
 
@@ -194,19 +196,26 @@ void print_time_formated(char *buf) __reentrant banked
 void print_datetime_formated(char *buf) __reentrant banked
 {
   struct time_param tp;
+  u8_t dow;
 
   /* Get the binary time value */
   tp.b_time = get_g_time();
   /* Convert to readable format */
   binary_to_dat(&tp);
 
+  /* Get day of week */
+  dow = day_of_week(tp.time.year, tp.time.month, tp.time.day);
+
   /* As we can't use more than 4 parameters for sprintf (Due to stack overflows)
-   * we need to split the print sequence in two parts here. Tack fÃ¶r det televerket.
+   * we need to split the print sequence in two parts here. Tack för det televerket.
    */
   sprintf(buf, "%04d-%02d-%02d ",
           tp.time.year,
           tp.time.month,
           tp.time.day);
+  B_(printf (__FILE__ " dow %d (%s)\n", dow, day_of_week_str(dow));)
+  sprintf((char*)(buf+strlen(buf)), " (%s) ",
+          day_of_week_str(day_of_week(tp.time.year, tp.time.month, tp.time.day)));
   sprintf((char*)(buf+strlen(buf)), "%02d:%02d:%02d",
           tp.time.hrs,
           tp.time.min,
@@ -229,6 +238,27 @@ static u8_t is_leap_year(u16_t year) __reentrant
   return TRUE;
 }
 
+/*************************************************************************************
+ *
+ * Day of week: Sakamoto's Method
+ *  tabular alternative to Mike Keith's method is embodied in the following ANSI C
+ *  function, which is adaptable to other high level programming languages with minor
+ *  changes (a 6502 assembly language version of Sakamoto's algorithm exists as well).
+ *  Devised by Tomohiko Sakamoto[2] in 1993, it is accurate for any date in the range
+ *  October 15, 1582–December 31, 9999:
+ *
+ ************************************************************************************/
+u8_t day_of_week(int y, int m, int d) __reentrant
+{
+  static int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+  y -= m < 3;
+  return (y + y/4 - y/100 + y/400 + t[m-1] + d) % 7;
+}
+
+char *day_of_week_str (u8_t day) __reentrant
+{
+  return weekdays[day];
+}
 /*************************************************************************************
  *
  * This function increments a pmdtime time entry with one day.
@@ -404,6 +434,9 @@ static u8_t time_for_update(struct time_client *tc) __reentrant
   EIE2 &= ~1;
   if (g_time >= tc->update_time) {
     tc->update_time = g_time + sys_cfg.update_interval * 3600;
+    A_(printf (__FILE__ " global time %lu, new update time %lu, "
+               "update interval %d\n", g_time, tc->update_time,
+               sys_cfg.update_interval);)
     EIE2 |= 1;
     return 1;
   }
@@ -566,9 +599,11 @@ PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked)
       A_(printf(__FILE__ " Done writing new data to RTC %s\r\n", str);)
       RTC_SET_HW_RTC = 0;
     } else {
-      A_(printf(__FILE__ " Recurring update of the time !\r\n", str);)
-      tc->do_update = 1;
-      tc->retries = 0;
+      if (sys_cfg.enable_time) {
+        A_(printf(__FILE__ " Recurring update of the time !\r\n", str);)
+        tc->do_update = 1;
+        tc->retries = 0;
+      }
     }
 
     /* Only try to connect the server if the functionality is enabled */
@@ -585,7 +620,7 @@ PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked)
         s.connected = 1;
         PSOCK_INIT(&s.psock, s.inputbuffer, sizeof(s.inputbuffer));
       } else {
-        A_(printf (__FILE__ " Immeditaly failed to connect to the TIME server !\n");)
+        A_(printf (__FILE__ " Immeditely failed to connect to the TIME server !\n");)
         /* Retry to connect to time server */
         RTC_GET_FAILED = 1;
       }

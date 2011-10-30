@@ -67,7 +67,8 @@ void load_default_config(void);
 void load_network_params(void);
 u8_t validate_config_flash(void);
 void sys_getethaddr(struct uip_eth_addr *addr);
-void erase_config_area(xdata u8_t *erase_ptr, u8_t bank);
-void write_to_flash(xdata u8_t *flash_ptr, u8_t *ram_ptr, u16_t len, u8_t bank);
+void erase_config_area(u8_t *erase_ptr, u8_t bank) __reentrant;
+void write_to_flash(u8_t *flash_ptr, u8_t *src_ptr,
+                    u16_t len, u8_t bank) __reentrant;
 
 #endif

@@ -92,6 +92,9 @@ void stop_rtc(void) banked;
 void print_datetime_formated(char *buf) __reentrant banked;
 void print_time_formated(char *buf) __reentrant banked;
 void print_date_formated(char *buf) __reentrant banked;
+u8_t day_of_week(int y, int m, int d) __reentrant;
+char *day_of_week_str (u8_t day) __reentrant;
+
 
 void time_appcall(void) banked;
 unsigned long get_g_time(void) banked;

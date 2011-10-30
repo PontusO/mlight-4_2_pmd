@@ -390,7 +390,7 @@ httpd_appcall(void) banked
 void
 httpd_init(void) banked
 {
-  uip_listen(HTONS(80));
+  uip_listen(htons(sys_cfg.http_port));
 }
 /*---------------------------------------------------------------------------*/
 /** @} */

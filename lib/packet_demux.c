@@ -27,19 +27,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#pragma codeseg APP_BANK
+#pragma codeseg UIP_BANK
 
 #include "system.h"
 #include "webserver.h"
 #include "rtc.h"
+#include "flash.h"
 
 #include <stdio.h>
 
 void tcp_app_demux(void) banked
 {
-  static char str[3];
-
-  if (uip_conn->lport == HTONS(80)) {
+  if (uip_conn->lport == htons(sys_cfg.http_port)) {
     httpd_appcall();
   }
   if (uip_conn->rport == HTONS(37)) {

@@ -27,6 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+//#define PRINT_A
+//#define PRINT_B
 
 #include "flash.h"
 #include "system.h"
@@ -45,12 +47,12 @@ const struct sys_config default_cfg = {
   {192, 168, 0, 11},                      /* The IP address of the node */
   {255, 255, 255, 0},                     /* The network mask of the node */
   {192, 168, 0, 1},                       /* The default gateway of the node */
-  80,                                     /* Default Web server port */
-  1,                                      /* The Timer server is enabled per default */
+  (u16_t)80,                              /* Default Web server port */
+  (u8_t)0,                                /* The Timer server is enabled per default */
   {192, 168, 0, 45},                      /* Time protocol server */
-  37,                                     /* Time protocol server port */
-  48,                                     /* Defult update interval = 48 hours */
-  2,                                      /* Default time zone */
+  (u16_t)37,                              /* Time protocol server port */
+  (u16_t)48,                              /* Defult update interval = 48 hours */
+  (char)2,                                /* Default time zone */
   { "admin", 0, 0, 0, 0 },                /* Default user name and password */
   { "pass", 0, 0, 0, 0, 0 }
 };
@@ -106,7 +108,7 @@ static void exit_flash_write(void)
   EXIT_CRITICAL_SECTION;
 }
 
-void erase_config_area(xdata u8_t * data erase_ptr, u8_t bank)
+void erase_config_area(u8_t * erase_ptr, u8_t bank) __reentrant
 {
   u8_t reg_bak;
 
@@ -138,8 +140,8 @@ void erase_config_area(xdata u8_t * data erase_ptr, u8_t bank)
  * The bank must be set up correctly by caller before calling this
  * function.
  */
-void write_to_flash(xdata u8_t * data flash_ptr, u8_t *src_ptr,
-                    u16_t len, u8_t bank)
+void write_to_flash(u8_t *flash_ptr, u8_t *src_ptr,
+                    u16_t len, u8_t bank) __reentrant
 {
   u16_t i;
   u8_t count;
@@ -171,14 +173,15 @@ void write_to_flash(xdata u8_t * data flash_ptr, u8_t *src_ptr,
 void write_config_to_flash(void)
 {
   int chksum;
+  u16_t temp = LAST_PAGE_ADDRESS;
 
   /* Erase the configuration flash block */
-  erase_config_area(LAST_PAGE_ADDRESS, 0x01);
-  write_to_flash(LAST_PAGE_ADDRESS, (xdata u8_t *)&sys_cfg, CONFIG_MEM_SIZE, CONST_BANK);
+  erase_config_area((__xdata u8_t *)LAST_PAGE_ADDRESS, 0x01);
+  write_to_flash((__xdata u8_t *)LAST_PAGE_ADDRESS, (__xdata u8_t *)&sys_cfg, CONFIG_MEM_SIZE, CONST_BANK);
 
   // Get new check sum of entire block minus last word
   chksum = flash_chksum(FLASH_WO_VER);
-  B_(printf_small("New FLASH checksum %d, verfication word %d\r\n", (int)chksum, (int)(-1 - chksum));)
+  B_(printf (__FILE__ " New FLASH checksum %d, verfication word %d\r\n", (int)chksum, (int)(-1 - chksum));)
   write_new_verification_word(-1 - chksum);
 }
 
@@ -186,7 +189,7 @@ static void write_new_verification_word(int ver)
 {
   u8_t count;
   __idata u8_t reg_bak;
-  __xdata u8_t * __idata dest = (__xdata u8_t *)LAST_PAGE_ADDRESS + 0x3FE;
+  __xdata u8_t * __idata dest = (__xdata u8_t *)(LAST_PAGE_ADDRESS + (FLASH_PAGE_SIZE - 2));
 
   reg_bak = PSBANK;
   PSBANK = ((PSBANK | 0x10) & 0xDF); /* select COBANK = 01*/
@@ -234,7 +237,7 @@ static int flash_chksum(u8_t command)
       break;
   }
 
-  B_(printf("Iterating %d\r\n", (int)loop);)
+  B_(printf(__FILE__ " Iterating %d\r\n", (int)loop);)
   for (i=0 ; i<loop ; i++)
   {
     chksum += *dest++;
@@ -264,17 +267,17 @@ u8_t validate_config_flash(void)
   __code int *memptr = (__code int *)LAST_PAGE_ADDRESS;
 
   chksum = flash_chksum(ENTIRE_FLASH);
-  B_(printf_small("FLASH checksum %d\r\n", (int)chksum);)
+  B_(printf (__FILE__ " FLASH checksum %d\r\n", (int)chksum);)
 
   /* Check if the content is valid */
   if (chksum != -1) {
-    B_(printf_small("Initializing FLASH\r\n");)
+    B_(printf (__FILE__ " Initializing FLASH\r\n");)
     // Go and get the default values from flash
     load_default_config();
     // Write it to flash
     write_config_to_flash();
   } else {
-    B_(printf_small("Loading existing FLASH configuration\r\n");)
+    B_(printf (__FILE__ " Loading existing FLASH configuration\r\n");)
     load_sys_config();
   }
   load_network_params();

@@ -44,7 +44,7 @@
  * $Id: httpd-cgi.c,v 1.2 2006/06/11 21:46:37 adam Exp $
  *
  */
-#define PRINT_A
+//#define PRINT_A
 
 #include "uip.h"
 #include "psock.h"
@@ -69,7 +69,6 @@
 HTTPD_CGI_CALL(L_get_time_ena, "get-time-ena", get_time_ena);
 HTTPD_CGI_CALL(L_get_time_ip, "get-time-ip", get_time_ip);
 HTTPD_CGI_CALL(L_get_timeport, "get-tim-port", get_timeport);
-HTTPD_CGI_CALL(L_get_interval, "get-interval", get_interval);
 HTTPD_CGI_CALL(L_get_current_time, "get-cur-tim", get_current_time);
 HTTPD_CGI_CALL(L_get_current_date, "get-cur-date", get_current_date);
 HTTPD_CGI_CALL(L_get_tz_options, "get-tz-opt", get_tz_options);
@@ -79,7 +78,6 @@ HTTPD_CGI_CALL(L_get_rtc, "get-rtc", get_rtc);
 HTTPD_CGI_CALL(L_set_param, "set-param", set_param);
 /* Generic data type CGI's */
 HTTPD_CGI_CALL(f_get_ip_num, "get-ip-num", get_ip_num);
-HTTPD_CGI_CALL(f_get_temp, "get-temp", get_temp);
 HTTPD_CGI_CALL(f_get_check_box, "get-check", get_check_box);
 HTTPD_CGI_CALL(f_get_string, "get-string", get_string);
 HTTPD_CGI_CALL(f_get_int, "get-int", get_int);
@@ -90,14 +88,12 @@ HTTPD_CGI_CALL(f_stop_ramp, "stop-ramp", stop_ramp);
 
 static const struct httpd_cgi_call *calls[] = {
   &f_get_ip_num,
-  &f_get_temp,
   &f_get_check_box,
   &f_get_string,
   &f_get_int,
   &L_get_time_ena,
   &L_get_time_ip,
   &L_get_timeport,
-  &L_get_interval,
   &L_get_current_time,
   &L_get_current_date,
   &L_get_tz_options,
@@ -396,20 +392,6 @@ PT_THREAD(get_timeport(struct httpd_state *s, char *ptr) __reentrant)
 
 /*---------------------------------------------------------------------------*/
 static
-PT_THREAD(get_interval(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf((char *)uip_appdata, "%u", (u16_t)sys_cfg.update_interval);
-
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
 PT_THREAD(get_time_tz(struct httpd_state *s, char *ptr) __reentrant)
 {
   PSOCK_BEGIN(&s->sout);
@@ -467,34 +449,6 @@ PT_THREAD(get_password(struct httpd_state *s, char *ptr) __reentrant)
   PSOCK_END(&s->sout);
 }
 
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_temp(struct httpd_state *s, char *ptr) __reentrant)
-{
-  int temp = 0;
-  int channel;
-
-  PSOCK_BEGIN(&s->sout);
-
-  while (*ptr != ' ')
-    ptr++;
-  ptr++;
-  channel = atoi(ptr);
-
-  switch (channel)
-  {
-    case 0:
-    case 1:
-    case 2:
-//      temp = get_angle(channel);
-      break;
-  }
-
-  sprintf((char *)uip_appdata, "%d.%d", temp / 100, abs(temp % 100));
-
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-  PSOCK_END(&s->sout);
-}
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(get_ip_num(struct httpd_state *s, char *ptr) __reentrant)
@@ -606,19 +560,9 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
 
   switch(intno)
   {
-    /* emergency stop pin status */
+    /* Update interval for the timeset web page */
     case 1:
-//      myint = EMERGENCY_STOP;
-      break;
-
-    /* Handles the larm level on the pellets level alarm */
-    case 2:
-//      myint = sys_cfg.sonar_larm;
-      break;
-
-    /* Handles the bottom level value for the pellet container */
-    case 3:
-//      myint = sys_cfg.sonar_bottom;
+      myint = (u16_t)sys_cfg.update_interval;
       break;
   }
 
