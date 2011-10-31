@@ -69,7 +69,7 @@ void Timer0_Init (void);
  * Protothread instance data
  */
 but_mon_t       but_mon;
-ramp_mgr_t      ramp_mgr;
+ramp_mgr_t      ramp_mgr[4];
 event_thread_t  event_thread;
 absval_mgr_t    absval_mgr;
 adc_event_t     adc_event;
@@ -152,8 +152,12 @@ void pmd(void) banked
   /* **********************Initialize system pthreads *******************/
   init_rtc();
   init_but_mon(&but_mon);
-  ramp_mgr.channel = 0;
-  init_ramp_mgr(&ramp_mgr);
+
+  /* Initialize all pwm ramp managers */
+  for (i=0; i<CFG_NUM_PWM_DRIVERS; i++) {
+    ramp_mgr[i].channel = i;
+    init_ramp_mgr(&ramp_mgr[i]);
+  }
   init_event_switch(&event_thread);
   /* Initialize all event action managers before the event providers */
   /* Event action managers */
@@ -167,7 +171,7 @@ void pmd(void) banked
   test_rule.event = 0;
   /* Just for testing, this will be the first action manager registered */
   test_rule.action = 0;
-  A_(printf(__FILE__ " Test rule ptr %p", &test_rule);)
+  A_(printf(__FILE__ " Test rule ptr %p\n", &test_rule);)
   evnt_register_handle(&test_rule);
 
   while(1)
@@ -187,7 +191,7 @@ void pmd(void) banked
 
         // UIP_CONNS - nominally 10 - is the maximum simultaneous
         // connections allowed. Scan through all 10
-        C_(printf_small("Time for connection periodic management\x0a\x0d");)
+        C_(printf("Time for connection periodic management\x0a\x0d");)
         for (i = 0; i < UIP_CONNS; i++)
         {
           uip_periodic(i);
@@ -211,7 +215,7 @@ void pmd(void) banked
         }
 
 #if UIP_UDP
-        C_(printf_small("Time for udp periodic management\x0a\x0d");)
+        C_(printf("Time for udp periodic management\x0a\x0d");)
         for (i = 0; i < UIP_UDP_CONNS; i++)
         {
           uip_udp_periodic(i);
@@ -229,7 +233,7 @@ void pmd(void) banked
       // Call the ARP timer function every 10 seconds. Flush dead entries
       if (ARP_EventPending)
       {
-        B_(printf_small("ARP house keeping.\x0a\x0d");)
+        B_(printf("ARP house keeping.\x0a\x0d");)
         ARP_EventPending = FALSE;
         uip_arp_timer();
       }
@@ -237,10 +241,10 @@ void pmd(void) banked
     // Packet Received (uip_len != 0) Process incoming
     else
     {
-      B_(printf_small("Received incomming data package.\x0a\x0d");)
+      B_(printf("Received incomming data package.\x0a\x0d");)
       if (BUF->type == htons(UIP_ETHTYPE_IP))
       {
-        B_(printf_small("IP Package received.\x0a\x0d");)
+        B_(printf("IP Package received.\x0a\x0d");)
         // Received an IP packet
         uip_arp_ipin();
         uip_input();
@@ -252,14 +256,14 @@ void pmd(void) banked
           uip_arp_out();
           tcpip_output();
           tcpip_output();
-          B_(printf_small("IP Package transmitted.\x0a\x0d");)
+          B_(printf("IP Package transmitted.\x0a\x0d");)
         }
       }
       else
       {
         if (BUF->type == htons(UIP_ETHTYPE_ARP))
         {
-          B_(printf_small("ARP package received.\x0a\x0d");)
+          B_(printf("ARP package received.\x0a\x0d");)
           // Received an ARP packet
           uip_arp_arpin();
           // If the above function invocation resulted in data that
@@ -269,7 +273,7 @@ void pmd(void) banked
           {
             tcpip_output();
             tcpip_output();
-            B_(printf_small("ARP Package transmitted.\x0a\x0d");)
+            B_(printf("ARP Package transmitted.\x0a\x0d");)
           }
         }
       }
@@ -280,7 +284,9 @@ void pmd(void) banked
     PT_SCHEDULE(handle_kicker(&kicker));
     PT_SCHEDULE(handle_time_client(&tc));
     PT_SCHEDULE(handle_but_mon(&but_mon));
-    PT_SCHEDULE(handle_ramp_mgr(&ramp_mgr));
+    for (i=0; i<CFG_NUM_PWM_DRIVERS; i++) {
+      PT_SCHEDULE(handle_ramp_mgr(&ramp_mgr[i]));
+    }
     /* Event action managers */
     PT_SCHEDULE(handle_absval_mgr(&absval_mgr));
     /* Event providers */

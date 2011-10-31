@@ -403,6 +403,8 @@ static u8_t time_for_update(struct time_client *tc) __reentrant
 {
   EIE2 &= ~1;
   if (g_time >= tc->update_time) {
+  	if (!sys_cfg.update_interval)
+      sys_cfg.update_interval = 1;
     tc->update_time = g_time + sys_cfg.update_interval * 3600;
     EIE2 |= 1;
     return 1;
@@ -566,9 +568,11 @@ PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked)
       A_(printf(__FILE__ " Done writing new data to RTC %s\r\n", str);)
       RTC_SET_HW_RTC = 0;
     } else {
-      A_(printf(__FILE__ " Recurring update of the time !\r\n", str);)
-      tc->do_update = 1;
-      tc->retries = 0;
+      if (sys_cfg.enable_time) {
+        A_(printf(__FILE__ " Recurring update of the time !\r\n", str);)
+        tc->do_update = 1;
+        tc->retries = 0;
+      }
     }
 
     /* Only try to connect the server if the functionality is enabled */
@@ -585,7 +589,7 @@ PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked)
         s.connected = 1;
         PSOCK_INIT(&s.psock, s.inputbuffer, sizeof(s.inputbuffer));
       } else {
-        A_(printf (__FILE__ " Immeditaly failed to connect to the TIME server !\n");)
+        A_(printf (__FILE__ " Immeditely failed to connect to the TIME server !\n");)
         /* Retry to connect to time server */
         RTC_GET_FAILED = 1;
       }

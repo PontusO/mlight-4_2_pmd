@@ -69,10 +69,16 @@ void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked
 
 ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked
 {
+  ramp_mgr_t *ptr;
+
   if (channel >= CFG_NUM_PWM_DRIVERS)
     return NULL;
 
-  return ramp_mgr_tab[channel];
+  ptr = ramp_mgr_tab[channel];
+  A_(printf (__FILE__ " Returning requested ramp manager for channel %d @ %p\n",
+             ptr->channel, ptr);)
+
+  return ptr;
 }
 
 /* Debug lines for catching compiler generated failures.
@@ -80,16 +86,17 @@ ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked
  * during runtime, this macro can be enabled and trace the required
  * variable.
  */
-#define TMR_GUARD if (ramp->timer != tmptim) { A_(printf (__FILE__ " Timer Error line %d: expected %d found %d, %p\n", __LINE__, (int)tmptim, (int)ramp->timer, ramp);) ; goto exit; }
-//#define TMR_GUARD
+/* IMPORTANT !! At the moment this does not work so don't use it */
+//#define TMR_GUARD if (ramp->timer != tmptim) { A_(printf (__FILE__ " Timer Error line %d: expected %d found %d, %p\n", __LINE__, (int)tmptim, (int)ramp->timer, ramp);) ; goto exit; }
+#define TMR_GUARD
+//static u8_t tmptim;
 
-static u8_t tmptim;
 PT_THREAD(do_ramp(ramp_t *ramp) __reentrant)
 {
   PT_BEGIN (&ramp->pt);
   {
     ramp->timer = alloc_timer();
-    tmptim = ramp->timer;
+//    tmptim = ramp->timer;
     ramp->signal = RAMP_CMD_RESET;
 
     A_(printf (__FILE__ " allocated timer %d for ramp manager %p\n", ramp->timer, ramp);)
@@ -142,6 +149,9 @@ exit:
 PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked)
 {
   PT_BEGIN(&rmgr->pt);
+
+  A_(printf (__FILE__ " Starting rampmanager %p on channel %d\n",
+             rmgr, rmgr->channel);)
 
   while (1)
   {
