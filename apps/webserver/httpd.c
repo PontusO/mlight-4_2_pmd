@@ -306,7 +306,7 @@ PT_THREAD(handle_input(struct httpd_state *s) __reentrant)
     PSOCK_CLOSE_EXIT(&s->sin);
   }
 
-  parse_input(s->inputbuf);
+  parse_input(s, s->inputbuf);
 
   if (s->inputbuf[1] == ISO_space) {
     strncpy(s->filename, http_index_html, sizeof(s->filename));

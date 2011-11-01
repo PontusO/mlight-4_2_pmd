@@ -45,11 +45,13 @@
 
 #include <string.h>
 #include <stdlib.h>
+#define PARAM_FUNC(x) \
+        static void x(struct httpd_state *s, char *buffer) __reentrant
 
 /*---------------------- Local data types -----------------------------------*/
 struct parameter_table {
   const char *param;
-  void (*function)(char *buffer) __reentrant;
+  void (*function)(struct httpd_state *s, char *buffer) __reentrant;
 };
 
 /*---------------------- Local data ----------------------------------------*/
@@ -185,10 +187,12 @@ static void parse_ip(char *buf, uip_ipaddr_t *ip)
   uip_ipaddr(ip, octet[0],octet[1],octet[2],octet[3]);
 }
 /*---------------------------------------------------------------------------*/
-static void set_device_id(char *buffer) __reentrant
+PARAM_FUNC (set_device_id)
 {
   u8_t *ptr = sys_cfg.device_id;
   char i = 8;
+
+  IDENTIFIER_NOT_USED (s);
 
   buffer = skip_to_char(buffer, '=');
 
@@ -200,9 +204,11 @@ static void set_device_id(char *buffer) __reentrant
 }
 
 /*---------------------------------------------------------------------------*/
-static void set_ip(char *buffer) __reentrant
+PARAM_FUNC (set_ip)
 {
   static uip_ipaddr_t ip;
+
+  IDENTIFIER_NOT_USED (s);
 
   parse_ip(buffer, &ip);
 
@@ -215,9 +221,11 @@ static void set_ip(char *buffer) __reentrant
 }
 
 /*---------------------------------------------------------------------------*/
-static void set_netmask(char *buffer) __reentrant
+PARAM_FUNC (set_netmask)
 {
   static uip_ipaddr_t ip;
+
+  IDENTIFIER_NOT_USED (s);
 
   parse_ip(buffer, &ip);
 
@@ -229,9 +237,11 @@ static void set_netmask(char *buffer) __reentrant
   need_reset = TRUE;
 }
 /*---------------------------------------------------------------------------*/
-static void set_gateway(char *buffer) __reentrant
+PARAM_FUNC (set_gateway)
 {
   static uip_ipaddr_t ip;
+
+  IDENTIFIER_NOT_USED (s);
 
   parse_ip(buffer, &ip);
 
@@ -243,8 +253,10 @@ static void set_gateway(char *buffer) __reentrant
   need_reset = TRUE;
 }
 /*---------------------------------------------------------------------------*/
-static void set_webport(char *buffer) __reentrant
+PARAM_FUNC (set_webport)
 {
+  IDENTIFIER_NOT_USED (s);
+
   buffer = skip_to_char(buffer, '=');
   if (*buffer != ISO_and) {
     sys_cfg.http_port = atoi(buffer);
@@ -256,15 +268,18 @@ static void set_webport(char *buffer) __reentrant
   }
 }
 /*---------------------------------------------------------------------------*/
-static void reset_time(char *buffer) __reentrant
+PARAM_FUNC (reset_time)
 {
-  IDENTIFIER_NOT_USED(buffer);
+  IDENTIFIER_NOT_USED (buffer);
+  IDENTIFIER_NOT_USED (s);
 
   sys_cfg.enable_time = 0;
 }
 /*---------------------------------------------------------------------------*/
-static void enable_time(char *buffer) __reentrant
+PARAM_FUNC (enable_time)
 {
+  IDENTIFIER_NOT_USED (s);
+
   buffer = skip_to_char(buffer, '=');
   if (strncmp(buffer, "on", 2) == 0) {
     /* Make sure we try to get a new time */
@@ -275,9 +290,11 @@ static void enable_time(char *buffer) __reentrant
   }
 }
 /*---------------------------------------------------------------------------*/
-static void set_time(char *buffer) __reentrant
+PARAM_FUNC (set_time)
 {
   static uip_ipaddr_t ip;
+
+  IDENTIFIER_NOT_USED (s);
 
   parse_ip(buffer, &ip);
 
@@ -288,15 +305,19 @@ static void set_time(char *buffer) __reentrant
   sys_cfg.time_server[3] = htons(ip[1]) & 0xff;
 }
 /*---------------------------------------------------------------------------*/
-static void set_timeport(char *buffer) __reentrant
+PARAM_FUNC (set_timeport)
 {
+  IDENTIFIER_NOT_USED (s);
+
   buffer = skip_to_char(buffer, '=');
   if (*buffer != ISO_and)
     sys_cfg.time_port = atoi(buffer);
 }
 /*---------------------------------------------------------------------------*/
-static void set_interval(char *buffer) __reentrant
+PARAM_FUNC (set_interval)
 {
+  IDENTIFIER_NOT_USED (s);
+
   buffer = skip_to_char(buffer, '=');
   if (*buffer != ISO_and) {
     sys_cfg.update_interval = atoi(buffer);
@@ -306,8 +327,9 @@ static void set_interval(char *buffer) __reentrant
   }
 }
 /*---------------------------------------------------------------------------*/
-static void set_timevalue(char* buffer) __reentrant
+PARAM_FUNC (set_timevalue)
 {
+  IDENTIFIER_NOT_USED (s);
   /* Here we need to parse the time value and store it before creating a 32 bit
     * binary time value
     * Note that if the option to use a time server we do not parse these values
@@ -328,8 +350,9 @@ static void set_timevalue(char* buffer) __reentrant
   }
 }
 /*---------------------------------------------------------------------------*/
-static void set_datevalue(char* buffer) __reentrant
+PARAM_FUNC (set_datevalue)
 {
+  IDENTIFIER_NOT_USED (s);
   /* Here we need to parse the date value and store it before creating a 32 bit
     * binary time value
     * Note that if the option to use a time server we do not parse these values
@@ -347,9 +370,11 @@ static void set_datevalue(char* buffer) __reentrant
   }
 }
 /*---------------------------------------------------------------------------*/
-static void set_timezone(char *buffer) __reentrant
+PARAM_FUNC (set_timezone)
 {
   static u8_t tz;
+
+  IDENTIFIER_NOT_USED (s);
 
   buffer = skip_to_char(buffer, '=');
   tz = atoi(buffer);
@@ -358,8 +383,10 @@ static void set_timezone(char *buffer) __reentrant
 }
 /*---------------------------------------------------------------------------*/
 struct time_param tp;
-static void set_save(char *buffer) __reentrant
+PARAM_FUNC (set_save)
 {
+  IDENTIFIER_NOT_USED (s);
+
   buffer = skip_to_char(buffer, '=');
   if (strncmp("save", buffer, 4) == 0) {
     /* Write new configuration to flash */
@@ -386,51 +413,13 @@ static void set_save(char *buffer) __reentrant
 }
 
 /*---------------------------------------------------------------------------*/
-static void cgi_set_channel(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  cgi_parms_ctrl.channel = atoi(buffer);
-  cgi_parms_ctrl.channel_updated = 1;
-  cgi_parms_ctrl.num_parms++;
-}
-/*---------------------------------------------------------------------------*/
-static void cgi_set_level(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  cgi_parms_ctrl.level = atoi(buffer);
-  cgi_parms_ctrl.level_updated = 1;
-  cgi_parms_ctrl.num_parms++;
-}
-/*---------------------------------------------------------------------------*/
-static void cgi_set_rampto(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  cgi_parms_ctrl.rampto = atoi(buffer);
-  cgi_parms_ctrl.rampto_updated = 1;
-  cgi_parms_ctrl.num_parms++;
-}
-/*---------------------------------------------------------------------------*/
-static void cgi_set_rate(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  cgi_parms_ctrl.rate = atoi(buffer);
-  cgi_parms_ctrl.rate_updated = 1;
-  cgi_parms_ctrl.num_parms++;
-}
-/*---------------------------------------------------------------------------*/
-static void cgi_set_step(char *buffer) __reentrant
-{
-  buffer = skip_to_char(buffer, '=');
-  cgi_parms_ctrl.step = atoi(buffer);
-  cgi_parms_ctrl.step_updated = 1;
-  cgi_parms_ctrl.num_parms++;
-}
-/*---------------------------------------------------------------------------*/
-static void set_username(char *buffer) __reentrant
+PARAM_FUNC (set_username)
 {
   u8_t *ptr = sys_cfg.username;
   char i = 8;
 
+  IDENTIFIER_NOT_USED (s);
+
   buffer = skip_to_char(buffer, '=');
 
   while ((*buffer != ISO_and) && (i >= 0)) {
@@ -441,11 +430,13 @@ static void set_username(char *buffer) __reentrant
 }
 
 /*---------------------------------------------------------------------------*/
-static void set_password(char *buffer) __reentrant
+PARAM_FUNC (set_password)
 {
   u8_t *ptr = sys_cfg.password;
   char i = 8;
 
+  IDENTIFIER_NOT_USED (s);
+
   buffer = skip_to_char(buffer, '=');
 
   while ((*buffer != ISO_and) && (i >= 0)) {
@@ -456,7 +447,48 @@ static void set_password(char *buffer) __reentrant
 }
 
 /*---------------------------------------------------------------------------*/
-static u8_t parse_expr(char *buf)
+PARAM_FUNC (cgi_set_channel)
+{
+  buffer = skip_to_char(buffer, '=');
+  s->parms.channel = atoi(buffer);
+  s->parms.channel_updated = 1;
+  s->parms.num_parms++;
+}
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (cgi_set_level)
+{
+  buffer = skip_to_char(buffer, '=');
+  s->parms.level = atoi(buffer);
+  s->parms.level_updated = 1;
+  s->parms.num_parms++;
+}
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (cgi_set_rampto)
+{
+  buffer = skip_to_char(buffer, '=');
+  s->parms.rampto = atoi(buffer);
+  s->parms.rampto_updated = 1;
+  s->parms.num_parms++;
+}
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (cgi_set_rate)
+{
+  buffer = skip_to_char(buffer, '=');
+  s->parms.rate = atoi(buffer);
+  s->parms.rate_updated = 1;
+  s->parms.num_parms++;
+}
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (cgi_set_step)
+{
+  buffer = skip_to_char(buffer, '=');
+  s->parms.step = atoi(buffer);
+  s->parms.step_updated = 1;
+  s->parms.num_parms++;
+}
+
+/*---------------------------------------------------------------------------*/
+static u8_t parse_expr(struct httpd_state *s, char *buf)
 {
   struct parameter_table *tptr = (struct parameter_table *)parmtab;
 
@@ -466,14 +498,14 @@ static u8_t parse_expr(char *buf)
        (strncmp(buf, tptr->param, strlen(tptr->param)) == 0))
     {
       /* Call the parameter set function */
-      tptr->function(buf);
+      tptr->function(s, buf);
       return 1;
     }
     tptr++;
   }
   return 0;
 }/*---------------------------------------------------------------------------*/
-void parse_input(char *buf) banked
+void parse_input(struct httpd_state *s, char *buf) banked
 {
   static char token[128];
   char *tok;
@@ -489,7 +521,7 @@ void parse_input(char *buf) banked
     return;
 
   /* Clear the cgi control parameter structure */
-  memset (&cgi_parms_ctrl, 0, sizeof cgi_parms_ctrl);
+  memset (&s->parms, 0, sizeof s->parms);
 
   while (*buf != ISO_space)
   {
@@ -501,7 +533,7 @@ void parse_input(char *buf) banked
     /* Here we simply try to parse the tokenized parameter
      * If the parameter does not exist, we simply discard it silently */
     A_(printf("Parsing token %s\n", token);)
-    parse_expr(token);
+    parse_expr(s, token);
   }
 }
 

@@ -53,6 +53,7 @@ struct httpd_state {
   unsigned short count;
   unsigned short content_length;
   u8_t is_authorized;
+  struct cgi_parameters parms;
 };
 
 void httpd_init(void) banked;

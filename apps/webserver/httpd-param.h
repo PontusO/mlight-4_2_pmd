@@ -47,6 +47,6 @@
 #define ISO_query   '?'
 #define ISO_equal   '='
 
-void parse_input(char *buf) banked;
+void parse_input(struct httpd_state *s, char *buf) banked;
 
 #endif /*HTTPDPARAM_H_*/
