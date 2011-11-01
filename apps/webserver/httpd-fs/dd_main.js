@@ -17,28 +17,28 @@ window.onload = function()
 	  steps: 20,
 	  animationCallback: function(x, y)
 	  {
-	    setlight("192.168.0.11", 0, x);
+	    setlight("192.168.1.11", 0, x);
 	  }
 	});
 	new Dragdealer('slider_2', {
 	  steps: 20,
 	  animationCallback: function(x, y)
 	  {
-	    setlight("192.168.0.11", 2, x);
+	    setlight("192.168.1.11", 1, x);
 	  }
 	});
 	new Dragdealer('slider_3', {
 	  steps: 20,
 	  animationCallback: function(x, y)
 	  {
-	    setlight("192.168.0.11", 3, x);
+	    setlight("192.168.1.11", 2, x);
 	  }
 	});
 	new Dragdealer('slider_4', {
 	  steps: 20,
 	  animationCallback: function(x, y)
 	  {
-	    setlight("192.168.0.11", 4, x);
+	    setlight("192.168.1.11", 3, x);
 	  }
 	});
 

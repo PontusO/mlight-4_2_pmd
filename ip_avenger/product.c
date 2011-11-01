@@ -49,6 +49,7 @@
 #include "event_switch.h"
 #include "adc_event.h"
 #include "lightlib.h"
+#include "demo.h"
 
 extern static u16_t half_Sec;
 extern static u16_t ten_Secs;
@@ -74,6 +75,7 @@ event_thread_t  event_thread;
 absval_mgr_t    absval_mgr;
 adc_event_t     adc_event;
 rule_t          test_rule;
+demo_t          demo;
 
 // ---------------------------------------------------------------------------
 //	pmd()
@@ -158,6 +160,7 @@ void pmd(void) banked
     ramp_mgr[i].channel = i;
     init_ramp_mgr(&ramp_mgr[i]);
   }
+  init_demo(&demo);
   init_event_switch(&event_thread);
   /* Initialize all event action managers before the event providers */
   /* Event action managers */
@@ -292,6 +295,8 @@ void pmd(void) banked
     /* Event providers */
     PT_SCHEDULE(handle_adc_event(&adc_event));
     PT_SCHEDULE(handle_event_switch(&event_thread));
+    PT_SCHEDULE(handle_demo(&demo));
+
   }	// end of 'while (1)'
 }
 
