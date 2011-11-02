@@ -56,7 +56,16 @@ void init_demo(demo_t *demo) __reentrant banked
 
     memset (demo, 0, sizeof *demo);
     PT_INIT(&demo->pt);
+    /* Hog one timer for this thread */
+    demo->timer = alloc_timer();
     demo->curr_P1_5 = P1_5;
+    demo->state = DEMO_STATE_DAY;
+    call_ramp (DEMO_DAYTIME, 1, 100, 100); //Starta med DAYTIME i full belysning
+  //  call_ramp(0,1,100,0);
+  //  call_ramp(1,1,100,0);
+  //  call_ramp(2,1,100,0);
+  //  call_ramp(3,1,100,0);
+
 
 }
 
@@ -81,8 +90,7 @@ void terminate_ramp(u8_t channel) __reentrant banked
 }
 PT_THREAD(handle_demo(demo_t *demo) __reentrant banked)
 {
-  /* Hog one timer for this thread */
-  demo->timer = alloc_timer();
+
 
   PT_BEGIN(&demo->pt);
 
@@ -90,16 +98,72 @@ PT_THREAD(handle_demo(demo_t *demo) __reentrant banked)
 
   while (1)
   {
-       /* Wait for a key stroke to arrive */
-    PT_WAIT_UNTIL (&demo->pt, P1_5 != demo->curr_P1_5);
+       /* Wait for a button to be pressed */
+    PT_WAIT_UNTIL (&demo->pt, P1_5 == 1);
 
-      call_ramp (0, 10, 5, 50);
-      set_timer(demo->timer, 50, NULL);
+    if (demo->state == DEMO_STATE_DAY){
+
+      /* Påbörja en 10 sekunders uprampning av SUNSET och
+       * när den kommit halvvägs skall släckningen av
+       * DAYTIME påbörjas Släckningen av DAYTIME skall ta 5 sekunder
+       */
+      call_ramp (DEMO_SUNSET, 10, 1, 50); // Tänd SUNSET till hälften under 5 sekunder
+      set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder (så lång tid som upprampningen tar)
       PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
-      call_ramp (1, 10, 10, 50);
-      set_timer(demo->timer, 100, NULL);
+      call_ramp(DEMO_DAYTIME, 5, 1, 0); // släck DAYTIME
+      call_ramp(DEMO_SUNSET, 10, 1, 100);  // tänd SUNSET fullt
+
+      set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder (så lång tid som upp och nedrampningen tar
       PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
 
+      /* Vänta 5 sekunder, påbörja sen nedsläckning av SUNSET under 10 sek.
+       * När SUNSET är släckt, tänd NIGHT under 10 sekunder.
+       * Vänta 10 sekunder, avsluta därefter sekvensen
+       */
+      set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+
+      call_ramp(DEMO_SUNSET, 10, 1, 0);
+      set_timer(demo->timer, 1000, NULL);  // Vänta 10 sekunder tills nedrampningen är färdig
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+
+      call_ramp(DEMO_NIGHT, 10, 1, 100); // Tänd NIGHT till max under 10 sekunder
+      set_timer(demo->timer, 1000, NULL);  // Vänta 10 sekunder tills upprampningen är färdig
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+
+
+      demo->state = DEMO_STATE_NIGHT;  //avsluta sekvensen
+    } else {
+      /* Gå från natt till dag.
+       * Börja med att tända SUNRISE till hälften under 5 sekunder.
+       * När 5 sekunder gått, påbörja en 5 sekunders släckning av NIGHT och
+       * tänd samtidigt upp SUNRISE till 100%.
+       */
+      call_ramp(DEMO_SUNRISE, 10, 1, 50); // påböra tändning av SUNRISE
+      set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+      call_ramp(DEMO_NIGHT, 10, 2, 0);    // Släck ner NIGHT
+      call_ramp(DEMO_SUNRISE, 10, 1, 100); //tänd SUNRISE till fullt
+      set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder tills SUNRISE är tänd
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+
+      /* Vänta 5 sekunder, påbörja sedan tändning av DAYTIME till 50% under 5 sekunder.
+       * När DAYTIME nått 50%, påbörja släckningen av SUNRISE och tänd
+       * samtidigt DAATIME till 100% under 5 sekunder.
+       */
+      set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+      call_ramp(DEMO_DAYTIME, 10, 1, 50); // påbörja tändning av DAYTIME
+      set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+      call_ramp(DEMO_SUNRISE, 10, 2, 0); //Släck ner SUNrISE på 5 sekunder
+      call_ramp(DEMO_DAYTIME, 10, 1, 100); // tänd DYATIME fullt på 5 sekunder)
+
+      set_timer(demo->timer, 1000, NULL);  // Vänta 10 sekunder
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+
+      demo->state = DEMO_STATE_DAY;
+    }
 
   }
 

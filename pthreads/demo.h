@@ -33,6 +33,14 @@
 #include "pt.h"
 #include "ramp_mgr.h"
 
+
+#define DEMO_STATE_DAY    0x00
+#define DEMO_STATE_NIGHT  0x01
+
+#define DEMO_DAYTIME   0x00
+#define DEMO_SUNSET    0x01
+#define DEMO_NIGHT     0x02
+#define DEMO_SUNRISE   0x03
 /*
  * Data types used by the demo
  */
@@ -41,6 +49,7 @@ typedef struct {
   struct pt pt;
   u8_t curr_P1_5;
   char timer;
+  u8_t state;
 } demo_t;
 
 void init_demo(demo_t *demo) __reentrant banked;
