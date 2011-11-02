@@ -194,6 +194,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pthreads\but_mon.h" />
+		<Unit filename="..\pthreads\demo.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\demo.h" />
 		<Unit filename="..\pthreads\events\actions\absval_mgr.c">
 			<Option compilerVar="CC" />
 		</Unit>
