@@ -562,6 +562,13 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
     case 1:
       myint = (u16_t)sys_cfg.update_interval;
       break;
+
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+      myint = (u16_t)ledlib_get_light_percentage(intno - 10);
+      break;
   }
 
   sprintf((char *)uip_appdata, "%d", myint);
@@ -588,6 +595,19 @@ PT_THREAD(get_string(struct httpd_state *s, char *ptr) __reentrant)
     /* Node Name */
     case 1:
       string = sys_cfg.device_id;
+      break;
+
+    case 10:
+    case 11:
+    case 12:
+    case 13: {
+        ramp_mgr_t *rmgr = get_ramp_mgr(stringno-10);
+        if (rmgr) {
+          string = get_ramp_state(rmgr);
+        } else {
+          string = "Invalid string !";
+        }
+      }
       break;
   }
 

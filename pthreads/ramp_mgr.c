@@ -29,7 +29,7 @@
  */
 #pragma codeseg APP_BANK
 
-#define PRINT_A     // Enable A prints
+//#define PRINT_A     // Enable A prints
 
 #include "system.h"
 #include "iet_debug.h"
@@ -45,6 +45,7 @@
  */
 static ramp_mgr_t *ramp_mgr_tab[CFG_NUM_PWM_DRIVERS];
 static u8_t num_mgrs = 0;
+char *ramp_states_str[] = {"Steady", "Increasing", "Decreasing"};
 
 /*
  * Initialize the ramp manager
@@ -79,6 +80,11 @@ ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked
              ptr->channel, ptr);)
 
   return ptr;
+}
+
+char *get_ramp_state (ramp_mgr_t *rmgr) __reentrant banked
+{
+  return ramp_states_str[rmgr->state];
 }
 
 /* Debug lines for catching compiler generated failures.
@@ -182,7 +188,16 @@ PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked)
         rmgr->ramp.step = rmgr->step;
         rmgr->ramp.rampto = rmgr->rampto;
 
+        /* Set state */
+        if (rmgr->ramp.step > 0)
+          rmgr->state = INCREASING;
+        else
+          rmgr->state = DECREASING;
+
         PT_SPAWN (&rmgr->pt, &rmgr->ramp.pt, do_ramp(&rmgr->ramp));
+
+        /* Reset state again */
+        rmgr->state = STEADY;
       }
     }
   }

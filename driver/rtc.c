@@ -545,8 +545,9 @@ PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked)
              (int)tc->hw_rtc.hours,
              (int)tc->hw_rtc.minutes,
              (int)tc->hw_rtc.vl_seconds);)
-  if (tc->hw_rtc.low_voltage)
+  if (tc->hw_rtc.low_voltage) {
     A_(printf (__FILE__ " Battery voltage is low, RTC data may be compromised !\n");)
+  }
 
   /* Convert the hw rtc data to tp format */
   translate_hw_rtc (&tc->hw_rtc, &tc->tp);

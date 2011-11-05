@@ -4,10 +4,18 @@
 <h1>LED Status</h1><hr color="#258D92" size="2" width="90%">
 <table width="80%" class="mytab"><center>
 <tr><th>LED Channel</th><th>Intensity</th><th>Status</th></tr>
-<tr><td>1</td><td>25%</td><td>Increasing</td></tr>
-<tr><td>2</td><td>80%</td><td>Steady</td></tr>
-<tr><td>3</td><td>100%</td><td>Steady</td></tr>
-<tr><td>4</td><td>10%</td><td>Decreasing</td></tr>
+<tr><td>1</td><td>%! get-int 10
+%</td><td>%! get-string 10
+</td></tr>
+<tr><td>2</td><td>%! get-int 11
+%</td><td>%! get-string 11
+</td></tr>
+<tr><td>3</td><td>%! get-int 12
+%</td><td>%! get-string 12
+</td></tr>
+<tr><td>4</td><td>%! get-int 13
+%</td><td>%! get-string 13
+</td></tr>
 </table></center><hr color="#258D92" size="2" width="90%"><br><br>
 </center>
 %!: /footer.html

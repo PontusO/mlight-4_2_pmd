@@ -37,6 +37,11 @@
 #define RAMP_CMD_START  0x01
 #define RAMP_CMD_STOP   0x02
 
+enum ramp_state {
+  STEADY = 0,
+  INCREASING,
+  DECREASING
+};
 /*
  * Data types used by the ramp manager
  */
@@ -63,10 +68,12 @@ typedef struct {
   char intensity;
   char rampto;
   char step;
+  char state;
 } ramp_mgr_t;
 
 void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked;
 ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked;
+char *get_ramp_state (ramp_mgr_t *rmgr) __reentrant banked;
 PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked);
 
 #endif // RAMP_MGR_H_INCLUDED
