@@ -1,9 +1,7 @@
 %!: /header.html
-<center>
-<h1>Time Settings</h1><br>
-Current Date: %! get-rtc
-<hr noshade width="75%"><form>
-<table width="50%" class="mytab"><input type="hidden" name="resettime">
+<h1>Time Settings</h1><hr color="#258D92" size="2" width="90%"><form><input type="hidden" name="resettime">
+<center><table width="90%" class="mytab"><tr><td>Current Date: </td><td>%! get-rtc
+</td></tr>
 <tr><td>Enable Automatic Time Updates</td><td><input type="checkbox" name="entim" %! get-time-ena
 ></td></tr>
 <tr><td>Time Server</td><td><input type="text" name="timip" size="15" maxlength="20" value="%! get-time-ip
@@ -19,11 +17,10 @@ Current Date: %! get-rtc
 <tr><td>Timezone</td><td>
 <select name="tz">%! get-tz-opt
 </select>
-</td></tr></table><hr noshade width="75%">
+</td></tr></table></center><hr color="#258D92" size="2" width="90%">
 <br>
 <input type="submit" name="submit" value="save">
 <input type="reset" name="reset" value="reset">
 </form>
 <br>
-</center>
 %!: /footer.html

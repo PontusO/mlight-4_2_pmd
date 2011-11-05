@@ -86,16 +86,17 @@ ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked
  * during runtime, this macro can be enabled and trace the required
  * variable.
  */
-#define TMR_GUARD if (ramp->timer != tmptim) { A_(printf (__FILE__ " Timer Error line %d: expected %d found %d, %p\n", __LINE__, (int)tmptim, (int)ramp->timer, ramp);) ; goto exit; }
-//#define TMR_GUARD
+/* IMPORTANT !! At the moment this does not work so don't use it */
+//#define TMR_GUARD if (ramp->timer != tmptim) { A_(printf (__FILE__ " Timer Error line %d: expected %d found %d, %p\n", __LINE__, (int)tmptim, (int)ramp->timer, ramp);) ; goto exit; }
+#define TMR_GUARD
+//static u8_t tmptim;
 
-static u8_t tmptim;
 PT_THREAD(do_ramp(ramp_t *ramp) __reentrant)
 {
   PT_BEGIN (&ramp->pt);
   {
     ramp->timer = alloc_timer();
-    tmptim = ramp->timer;
+//    tmptim = ramp->timer;
     ramp->signal = RAMP_CMD_RESET;
 
     A_(printf (__FILE__ " allocated timer %d for ramp manager %p\n", ramp->timer, ramp);)
@@ -165,22 +166,24 @@ PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked)
       /* Get current light intensity */
       rmgr->intensity = ledlib_get_light_percentage(rmgr->channel);
       A_(printf (__FILE__ " Start intensity %d\n", rmgr->intensity);)
-      /* Check difference between new and current */
-      rmgr->cnt = rmgr->rampto - rmgr->intensity;
-      A_(printf (__FILE__ " Ramping to %d\n", rmgr->rampto);)
+      if (rmgr->intensity != rmgr->rampto) {
+        /* Check difference between new and current */
+        rmgr->cnt = rmgr->rampto - rmgr->intensity;
+        A_(printf (__FILE__ " Ramping to %d\n", rmgr->rampto);)
 
-      if (rmgr->cnt < 0) {
-        rmgr->step *= -1;
-        rmgr->cnt = abs(rmgr->cnt);
+        if (rmgr->cnt < 0) {
+          rmgr->step *= -1;
+          rmgr->cnt = abs(rmgr->cnt);
+        }
+
+        rmgr->ramp.channel = rmgr->channel;
+        rmgr->ramp.intensity = rmgr->intensity;
+        rmgr->ramp.rate = rmgr->rate;
+        rmgr->ramp.step = rmgr->step;
+        rmgr->ramp.rampto = rmgr->rampto;
+
+        PT_SPAWN (&rmgr->pt, &rmgr->ramp.pt, do_ramp(&rmgr->ramp));
       }
-
-      rmgr->ramp.channel = rmgr->channel;
-      rmgr->ramp.intensity = rmgr->intensity;
-      rmgr->ramp.rate = rmgr->rate;
-      rmgr->ramp.step = rmgr->step;
-      rmgr->ramp.rampto = rmgr->rampto;
-
-      PT_SPAWN (&rmgr->pt, &rmgr->ramp.pt, do_ramp(&rmgr->ramp));
     }
   }
 

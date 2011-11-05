@@ -1,8 +1,6 @@
 %!: /header.html
-<center>
-<h1>Network Settings</h1><hr color="#258D92" size="4" width="50%">
-<form>
-<table width="50%" class="mytab">
+<h1>Network Settings</h1><hr color="#258D92" size="2" width="90%">
+<form><center><table width="90%" class="mytab">
 <tr><td>Node Name</td><td><input type="text" name="node" size="16" maxlength="16" value="%! get-string 1
 "></td></tr>
 <tr><td>IP Adress</td><td><input type="text" name="hostip" size="15" maxlength="20" value="%! get-ip-num 1
@@ -13,11 +11,10 @@
 "></td></tr>
 <tr><td>HTTP port</td><td><input type="text" name="webport" size="5" maxlength="5" value="%! get-ip-num 5
 "></td></tr>
-</table><p>The unit will be reset when you click Save, Enter the new network address in the browser to connect the unit again.</p>
-<br>
+</table></center><p>The unit will be reset when you click Save.<br>Enter the new network address in the browser to connect the unit again.</p>
+<hr color="#258D92" size="2" width="90%"><br>
 <input type="submit" name="submit" value="save">
 <input type="reset" name="reset" value="Reset">
 </form>
 <br>
-</center>
 %!: /footer.html
