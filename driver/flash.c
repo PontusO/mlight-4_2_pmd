@@ -44,10 +44,10 @@ const struct sys_config default_cfg = {
   {0x30, 0x30, 0x30, 0x30, 0, 0, 0, 0},   /* String with "0000" */
   {192, 168, 1, 11},                      /* The IP address of the node */
   {255, 255, 255, 0},                     /* The network mask of the node */
-  {192, 168, 0, 1},                       /* The default gateway of the node */
+  {192, 168, 1, 1},                       /* The default gateway of the node */
   80,                                     /* Default Web server port */
   1,                                      /* The Timer server is enabled per default */
-  {192, 168, 0, 45},                      /* Time protocol server */
+  {192, 168, 1, 45},                      /* Time protocol server */
   37,                                     /* Time protocol server port */
   48,                                     /* Defult update interval = 48 hours */
   2,                                      /* Default time zone */

@@ -56,14 +56,16 @@ void init_demo(demo_t *demo) __reentrant banked
 
     memset (demo, 0, sizeof *demo);
     PT_INIT(&demo->pt);
+    /* Hog one timer for this thread */
+    demo->timer = alloc_timer();
     demo->curr_P1_5 = P1_5;
     demo->state = DEMO_STATE_DAY;
-    call_ramp (DEMO_DAYTIME, 1, 2, 100); //Starta med DAYTIME i full belysning
+    call_ramp (DEMO_DAYTIME, 10, 100, 100); //Starta med DAYTIME i full belysning
 
 
 }
 
-void call_ramp(u8_t channel, u8_t rate, u8_t step, u8_t rampto) __reentrant banked
+void call_ramp(u8_t channel, u8_t rate, u8_t step, u8_t rampto)
 {
   ramp_mgr_t *rmptr = get_ramp_mgr (channel);
       /* Assert a signal to the ramp manager to start a ramp */
@@ -76,12 +78,14 @@ void call_ramp(u8_t channel, u8_t rate, u8_t step, u8_t rampto) __reentrant bank
 
 }
 
-void terminate_ramp(u8_t channel) __reentrant banked
+void terminate_ramp(u8_t channel)
 {
   ramp_mgr_t *rmptr = get_ramp_mgr (channel);
   rmptr->ramp.signal = RAMP_CMD_STOP;
 
 }
+
+
 
 PT_THREAD(handle_demo(demo_t *demo) __reentrant banked)
 {
@@ -93,25 +97,76 @@ PT_THREAD(handle_demo(demo_t *demo) __reentrant banked)
 
   while (1)
   {
-       /* Wait for a button to be pressed */
-    PT_WAIT_UNTIL (&demo->pt, P1_5 == 1 && demo->state != DEMO_ONGOING);
-    demo->state = DEMO_ONGOING;
+ //   set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder (så lång tid som upprampningen tar)
+   // PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+
 
     if (demo->state == DEMO_STATE_DAY){
-      A_(printf (__FILE__ "DAYTIME to 0\n");)
+      A_(printf (__FILE__ "SUNSET up to 50\n");)
+      /* Påbörja en 10 sekunders uprampning av SUNSET och
+       * när den kommit halvvägs skall släckningen av
+       * DAYTIME påbörjas Släckningen av DAYTIME skall ta 5 sekunder
+       */
+      call_ramp (DEMO_SUNSET, 10, 1, 50); // Tänd SUNSET till hälften under 5 sekunder
+      A_(printf (__FILE__ " Sleep 5 sec\n");)
+      set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder (så lång tid som upprampningen tar)
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+      A_(printf (__FILE__ "DAYTIME down to 0 and SUNSET up to 100\n");)
+      call_ramp(DEMO_DAYTIME, 5, 1, 0); // släck DAYTIME
+      call_ramp(DEMO_SUNSET, 5, 1, 100);  // tänd SUNSET fullt
 
-      call_ramp (DEMO_DAYTIME, 1, 10, 0);
+      A_(printf (__FILE__ " Sleep 5 sec\n");)
+      set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder (så lång tid som upp och nedrampningen tar
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
 
-      A_(printf (__FILE__ " NIGHT up to 100\n");)
-      call_ramp(DEMO_NIGHT, 1, 10, 100);
+      /* Vänta 5 sekunder, påbörja sen nedsläckning av SUNSET under 10 sek.
+       * När SUNSET är släckt, tänd NIGHT under 10 sekunder.
+       * Vänta 10 sekunder, avsluta därefter sekvensen
+       */
+      A_(printf (__FILE__ " Sleep 5 sec\n");)
+      set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+
+      A_(printf (__FILE__ " SUNSET down to 0\n");)
+      call_ramp(DEMO_SUNSET, 10, 2, 0);
+      A_(printf (__FILE__ " Sleep 10 sec\n");)
+      set_timer(demo->timer, 300, NULL);  // Vänta 10 sekunder tills nedrampningen är färdig
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+
+      A_(printf (__FILE__ " NIGHT up 100\n");)
+      call_ramp(DEMO_NIGHT, 10, 10, 100); // Tänd NIGHT till max under 10 sekunder
+      A_(printf (__FILE__ " Sleep 10 sec\n");)
+      set_timer(demo->timer, 400, NULL);  // Vänta 10 sekunder tills upprampningen är färdig
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
 
 
       demo->state = DEMO_STATE_NIGHT;  //avsluta sekvensen
     } else {
-      A_(printf (__FILE__ " Night to 0\n");)
-      call_ramp(DEMO_NIGHT, 1, 10, 0);
-       A_(printf (__FILE__ " DAYTIME up 100\n");)
-      call_ramp(DEMO_DAYTIME, 1, 10, 100);
+      /* Gå från natt till dag.
+       * Börja med att tända SUNRISE till hälften under 5 sekunder.
+       * När 5 sekunder gått, påbörja en 5 sekunders släckning av NIGHT och
+       * tänd samtidigt upp SUNRISE till 100%.
+       */
+       A_(printf (__FILE__ " SUNRISE up 50\n");)
+      call_ramp(DEMO_NIGHT, 10, 2, 0);    // Släck ner NIGHT
+      call_ramp(DEMO_SUNRISE, 10, 1, 100); //tänd SUNRISE till fullt
+      A_(printf (__FILE__ " Sleep 5 sec\n");)
+      set_timer(demo->timer, 700, NULL);  // Vänta 5 sekunder tills SUNRISE är tänd
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+
+      /* Vänta 5 sekunder, påbörja sedan tändning av DAYTIME till 50% under 5 sekunder.
+       * När DAYTIME nått 50%, påbörja släckningen av SUNRISE och tänd
+       * samtidigt DAATIME till 100% under 5 sekunder.
+       */
+       A_(printf (__FILE__ " Sleep 5 sec\n");)
+      set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+      A_(printf (__FILE__ " DAYTIME up 50\n");)
+      call_ramp(DEMO_SUNRISE, 5, 1, 4); //Släck ner SUNRISE på 5 sekunder
+      call_ramp(DEMO_DAYTIME, 10, 1, 100); // tänd DYATIME fullt på 5 sekunder)
+      A_(printf (__FILE__ " Sleep 10 sec\n");)
+      set_timer(demo->timer, 1000, NULL);  // Vänta 10 sekunder
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
 
       demo->state = DEMO_STATE_DAY;
     }

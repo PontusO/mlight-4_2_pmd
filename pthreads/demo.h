@@ -36,10 +36,11 @@
 
 #define DEMO_STATE_DAY    0x00
 #define DEMO_STATE_NIGHT  0x01
-#define DEMO_ONGOING      0x02
 
 #define DEMO_DAYTIME   0x00
-#define DEMO_NIGHT     0x01
+#define DEMO_SUNSET    0x01
+#define DEMO_NIGHT     0x03
+#define DEMO_SUNRISE   0x02
 /*
  * Data types used by the demo
  */
@@ -47,11 +48,12 @@
 typedef struct {
   struct pt pt;
   u8_t curr_P1_5;
+  char timer;
   u8_t state;
 } demo_t;
 
 void init_demo(demo_t *demo) __reentrant banked;
-void call_ramp(u8_t channel, u8_t rate, u8_t step, u8_t rampto) __reentrant banked;
+void call_ramp(u8_t channel, u8_t rate, u8_t step, u8_t rampto);
 PT_THREAD(handle_demo(demo_t *demo) __reentrant banked);
 
 #endif // DEMO_H_INCLUDED
