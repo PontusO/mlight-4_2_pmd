@@ -100,7 +100,7 @@ PT_THREAD(handle_demo(demo_t *demo) __reentrant banked)
  //   set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder (så lång tid som upprampningen tar)
    // PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
 
-
+    PT_WAIT_UNTIL (&demo->pt, P1_5 == 0);
     if (demo->state == DEMO_STATE_DAY){
       A_(printf (__FILE__ "SUNSET up to 50\n");)
       /* Påbörja en 10 sekunders uprampning av SUNSET och
@@ -162,8 +162,11 @@ PT_THREAD(handle_demo(demo_t *demo) __reentrant banked)
       set_timer(demo->timer, 500, NULL);  // Vänta 5 sekunder
       PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
       A_(printf (__FILE__ " DAYTIME up 50\n");)
-      call_ramp(DEMO_SUNRISE, 5, 1, 4); //Släck ner SUNRISE på 5 sekunder
       call_ramp(DEMO_DAYTIME, 10, 1, 100); // tänd DYATIME fullt på 5 sekunder)
+      set_timer(demo->timer, 200, NULL);  // Vänta 5 sekunder
+      PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
+      call_ramp(DEMO_SUNRISE, 5, 1, 4); //Släck ner SUNRISE på 5 sekunder
+
       A_(printf (__FILE__ " Sleep 10 sec\n");)
       set_timer(demo->timer, 1000, NULL);  // Vänta 10 sekunder
       PT_WAIT_UNTIL(&demo->pt, get_timer(demo->timer) == 0);
