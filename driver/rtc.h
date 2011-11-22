@@ -82,6 +82,7 @@ struct time_client {
 
 extern struct rtc rtc;
 extern struct time_client tc;
+extern bit RTC_SECOND_EVENT;
 
 /*
  * Interface declarations

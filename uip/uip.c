@@ -79,7 +79,7 @@
  * checksums, and fill in the necessary header fields and finally send
  * the packet back to the peer.
 */
-// #define DEBUG_PRINTF(...) printf(__VA_ARGS__)
+//#define DEBUG_PRINTF(...) printf(__VA_ARGS__)
 #define DEBUG_PRINTF
 
 #include "uip.h"

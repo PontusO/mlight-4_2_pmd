@@ -516,11 +516,13 @@ void parse_input(struct httpd_state *s, char *buf) banked
          *buf != ISO_space)
     buf++;
 
+  /* Clear the cgi control parameter structure */
+  //s->parms.channel_updated = 1;
+  //s->parms.num_parms = 1;
+
   /* Return if no query is present */
   if (*buf == ISO_nl || *buf == ISO_space)
     return;
-
-  /* Clear the cgi control parameter structure */
   memset (&s->parms, 0, sizeof s->parms);
 
   while (*buf != ISO_space)

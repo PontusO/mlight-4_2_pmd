@@ -33,7 +33,7 @@
 
 u8_t seconds;
 unsigned long g_time;
-extern bit RTC_SECOND_EVENT;
+bit RTC_SECOND_EVENT;
 
 /*************************************************************************************
  *
@@ -48,6 +48,7 @@ void rtc_isr(void) interrupt TF3_VECTOR using 0
   if (!seconds) {
     seconds = MAKES_A_SECOND;
     g_time++;
+    RTC_SECOND_EVENT ^= 1;
   }
 
   TF3 = 0;

@@ -29,6 +29,7 @@
  */
 #define PRINT_A
 //#define PRINT_B
+//#define PRINT_C
 
 #pragma codeseg APP_BANK
 
@@ -48,6 +49,7 @@
 #include "absval_mgr.h"
 #include "event_switch.h"
 #include "adc_event.h"
+#include "time_event.h"
 #include "lightlib.h"
 
 extern static u16_t half_Sec;
@@ -74,6 +76,7 @@ event_thread_t  event_thread;
 absval_mgr_t    absval_mgr;
 adc_event_t     adc_event;
 rule_t          test_rule;
+time_event_t    time_event;
 
 // ---------------------------------------------------------------------------
 //	pmd()
@@ -171,8 +174,9 @@ void pmd(void) banked
   test_rule.event = 0;
   /* Just for testing, this will be the first action manager registered */
   test_rule.action = 0;
-  A_(printf(__FILE__ " Test rule ptr %p", &test_rule);)
+  A_(printf(__FILE__ " Test rule ptr %p\n", &test_rule);)
   evnt_register_handle(&test_rule);
+  init_time_event (&time_event);
 
   while(1)
   {
@@ -292,6 +296,7 @@ void pmd(void) banked
     /* Event providers */
     PT_SCHEDULE(handle_adc_event(&adc_event));
     PT_SCHEDULE(handle_event_switch(&event_thread));
+    PT_SCHEDULE(handle_time_event(&time_event));
   }	// end of 'while (1)'
 }
 

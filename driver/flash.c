@@ -34,6 +34,7 @@
 #include "system.h"
 #include "string.h"
 #include "iet_debug.h"
+#include "time_event.h"
 
 /* This defines how many bytes there are in a flash page */
 #define FLASH_PAGE_SIZE     1024
@@ -54,7 +55,24 @@ const struct sys_config default_cfg = {
   (u16_t)48,                              /* Defult update interval = 48 hours */
   (char)2,                                /* Default time zone */
   { "admin", 0, 0, 0, 0 },                /* Default user name and password */
-  { "pass", 0, 0, 0, 0, 0 }
+  { "pass", 0, 0, 0, 0, 0 },
+  2,                                      /* The number of time events in the table */
+  { { 3, { 'M', 'o', 'r', 'n', 'i', 'n', 'g', 0 }, 6, 50, 0x7c }, /* Array of time events */
+  { 2, { 'E', 'v', 'e', 'n', 'i', 'n', 'g', 0 }, 20, 30, 3 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
+  { 0, { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 }, },
 };
 
 /* This is the config in the RAM */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2005, Adam Dunkels.
+ * Copyright (c) 2011, Pontus Oldberg.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,49 +26,47 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * This file is part of the uIP TCP/IP stack.
- *
- * $Id: httpd.h,v 1.2 2006/06/11 21:46:38 adam Exp $
- *
  */
+#ifndef TIME_EVENT_H_INCLUDED
+#define TIME_EVENT_H_INCLUDED
 
-#ifndef __HTTPD_H__
-#define __HTTPD_H__
+#include "event_switch.h"
 
-#include "psock.h"
-#include "httpd-fs.h"
+#define NMBR_TIME_EVENTS    16
+#define TIME_EVENT_NAME_LEN 8
 
-/*
- * A place holder for cgi variables
+/**
+ * This is a bit field with the following functions
+ *
+ * Bit 0 - Indicates if the user has enabled or disabled the time event.
+ *         0 means that the event is disabled
+ *         1 means that the event is enabled
+ * Bit 1 - Indicates if this entry holds a valid time event entry or not
+ *         0 means that the entry has not yet been configured or has been
+ *           deleted.
+ *         1 indicates that the entry is configured and valid.
  */
+typedef enum {
+  TIME_EVENT_ENABLED    = 0x01,
+  TIME_EVENT_ENTRY_USED = 0x02
+} time_event_status_t;
+
 typedef struct {
-  int cnt;
-  int i;
-} cgi_t;
+  time_event_status_t status;
+  char name[TIME_EVENT_NAME_LEN];
+  u8_t hrs;
+  u8_t min;
+  u8_t weekday;
+} time_spec_t;
 
-struct httpd_state {
-  unsigned char timer;
-  struct psock sin, sout;
-  struct pt outputpt, scriptpt, utilpt;
-  char inputbuf[200];
-  char filename[35];
-  char state;
-  struct httpd_fs_file file;
-  int len;
-  char *scriptptr;
-  int scriptlen;
-  unsigned short content_length;
-  u8_t is_authorized;
-  struct cgi_parameters parms;
-  cgi_t cgiv;
-};
+typedef struct {
+  struct pt pt;
+  char sd;
+  time_spec_t *time_spec;
+  event_prv_t event;
+} time_event_t;
 
-void httpd_init(void) banked;
-void httpd_appcall(void) banked;
+void init_time_event(time_event_t *time_event) __reentrant banked;
+PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant banked);
 
-/*
-void httpd_log(char *msg);
-void httpd_log_file(u16_t *requester, char *file);
-*/
-
-#endif /* __HTTPD_H__ */
+#endif // TIME_EVENT_H_INCLUDED

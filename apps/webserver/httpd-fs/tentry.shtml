@@ -1,0 +1,23 @@
+%!: /header.html
+<h1>New Time Event</h1><hr color="#258D92" size="2" width="90%">
+<form><center><table width="90%" class="mytab">
+<tr><td>Event Name</td><td colspan="8"><input type="text" name="node" size="16" maxlength="16" value=""></td></tr>
+<tr><td>Enter Time (ex. 21:50)</td><td colspan="8"><input type="text" name="timval" size="6" maxlength="5" value="%! get-cur-tim
+"></td></tr>
+<tr><td>Schedule</td>
+<td><div>Mon<br><input type="checkbox" name="mon"></div></td>
+<td><div>Tue<br><input type="checkbox" name="tue"></div></td>
+<td><div>Wed<br><input type="checkbox" name="wed"></div></td>
+<td><div>Thu<br><input type="checkbox" name="thu"></div></td>
+<td><div>Fri<br><input type="checkbox" name="fri"></div></td>
+<td><div>Sat<br><input type="checkbox" name="sat"></div></td>
+<td><div>Sun<br><input type="checkbox" name="sun"></div></td>
+</tr>
+</center></table>
+<hr color="#258D92" size="2" width="90%"><br>
+<input type="submit" name="submit" value="save">
+<input type="reset" name="reset" value="Reset">
+</form>
+<br>
+%!: /footer.html
+

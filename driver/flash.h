@@ -30,8 +30,9 @@
 
 #ifndef _FLASH_H_
 #define _FLASH_H_
-#include "system.h"
 
+#include "system.h"
+#include "time_event.h"
 
 void flash_write_config(void);
 /* write flash */
@@ -52,6 +53,8 @@ struct sys_config
   char time_zone;                 /* The offset from GMT for our system time */
   char username[9];               /* Authentication user name */
   char password[9];               /* Authentication password */
+  u8_t nmbr_time_events;          /* The number of time events in the table */
+  time_spec_t time_events[16];    /* Array of time events */
 };
 
 #define CONFIG_MEM_SIZE ((u16_t)sizeof(struct sys_config))

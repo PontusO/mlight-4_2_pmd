@@ -30,6 +30,11 @@ div.menubox {
   text-align:left;
   text-indent:10px;
 }
+div.menubox_1 {
+  border:0;
+  text-align:left;
+  text-indent:20px;
+}
 div.topbox {
   border:0;
   font-size:14pt;

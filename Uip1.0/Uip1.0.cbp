@@ -96,6 +96,8 @@
 		<Unit filename="..\apps\webserver\httpd-fs\netset.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\settings.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\style.css" />
+		<Unit filename="..\apps\webserver\httpd-fs\tentry.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\tevents.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\timeset.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fsdata.c">
 			<Option compilerVar="CC" />
@@ -209,6 +211,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pthreads\events\events\adc_event.h" />
+		<Unit filename="..\pthreads\events\events\time_event.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\events\events\time_event.h" />
 		<Unit filename="..\pthreads\ramp_mgr.c">
 			<Option compilerVar="CC" />
 		</Unit>

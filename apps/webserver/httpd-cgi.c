@@ -81,6 +81,8 @@ HTTPD_CGI_CALL(f_get_ip_num, "get-ip-num", get_ip_num);
 HTTPD_CGI_CALL(f_get_check_box, "get-check", get_check_box);
 HTTPD_CGI_CALL(f_get_string, "get-string", get_string);
 HTTPD_CGI_CALL(f_get_int, "get-int", get_int);
+HTTPD_CGI_CALL(f_get_time_events, "te-get-time-events", get_time_events);
+
 HTTPD_CGI_CALL(f_set_level, "set-level", set_level);
 HTTPD_CGI_CALL(f_get_level, "get-level", get_level);
 HTTPD_CGI_CALL(f_start_ramp, "start-ramp", start_ramp);
@@ -100,6 +102,7 @@ static const struct httpd_cgi_call *calls[] = {
   &L_get_time_tz,
   &L_get_rtc,
   &L_set_param,
+  &f_get_time_events,
   &f_set_level,
   &f_get_level,
   &f_start_ramp,
@@ -278,6 +281,77 @@ PT_THREAD(get_rtc(struct httpd_state *s, char *ptr) __reentrant)
 }
 #endif
 /* ***************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+/*
+ * Create a list of the currently configured time events in the system
+ * The output is modeled after this static html code.
+ * <tr>
+ *   <td><input type="checkbox" name="cb1"></td>
+ *   <td>Evening</td>
+ *   <td>Time 21:40</td>
+ *   <td>Weekdays: Mon-Tue-Wed-Thu-Fri</td>
+ * </tr>
+ *
+ */
+static char *weekdays[] =
+  {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+static unsigned short generate_time_events(void *arg) __reentrant
+{
+  struct httpd_state *s = (struct httpd_state *)arg;
+  time_spec_t *ts;
+  int i;
+  u8_t j, day_mask;
+
+  ts = &sys_cfg.time_events[s->cgiv.i];
+  printf ("s->cgiv.i=%d, status %d\n", s->cgiv.i, ts->status);
+  if (ts->status & TIME_EVENT_ENTRY_USED) {
+    i = sprintf((char *)uip_appdata, "<tr><td><input type=\"checkbox\" name=\"cb%d\" ", s->cgiv.i);
+    if (ts->status & TIME_EVENT_ENABLED)
+      i += sprintf((char *)uip_appdata+i, "Checked");
+    i += sprintf((char *)uip_appdata+i, "></td>");
+    i += sprintf((char *)uip_appdata+i, "<td>%s</td>", ts->name);
+    i += sprintf((char *)uip_appdata+i, "<td>Time %02d:%02d</td>", ts->hrs, ts->min);
+    i += sprintf((char *)uip_appdata+i, "<td>Weekdays: ");
+    day_mask = 0x40;
+    for (j=0;j<7;j++) {
+      if (ts->weekday & day_mask) {
+        i += sprintf((char *)uip_appdata+i, "%s ", weekdays[j]);
+      }
+      day_mask >>= 1;
+    }
+    sprintf((char *)uip_appdata+i, "</td></tr>");
+    printf ((char*)uip_appdata);
+    putchar ('\n');
+  } else {
+    sprintf((char *)uip_appdata, "");
+  }
+  return strlen(uip_appdata);
+}
+
+static
+PT_THREAD(get_time_events(struct httpd_state *s, char *ptr) __reentrant)
+{
+  printf ("httpd_state instance %p, %d\n", s, s->cgiv.i);
+  IDENTIFIER_NOT_USED(ptr);
+
+  PSOCK_BEGIN(&s->sout)
+
+  for(s->cgiv.i=0;s->cgiv.i < NMBR_TIME_EVENTS;++s->cgiv.i) {
+    time_spec_t *ts;
+
+    ts = &sys_cfg.time_events[s->cgiv.i];
+    // printf ("main check %d, iteration %d\n", ts->status, s->cgiv.i);
+    sprintf ((char*)uip_appdata, "Bobba Fett %d, %d<br>", s->cgiv.i, ts->status);
+    PSOCK_SEND_STR(&s->sout, uip_appdata);
+    printf ("lc %d\n", (&((&s->sout)->pt))->lc);
+//    if (ts->status & TIME_EVENT_ENTRY_USED) {
+//      PSOCK_GENERATOR_SEND (&s->sout, generate_time_events, s);
+//    }
+  }
+
+  PSOCK_END(&s->sout);
+}
 
 /*---------------------------------------------------------------------------*/
 static
@@ -534,10 +608,12 @@ PT_THREAD(get_check_box(struct httpd_state *s, char *ptr) __reentrant)
       break;
   }
 
+#if 0
   if (check_box)
     sprintf((char *)uip_appdata, "checked");
   else
     sprintf((char *)uip_appdata, " ");
+#endif
 
   PSOCK_SEND_STR(&s->sout, uip_appdata);
   PSOCK_END(&s->sout);
