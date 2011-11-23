@@ -304,54 +304,48 @@ static unsigned short generate_time_events(void *arg) __reentrant
   u8_t j, day_mask;
 
   ts = &sys_cfg.time_events[s->cgiv.i];
-  printf ("s->cgiv.i=%d, status %d\n", s->cgiv.i, ts->status);
-  if (ts->status & TIME_EVENT_ENTRY_USED) {
-    i = sprintf((char *)uip_appdata, "<tr><td><input type=\"checkbox\" name=\"cb%d\" ", s->cgiv.i);
-    if (ts->status & TIME_EVENT_ENABLED)
-      i += sprintf((char *)uip_appdata+i, "Checked");
-    i += sprintf((char *)uip_appdata+i, "></td>");
-    i += sprintf((char *)uip_appdata+i, "<td>%s</td>", ts->name);
-    i += sprintf((char *)uip_appdata+i, "<td>Time %02d:%02d</td>", ts->hrs, ts->min);
-    i += sprintf((char *)uip_appdata+i, "<td>Weekdays: ");
-    day_mask = 0x40;
-    for (j=0;j<7;j++) {
-      if (ts->weekday & day_mask) {
-        i += sprintf((char *)uip_appdata+i, "%s ", weekdays[j]);
-      }
-      day_mask >>= 1;
+  i = sprintf((char *)uip_appdata, "<tr><td><input type=\"checkbox\" name=\"cb%d\" ", s->cgiv.i);
+  if (ts->status & TIME_EVENT_ENABLED)
+    i += sprintf((char *)uip_appdata+i, "Checked");
+  i += sprintf((char *)uip_appdata+i, "></td>");
+  i += sprintf((char *)uip_appdata+i, "<td>%s</td>", ts->name);
+  i += sprintf((char *)uip_appdata+i, "<td>Time %02d:%02d</td>", ts->hrs, ts->min);
+  i += sprintf((char *)uip_appdata+i, "<td>Weekdays: ");
+  day_mask = 0x40;
+  for (j=0;j<7;j++) {
+    if (ts->weekday & day_mask) {
+      i += sprintf((char *)uip_appdata+i, "%s ", weekdays[j]);
     }
-    sprintf((char *)uip_appdata+i, "</td></tr>");
-    printf ((char*)uip_appdata);
-    putchar ('\n');
-  } else {
-    sprintf((char *)uip_appdata, "");
+    day_mask >>= 1;
   }
+  sprintf((char *)uip_appdata+i, "</td></tr>");
+  printf ((char*)uip_appdata);
+  putchar ('\n');
+
   return strlen(uip_appdata);
 }
 
+#pragma save
+#pragma nogcse
 static
 PT_THREAD(get_time_events(struct httpd_state *s, char *ptr) __reentrant)
 {
-  printf ("httpd_state instance %p, %d\n", s, s->cgiv.i);
   IDENTIFIER_NOT_USED(ptr);
 
-  PSOCK_BEGIN(&s->sout)
+  PSOCK_BEGIN(&s->sout);
 
   for(s->cgiv.i=0;s->cgiv.i < NMBR_TIME_EVENTS;++s->cgiv.i) {
     time_spec_t *ts;
 
     ts = &sys_cfg.time_events[s->cgiv.i];
-    // printf ("main check %d, iteration %d\n", ts->status, s->cgiv.i);
-    sprintf ((char*)uip_appdata, "Bobba Fett %d, %d<br>", s->cgiv.i, ts->status);
-    PSOCK_SEND_STR(&s->sout, uip_appdata);
-    printf ("lc %d\n", (&((&s->sout)->pt))->lc);
-//    if (ts->status & TIME_EVENT_ENTRY_USED) {
-//      PSOCK_GENERATOR_SEND (&s->sout, generate_time_events, s);
-//    }
+    if (ts->status & TIME_EVENT_ENTRY_USED) {
+      PSOCK_GENERATOR_SEND (&s->sout, generate_time_events, s);
+    }
   }
 
   PSOCK_END(&s->sout);
 }
+#pragma restore
 
 /*---------------------------------------------------------------------------*/
 static
