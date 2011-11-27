@@ -303,14 +303,15 @@ static unsigned short generate_time_events(void *arg) __reentrant
   int i;
   u8_t j, day_mask;
 
-  ts = &sys_cfg.time_events[s->cgiv.i];
-  i = sprintf((char *)uip_appdata, "<tr><td><input type=\"checkbox\" name=\"cb%d\" ", s->cgiv.i);
-  if (ts->status & TIME_EVENT_ENABLED)
-    i += sprintf((char *)uip_appdata+i, "Checked");
-  i += sprintf((char *)uip_appdata+i, "></td>");
+  ts = &sys_cfg.time_events[s->i];
+  i = sprintf((char *)uip_appdata,
+              "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td>", s->i);
+  i += sprintf((char *)uip_appdata+i,
+              "<td>%s</td>", (ts->status & TIME_EVENT_ENABLED) ? "Yes" : "No");
   i += sprintf((char *)uip_appdata+i, "<td>%s</td>", ts->name);
   i += sprintf((char *)uip_appdata+i, "<td>Time %02d:%02d</td>", ts->hrs, ts->min);
   i += sprintf((char *)uip_appdata+i, "<td>Weekdays: ");
+  /* Resolve week days */
   day_mask = 0x40;
   for (j=0;j<7;j++) {
     if (ts->weekday & day_mask) {
@@ -319,9 +320,6 @@ static unsigned short generate_time_events(void *arg) __reentrant
     day_mask >>= 1;
   }
   sprintf((char *)uip_appdata+i, "</td></tr>");
-  printf ((char*)uip_appdata);
-  putchar ('\n');
-
   return strlen(uip_appdata);
 }
 
@@ -334,10 +332,10 @@ PT_THREAD(get_time_events(struct httpd_state *s, char *ptr) __reentrant)
 
   PSOCK_BEGIN(&s->sout);
 
-  for(s->cgiv.i=0;s->cgiv.i < NMBR_TIME_EVENTS;++s->cgiv.i) {
+  for(s->i=0; s->i < NMBR_TIME_EVENTS; ++s->i) {
     time_spec_t *ts;
 
-    ts = &sys_cfg.time_events[s->cgiv.i];
+    ts = &sys_cfg.time_events[s->i];
     if (ts->status & TIME_EVENT_ENTRY_USED) {
       PSOCK_GENERATOR_SEND (&s->sout, generate_time_events, s);
     }

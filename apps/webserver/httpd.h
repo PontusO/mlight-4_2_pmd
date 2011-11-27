@@ -37,14 +37,27 @@
 
 #include "psock.h"
 #include "httpd-fs.h"
+#include "time_event.h"
 
 /*
- * A place holder for cgi variables
+ * A parameter structure for transfering parameters to xcgi commands
  */
-typedef struct {
-  int cnt;
-  int i;
-} cgi_t;
+struct cgi_parameters {
+  u8_t channel;
+  u8_t channel_updated;
+  u8_t level;
+  u8_t level_updated;
+  u8_t rampto;
+  u8_t rampto_updated;
+  u16_t rate;
+  u8_t rate_updated;
+  u8_t step;
+  u8_t step_updated;
+  u8_t num_parms;
+  time_spec_t *ts;
+  u16_t tslist;
+};
+extern struct cgi_parameters cgi_parms_ctrl;
 
 struct httpd_state {
   unsigned char timer;
@@ -58,9 +71,9 @@ struct httpd_state {
   char *scriptptr;
   int scriptlen;
   unsigned short content_length;
+  int i;    /* Free agent, can be used by cgi's to create loops */
   u8_t is_authorized;
   struct cgi_parameters parms;
-  cgi_t cgiv;
 };
 
 void httpd_init(void) banked;

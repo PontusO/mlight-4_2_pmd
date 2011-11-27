@@ -47,7 +47,10 @@
 #include <stdlib.h>
 #define PARAM_FUNC(x) \
         static void x(struct httpd_state *s, char *buffer) __reentrant
-
+#define PARAM_ENTRY(x,y) \
+        { x , y }
+#define NEOP(x) \
+        ((x != ISO_and) && (x != ISO_space) && (x != ISO_cr))
 /*---------------------- Local data types -----------------------------------*/
 struct parameter_table {
   const char *param;
@@ -57,98 +60,61 @@ struct parameter_table {
 /*---------------------- Local data ----------------------------------------*/
 /* Form parameters that needs to be parsed */
 static const struct parameter_table parmtab[] = {
-    {
-        "user",
-        set_username
-    },
-    {
-        "password",
-        set_password
-    },
-    {
-        "node",
-        set_device_id
-    },
-    {
-        "hostip",
-        set_ip
-    },
-    {
-        "netmask",
-        set_netmask
-    },
-    {
-        "gateway",
-        set_gateway
-    },
-    {
-        "webport",
-        set_webport
-    },
-    {
-        "resettime",
-        reset_time
-    },
-    {
-        "entim",
-        enable_time
-    },
-    {
-        "timip",
-        set_time
-    },
-    {
-        "timprt",
-        set_timeport
-    },
-    {
-        "intrvl",
-        set_interval
-    },
-    {
-        "timval",
-        set_timevalue
-    },
-    {
-        "datval",
-        set_datevalue
-    },
-    {
-        "tz",
-        set_timezone
-    },
+  PARAM_ENTRY("user", set_username),
+  PARAM_ENTRY("password", set_password),
+  PARAM_ENTRY("node", set_device_id),
+  PARAM_ENTRY("hostip", set_ip),
+  PARAM_ENTRY("netmask", set_netmask),
+  PARAM_ENTRY("gateway", set_gateway),
+  PARAM_ENTRY("webport", set_webport),
+  PARAM_ENTRY("resettime", reset_time),
+  PARAM_ENTRY("entim", enable_time),
+  PARAM_ENTRY("timip", set_time),
+  PARAM_ENTRY("timprt", set_timeport),
+  PARAM_ENTRY("intrvl", set_interval),
+  PARAM_ENTRY("timval", set_timevalue),
+  PARAM_ENTRY("datval", set_datevalue),
+  PARAM_ENTRY("tz", set_timezone),
+  /* Entry list parameters */
+  PARAM_ENTRY("cb0", set_tslist),
+  PARAM_ENTRY("cb1", set_tslist),
+  PARAM_ENTRY("cb2", set_tslist),
+  PARAM_ENTRY("cb3", set_tslist),
+  PARAM_ENTRY("cb4", set_tslist),
+  PARAM_ENTRY("cb5", set_tslist),
+  PARAM_ENTRY("cb6", set_tslist),
+  PARAM_ENTRY("cb7", set_tslist),
+  PARAM_ENTRY("cb8", set_tslist),
+  PARAM_ENTRY("cb9", set_tslist),
+  PARAM_ENTRY("cb10", set_tslist),
+  PARAM_ENTRY("cb11", set_tslist),
+  PARAM_ENTRY("cb12", set_tslist),
+  PARAM_ENTRY("cb13", set_tslist),
+  PARAM_ENTRY("cb14", set_tslist),
+  PARAM_ENTRY("cb15", set_tslist),
+  /* Create time event parameters */
+  PARAM_ENTRY("tsname", set_tsname),
+  PARAM_ENTRY("tsena", set_tsenable),
+  PARAM_ENTRY("tstim", set_tstime),
+  PARAM_ENTRY("tsd1", set_tsday),
+  PARAM_ENTRY("tsd2", set_tsday),
+  PARAM_ENTRY("tsd3", set_tsday),
+  PARAM_ENTRY("tsd4", set_tsday),
+  PARAM_ENTRY("tsd5", set_tsday),
+  PARAM_ENTRY("tsd6", set_tsday),
+  PARAM_ENTRY("tsd7", set_tsday),
 	/* Parameters used in xcgi commands */
-	{
-        "channel",
-        cgi_set_channel
-    },
-    {
-        "level",
-        cgi_set_level
-    },
-    {
-        "rampto",
-        cgi_set_rampto
-    },
-    {
-        "rate",
-        cgi_set_rate
-    },
-    {
-        "step",
-        cgi_set_step
-    },
+  PARAM_ENTRY("channel", cgi_set_channel),
+  PARAM_ENTRY("level", cgi_set_level),
+  PARAM_ENTRY("rampto", cgi_set_rampto),
+  PARAM_ENTRY("rate", cgi_set_rate),
+  PARAM_ENTRY("step", cgi_set_step),
     /* This is the last parameter in the list of html parameters.
      * It's used to trigger the real flash save function
      */
-    {
-        "submit",
-        set_save
-    },
-    {
-        "*",
-        0
-    }
+  PARAM_ENTRY("submit", set_save),
+  /* This entry terminates the table */
+  PARAM_ENTRY("*", 0)
 };
 
 static u16_t year;
@@ -156,8 +122,9 @@ static u8_t month;
 static u8_t day;
 static u8_t hrs;
 static u8_t min;
-static bit need_time_update = FALSE;
-static bit need_reset = FALSE;
+static __bit need_time_update = FALSE;
+static __bit need_reset = FALSE;
+static __bit ts_update = FALSE;
 
 /*---------------------------------------------------------------------------*/
 static char *skip_to_char(char *buf, char chr) __reentrant
@@ -186,6 +153,91 @@ static void parse_ip(char *buf, uip_ipaddr_t *ip)
 
   uip_ipaddr(ip, octet[0],octet[1],octet[2],octet[3]);
 }
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_tslist)
+{
+  u8_t tsentry;
+
+  buffer = skip_to_char(buffer, '=');
+  buffer -= 2;
+  tsentry = atoi(buffer);
+  s->parms.tslist |= (1 << tsentry);
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_tsname)
+{
+  char i = 8;
+
+  if (s->parms.ts) {
+    char *ptr = ((time_spec_t*)(s->parms.ts))->name;
+
+    buffer = skip_to_char(buffer, '=');
+
+    while (NEOP(*buffer) && (i >= 0)) {
+      *ptr++ = *buffer++;
+      i--;
+    }
+    *buffer = 0x00;
+    ts_update = TRUE;
+  } else {
+    A_(printf (__FILE__ " Serious error occured !\n");)
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_tsenable)
+{
+  if (s->parms.ts) {
+    buffer = skip_to_char(buffer, '=');
+    if (strncmp(buffer, "on", 2) == 0) {
+      s->parms.ts->status |= TIME_EVENT_ENABLED;
+    }
+    ts_update = TRUE;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_tstime)
+{
+  /* Update sys_cfg time_specs time values directly. We rely on the web
+   * front end to ensure that the values are correct before being sent
+   * here, nasty !? you bet */
+  if (s->parms.ts) {
+    buffer = skip_to_char(buffer, '=');
+    if (*buffer != ISO_and) {
+      s->parms.ts->hrs = atoi(buffer);
+      if (s->parms.ts->hrs > 23)
+        s->parms.ts->hrs = 23;
+      buffer = skip_to_char(buffer, '%');
+      buffer += 2;
+      s->parms.ts->min = atoi(buffer);
+      if (s->parms.ts->min > 59)
+        s->parms.ts->min = 59;
+    }
+    ts_update = TRUE;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_tsday)
+{
+  u8_t day;
+
+  IDENTIFIER_NOT_USED (s);
+  IDENTIFIER_NOT_USED (buffer);
+
+  if (s->parms.ts) {
+    buffer = skip_to_char(buffer, '=');
+    buffer -= 2;
+    day = *buffer-0x31;
+    s->parms.ts->weekday |= (1 << day);
+    A_(printf (__FILE__ " Day: %d\n", day);)
+    ts_update = TRUE;
+  }
+}
+
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_device_id)
 {
@@ -196,7 +248,7 @@ PARAM_FUNC (set_device_id)
 
   buffer = skip_to_char(buffer, '=');
 
-  while ((*buffer != ISO_and) && (i >= 0)) {
+  while ((*buffer != ISO_and) && (*buffer != ISO_space) && (i >= 0)) {
     *ptr++ = *buffer++;
     i--;
   }
@@ -389,6 +441,10 @@ PARAM_FUNC (set_save)
 
   buffer = skip_to_char(buffer, '=');
   if (strncmp("save", buffer, 4) == 0) {
+    /* Actions needed for the time event set page */
+    if (ts_update) {
+      s->parms.ts->status |= TIME_EVENT_ENTRY_USED;
+    }
     /* Write new configuration to flash */
     write_config_to_flash();
     /* In case we are setting the time manually */
@@ -406,9 +462,32 @@ PARAM_FUNC (set_save)
       RTC_SET_HW_RTC = &tp;
     }
     if (need_reset) {
+      need_reset = FALSE;
       A_(printf (__FILE__ " Performing a planned software reset !\n");)
       RSTSRC |= 0x10; // Force a software reset
     }
+  } if (strncmp("Delete", buffer, 6) == 0) {
+    u16_t lst=1;
+    u8_t i;
+    time_spec_t *ts = &sys_cfg.time_events[0];
+
+    /* Go through all time events */
+    for (i=0; i<NMBR_TIME_EVENTS; i++) {
+      /* Check only used entries */
+      if (ts->status & TIME_EVENT_ENTRY_USED) {
+        /* Check if this entry is on the delete list */
+        if (s->parms.tslist & lst) {
+          /* Delete entry */
+          ts->status &= ~TIME_EVENT_ENTRY_USED;
+        }
+      }
+      /* Move to next entry */
+      lst <<= 1;
+      /* Move to next active entry in the list */
+      ts++;
+    }
+    /* Write new configuration to flash */
+    write_config_to_flash();
   }
 }
 
@@ -517,13 +596,18 @@ void parse_input(struct httpd_state *s, char *buf) banked
     buf++;
 
   /* Clear the cgi control parameter structure */
-  //s->parms.channel_updated = 1;
-  //s->parms.num_parms = 1;
 
   /* Return if no query is present */
   if (*buf == ISO_nl || *buf == ISO_space)
     return;
   memset (&s->parms, 0, sizeof s->parms);
+
+  /* In case these parameters belong to tentry.shtml */
+  s->parms.ts = get_first_free_time_event_entry();
+  if (s->parms.ts) {
+    memset (s->parms.ts, 0, sizeof *(s->parms.ts));
+    ts_update = FALSE;
+  }
 
   while (*buf != ISO_space)
   {
@@ -534,7 +618,7 @@ void parse_input(struct httpd_state *s, char *buf) banked
     *tok = 0;
     /* Here we simply try to parse the tokenized parameter
      * If the parameter does not exist, we simply discard it silently */
-    A_(printf("Parsing token %s\n", token);)
+    A_(printf(__FILE__ " Parsing token %s\n", token);)
     parse_expr(s, token);
   }
 }

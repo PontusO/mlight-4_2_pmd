@@ -62,23 +62,6 @@ struct httpd_cgi_call {
   const httpd_cgifunction function;
 };
 
-/*
- * A parameter structure for transfering parameters to xcgi commands */
-struct cgi_parameters {
-  u8_t channel;
-  u8_t channel_updated;
-  u8_t level;
-  u8_t level_updated;
-  u8_t rampto;
-  u8_t rampto_updated;
-  u16_t rate;
-  u8_t rate_updated;
-  u8_t step;
-  u8_t step_updated;
-  u8_t num_parms;
-};
-extern struct cgi_parameters cgi_parms_ctrl;
-
 /**
  * \brief      HTTPD CGI function declaration
  * \param name The C variable name of the function

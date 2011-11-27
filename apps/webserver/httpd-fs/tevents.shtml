@@ -1,9 +1,9 @@
 %!: /header.html
 <center>
 <h1>Time Events</h1><hr color="#258D92" size="2" width="90%">
-<form action="tentry.shtml"><center><table width="90%" class="mytab">
+<form><center><table width="90%" class="mytab">
 <tr>
-  <th>Mark</th><th>Name</th><th>Event Time</th><th>Schedule</th>
+  <th>Mark</th><th>Enabled</th><th>Name</th><th>Event Time</th><th>Schedule</th>
 </tr>%! te-get-time-events
 </table></center>
 <hr color="#258D92" size="2" width="90%"><br>

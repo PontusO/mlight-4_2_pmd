@@ -53,7 +53,7 @@ typedef enum {
 
 typedef struct {
   time_event_status_t status;
-  char name[TIME_EVENT_NAME_LEN];
+  char name[TIME_EVENT_NAME_LEN+1]; /* Allow for a 0 terminator */
   u8_t hrs;
   u8_t min;
   u8_t weekday;
@@ -66,7 +66,8 @@ typedef struct {
   event_prv_t event;
 } time_event_t;
 
-void init_time_event(time_event_t *time_event) __reentrant banked;
-PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant banked);
+void init_time_event(time_event_t *time_event) __reentrant __banked;
+time_spec_t *get_first_free_time_event_entry(void) __reentrant __banked;
+PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked);
 
 #endif // TIME_EVENT_H_INCLUDED

@@ -40,6 +40,7 @@
 		<Compiler>
 			<Add option="--model-large" />
 			<Add option="-mmcs51" />
+			<Add option="--Werror" />
 			<Add option="-DCONFIG_BANKED=1" />
 			<Add option="-DHAVE_FLASH=1" />
 			<Add option="-DINCLUDE_PSOCK_GEN_SEND=1" />
@@ -62,6 +63,7 @@
 		<ExtraCommands>
 			<Add before="perl ..\apps\webserver\makefsdata" />
 			<Add before="perl ..\apps\webserver\makestrings" />
+			<Add before="sdcc --version" />
 		</ExtraCommands>
 		<Unit filename="..\.gitignore" />
 		<Unit filename="..\README" />

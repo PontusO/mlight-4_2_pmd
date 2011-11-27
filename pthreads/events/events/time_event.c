@@ -55,6 +55,43 @@ void init_time_event(time_event_t *time_event) __reentrant banked
   PT_INIT(&time_event->pt);
 }
 
+/*
+ * Look for a free time event entry in the list.
+ */
+time_spec_t *get_first_free_time_event_entry(void) __reentrant __banked
+{
+  time_spec_t *ptr;
+  u8_t i;
+
+  ptr = &sys_cfg.time_events[0];
+
+  for (i=0 ; i<NMBR_TIME_EVENTS ; i++) {
+    if (!(ptr->status & TIME_EVENT_ENTRY_USED))
+      return ptr;
+    ptr++;
+  }
+  return NULL;
+}
+
+/*
+ * Add a new event to the list
+ *
+ * Return 0 if operation was ok, otherwise -1
+ */
+char add_time_event (time_spec_t *ts)
+{
+  time_spec_t *ptr;
+
+  ptr = get_first_free_time_event_entry();
+  if (!ptr) {
+    A_(printf (__FILE__ " No free entries left !\n");)
+    return -1;
+  }
+  memcpy (ptr, ts, sizeof ts);
+  ptr->status |= TIME_EVENT_ENTRY_USED;
+  return 0;
+}
+
 PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant banked)
 {
   PT_BEGIN(&time_event->pt);
@@ -79,7 +116,8 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant banked)
       for (i=0;i<NMBR_TIME_EVENTS;i++) {
         if (time_event->time_spec->status & (TIME_EVENT_ENABLED | TIME_EVENT_ENTRY_USED) &&
             time_event->time_spec->hrs == tp.time.hrs &&
-            time_event->time_spec->min == tp.time.min) {
+            time_event->time_spec->min == tp.time.min &&
+            tp.time.sec == 0) {
           A_(printf (__FILE__ " Handling a time event !\n");)
             /* "Sound the alarm", note that the event need to be initialized before
              * being sent */
