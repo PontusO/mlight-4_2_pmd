@@ -36,7 +36,7 @@
 
 #include <stdio.h>
 
-void tcp_app_demux(void) banked
+void tcp_app_demux(void) __banked
 {
   if (uip_conn->lport == htons(sys_cfg.http_port)) {
     httpd_appcall();

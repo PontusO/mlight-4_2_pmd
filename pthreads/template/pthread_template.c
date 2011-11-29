@@ -46,12 +46,12 @@
 /*
  * Initialize the pthread_template pthread
  */
-void init_pthread_template(pthread_template_t *pthread_template) __reentrant banked
+void init_pthread_template(pthread_template_t *pthread_template) __reentrant __banked
 {
   PT_INIT(&pthread_template->pt);
 }
 
-PT_THREAD(handle_pthread_template(pthread_template_t *pthread_template) __reentrant banked)
+PT_THREAD(handle_pthread_template(pthread_template_t *pthread_template) __reentrant __banked)
 {
   PT_BEGIN(&pthread_template->pt);
 

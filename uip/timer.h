@@ -76,10 +76,10 @@ struct timer {
   clock_time_t interval;
 };
 
-void timer_set(struct timer *t, clock_time_t interval) __reentrant banked;
-void timer_reset(struct timer *t) __reentrant banked;
-void timer_restart(struct timer *t) __reentrant banked;
-int timer_expired(struct timer *t) __reentrant banked;
+void timer_set(struct timer *t, clock_time_t interval) __reentrant __banked;
+void timer_reset(struct timer *t) __reentrant __banked;
+void timer_restart(struct timer *t) __reentrant __banked;
+int timer_expired(struct timer *t) __reentrant __banked;
 
 #endif /* __TIMER_H__ */
 

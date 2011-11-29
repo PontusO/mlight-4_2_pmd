@@ -41,7 +41,7 @@
 static char i;
 static char tstr[32];
 
-PT_THREAD(get_tz_options_util(struct httpd_state *s) __reentrant banked)
+PT_THREAD(get_tz_options_util(struct httpd_state *s) __reentrant __banked)
 {
   PSOCK_BEGIN(&s->sout);
 

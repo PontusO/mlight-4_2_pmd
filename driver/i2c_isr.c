@@ -39,22 +39,22 @@ extern char I2cPtr;
 extern char I2cError;
 extern unsigned char I2cHighAdd;
 extern unsigned char I2cLowAdd;
-extern bit SM_BUSY;
+extern __bit SM_BUSY;
 
 //------------------------------------------------------------------------------------
-// Interrupt Service Routine
+// __interrupt Service Routine
 //------------------------------------------------------------------------------------
-void SMBus_ISR (void) interrupt SMB0_VECTOR using 0
+void SMBus_ISR (void) __interrupt SMB0_VECTOR __using 0
 {
   switch (SMB0STA){                   // Status code for the SMBus (SMB0STA register)
 
       // Master Transmitter/Receiver: START condition transmitted.
-      // The R/W bit of the COMMAND word sent after this state will
+      // The R/W __bit of the COMMAND word sent after this state will
       // always be a zero (W) because for both read and write,
       // the memory address must be written first.
     case SMB_START:
       SMB0DAT = (I2cCommand & 0xFE);   // Load address of the slave to be accessed.
-      STA = 0;                      // Manually clear START bit
+      STA = 0;                      // Manually clear START __bit
       break;
 
       // Master Transmitter/Receiver: Repeated START condition transmitted.
@@ -177,7 +177,7 @@ void SMBus_ISR (void) interrupt SMB0_VECTOR using 0
       break;
   }
 
-  SI=0;                               // clear interrupt flag
+  SI=0;                               // clear __interrupt flag
 }
 
 // EOF

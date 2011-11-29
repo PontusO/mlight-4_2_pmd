@@ -43,7 +43,7 @@
 
 /*-----------------------------------------------------------------------------------*/
 unsigned char
-uiplib_ipaddrconv(char *addrstr, unsigned char *ipaddr) __reentrant banked
+uiplib_ipaddrconv(char *addrstr, unsigned char *ipaddr) __reentrant __banked
 {
   unsigned char tmp;
   char c;

@@ -64,7 +64,7 @@
  *
  */
 void
-timer_set(struct timer *t, clock_time_t interval)  __reentrant banked
+timer_set(struct timer *t, clock_time_t interval)  __reentrant __banked
 {
   t->interval = interval;
   t->start = clock_time();
@@ -84,7 +84,7 @@ timer_set(struct timer *t, clock_time_t interval)  __reentrant banked
  * \sa timer_restart()
  */
 void
-timer_reset(struct timer *t) __reentrant banked
+timer_reset(struct timer *t) __reentrant __banked
 {
   t->start += t->interval;
 }
@@ -104,7 +104,7 @@ timer_reset(struct timer *t) __reentrant banked
  * \sa timer_reset()
  */
 void
-timer_restart(struct timer *t) __reentrant banked
+timer_restart(struct timer *t) __reentrant __banked
 {
   t->start = clock_time();
 }
@@ -121,7 +121,7 @@ timer_restart(struct timer *t) __reentrant banked
  *
  */
 int
-timer_expired(struct timer *t) __reentrant banked
+timer_expired(struct timer *t) __reentrant __banked
 {
   return (clock_time_t)(clock_time() - t->start) >= (clock_time_t)t->interval;
 }

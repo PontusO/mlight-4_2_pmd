@@ -30,6 +30,6 @@
 #ifndef BASE64_H_INCLUDED
 #define BASE64_H_INCLUDED
 
-void encode64( const char *instr, char *outstr); //banked;
+void encode64( const char *instr, char *outstr); //__banked;
 
 #endif // BASE64_H_INCLUDED

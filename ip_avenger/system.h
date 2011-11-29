@@ -132,9 +132,9 @@ void putchar(char n);
 #define TRUE 1
 #endif
 
-#define IE0_VECTOR		0	  // 0x03 external interrupt 0
+#define IE0_VECTOR		0	  // 0x03 external __interrupt 0
 #define TF0_VECTOR		1	  // 0x0b timer 0 overflow
-#define IE1_VECTOR		2	  // 0x13 external interrupt 1
+#define IE1_VECTOR		2	  // 0x13 external __interrupt 1
 #define TF1_VECTOR		3	  // 0x1b timer 1 overflow
 #define SI0_VECTOR		4	  // 0x23 serial port 0
 #define TF2_VECTOR		5	  // 0x2B timer 2 overflow
@@ -150,8 +150,8 @@ void putchar(char n);
 #define AD0INT_VECTOR 15  // 0x7b ADC0 Conversion Complete
 #define TF4_VECTOR    16  // 0x83 T4 overflow
 #define AD1INT_VECTOR 17  // 0x8b ADC1 End of Conversion
-#define IE6_VECTOR    18  // 0x93 External Interrupt 6
-#define IE7_VECTOR		19  // 0x9B External Interrupt 7
+#define IE6_VECTOR    18  // 0x93 External __interrupt 6
+#define IE7_VECTOR		19  // 0x9B External __interrupt 7
 #define UART1_VECTOR	20  // 0xA3 serial port 1
 #define XTLVLD_VECTOR	21  // 0xAB External Crystal OSC Ready
 #define TF3H 0x80			    // Timer 3 high byte overflow flag

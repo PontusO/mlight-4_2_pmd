@@ -41,7 +41,7 @@ timer_cb timer_cbs[NUMBER_OF_SWTIMERS];
 
 struct kicker kicker;
 
-extern bit callback_kicker;
+extern __bit callback_kicker;
 static u8_t count = 0;
 
 
@@ -273,7 +273,7 @@ void start_timer(u8_t timer)
  * This thread listens to the <callback_kicker> signal and when it is
  * triggered it goes through all software timers and executes the
  * indicated call back methods.
- * This functionality was broken out of the timer 0 interrupt routine
+ * This functionality was broken out of the timer 0 __interrupt routine
  * as it was severely instable.
  */
 PT_THREAD(handle_kicker(struct kicker *Kicker) )
@@ -288,7 +288,7 @@ PT_THREAD(handle_kicker(struct kicker *Kicker) )
     ET0 = INTERRUPT_OFF;
     callback_kicker = 0;
     {
-      near u8_t i;
+      __near u8_t i;
 
       for (i=0 ; i<NUMBER_OF_SWTIMERS ; i++)
       {

@@ -32,6 +32,6 @@
 
 #include "httpd.h"
 
-PT_THREAD(get_tz_options_util(struct httpd_state *s) __reentrant banked);
+PT_THREAD(get_tz_options_util(struct httpd_state *s) __reentrant __banked);
 
 #endif // CGI_UTILS_H_INCLUDED

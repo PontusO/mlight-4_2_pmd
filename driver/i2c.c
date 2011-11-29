@@ -20,7 +20,7 @@
 //
 //
 // Example code for interfacing a C8051F0xx to three EEPROMs via the SMBus.
-// Code assumes that three 16-bit address space EEPROMs are connected
+// Code assumes that three 16-__bit address space EEPROMs are connected
 // on the SCL and SDA lines, and configured so that their slave addresses
 // are as follows:
 // CHIP_A = 1010000
@@ -47,7 +47,7 @@
 //-----------------------------------------------------------------------------------
 //Global VARIABLES
 //-----------------------------------------------------------------------------------
-char I2cCommand;            // Holds the slave address + R/W bit for
+char I2cCommand;            // Holds the slave address + R/W __bit for
                             // use in the SMBus ISR.
 
 char I2cWord;               // Holds data to be transmitted by the SMBus
@@ -71,7 +71,7 @@ char I2cError;              // Holds any error after the transmission is ready.
 unsigned char I2cHighAdd;   // High byte for EEPROM memory address
 unsigned char I2cLowAdd;    // Low byte for EEPROM memory address
 
-volatile bit SM_BUSY;       // This flag is set when a send or receive
+volatile __bit SM_BUSY;       // This flag is set when a send or receive
                             // is started. It is cleared by the
                             // ISR when the operation is finished.
 
@@ -83,13 +83,13 @@ struct i2c i2c;             // Instance data
  *
  * Initialize the SMBus interface.
  */
-void init_i2c(void) banked
+void init_i2c(void) __banked
 {
   /* Initialize the oscillator and SMBus control register */
   SFRPAGE   = SMB0_PAGE;
   SMB0CN    = 0x44;
   SMB0CR    = 0xE9;
-  EIE1      |= 0x02;        // SMBus interrupt enable
+  EIE1      |= 0x02;        // SMBus __interrupt enable
   SM_BUSY   = 0;            // Free SMBus for first transfer.
 
   PT_INIT(&i2c.pt);
@@ -102,7 +102,7 @@ void init_i2c(void) banked
  * This protothread will write a number of data bytes to the I2C bus
  * according to the description in the i2c structure
  */
-PT_THREAD(SM_Send(struct i2c *i2c) banked)
+PT_THREAD(SM_Send(struct i2c *i2c) __banked)
 {
   PT_BEGIN(&i2c->pt);
 
@@ -150,7 +150,7 @@ PT_THREAD(SM_Send(struct i2c *i2c) banked)
  * This protothread will read a number of data bytes from the I2C bus
  * according to the description in the i2c structure
  */
-PT_THREAD(SM_Receive(struct i2c *i2c) banked)
+PT_THREAD(SM_Receive(struct i2c *i2c) __banked)
 {
   PT_BEGIN(&i2c->pt);
 
@@ -193,7 +193,7 @@ PT_THREAD(SM_Receive(struct i2c *i2c) banked)
  *
  * Returns wether the smbus is busy or not
  */
-u8_t is_smbus_busy(void) banked
+u8_t is_smbus_busy(void) __banked
 {
   if (SM_BUSY)
     return 1;
@@ -209,7 +209,7 @@ u8_t is_smbus_busy(void) banked
  * It does not use protothreading making it usefull during startup or in places
  * where it is impossible to use protothreads.
  */
-u8_t nos_i2c_write(struct i2c *i2c) __reentrant banked
+u8_t nos_i2c_write(struct i2c *i2c) __reentrant __banked
 {
   if (SM_BUSY)
     return 1;
@@ -248,7 +248,7 @@ u8_t nos_i2c_write(struct i2c *i2c) __reentrant banked
  * It does not use protothreading making it usefull during startup or in places
  * where it is impossible to use protothreads.
  */
-u8_t nos_i2c_read(struct i2c *i2c) __reentrant banked
+u8_t nos_i2c_read(struct i2c *i2c) __reentrant __banked
 {
   if(SM_BUSY)                                             // If busy, return
     return 1;

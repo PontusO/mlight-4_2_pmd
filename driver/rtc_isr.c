@@ -33,16 +33,16 @@
 
 u8_t seconds;
 unsigned long g_time;
-bit RTC_SECOND_EVENT;
+__bit RTC_SECOND_EVENT;
 
 /*************************************************************************************
  *
- * Interrupt Service Routine for timer 3 overflows
+ * __interrupt Service Routine for timer 3 overflows
  *
- * Here we simply increment the 32 bit time value.
+ * Here we simply increment the 32 __bit time value.
  *
  ************************************************************************************/
-void rtc_isr(void) interrupt TF3_VECTOR using 0
+void rtc_isr(void) __interrupt TF3_VECTOR __using 0
 {
   seconds--;
   if (!seconds) {

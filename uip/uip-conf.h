@@ -59,7 +59,7 @@
 #define register
 
 #ifndef CONFIG_BANKED
-#define banked
+#define __banked
 #endif
 
 /* Good to have stuff */
@@ -68,18 +68,18 @@
 /* #include <inttypes.h> */
 
 /**
- * 8 bit datatype
+ * 8 __bit datatype
  *
- * This typedef defines the 8-bit type used throughout uIP.
+ * This typedef defines the 8-__bit type used throughout uIP.
  *
  * \hideinitializer
  */
 typedef unsigned char u8_t;
 
 /**
- * 16 bit datatype
+ * 16 __bit datatype
  *
- * This typedef defines the 16-bit type used throughout uIP.
+ * This typedef defines the 16-__bit type used throughout uIP.
  *
  * \hideinitializer
  */

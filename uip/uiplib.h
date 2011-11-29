@@ -64,7 +64,7 @@
  * \retval 0 If the IP address could not be parsed.
  * \retval Non-zero If the IP address was parsed.
  */
-unsigned char uiplib_ipaddrconv(char *addrstr, unsigned char *addr) __reentrant banked;
+unsigned char uiplib_ipaddrconv(char *addrstr, unsigned char *addr) __reentrant __banked;
 
 /** @} */
 

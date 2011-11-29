@@ -34,24 +34,24 @@
 
 /* some utilities used by the system */
 
-/* convert two hex nibbles to 8-bit value */
-u8_t hexstr2value(u8_t  *str) banked;
+/* convert two hex nibbles to 8-__bit value */
+u8_t hexstr2value(u8_t  *str) __banked;
 /* convert a decimal string to one-byte value */
-u8_t decimal2byte(u8_t  *str, u8_t *val) banked;
-/* convert a decimal string to 16-bit positive integer */
-void decimal2word(u8_t  *str, u16_t *val) banked;
+u8_t decimal2byte(u8_t  *str, u8_t *val) __banked;
+/* convert a decimal string to 16-__bit positive integer */
+void decimal2word(u8_t  *str, u16_t *val) __banked;
 /* search a value in an array */
-u8_t search_value(u8_t *str, u8_t value, u8_t len) banked;
+u8_t search_value(u8_t *str, u8_t value, u8_t len) __banked;
 /* parse ip address */
-void parse_ip(u8_t *buf, u8_t *str) banked;
+void parse_ip(u8_t *buf, u8_t *str) __banked;
 /* parse mac address */
-void parse_mac(u8_t * buf, u8_t * str) banked;
+void parse_mac(u8_t * buf, u8_t * str) __banked;
 /* URL string copy, additional \0 will be added to the destination string */
-void url_str_cpy(u8_t *dest, u8_t *src, u16_t len) banked;
+void url_str_cpy(u8_t *dest, u8_t *src, u16_t len) __banked;
 /* delay ms*/
-void wait_ms(u8_t count) banked;
+void wait_ms(u8_t count) __banked;
 /* delay us */
-void wait_us(u8_t count) banked;
+void wait_us(u8_t count) __banked;
 
 #define ISO_minus   '-'
 #define ISO_plus    '+'

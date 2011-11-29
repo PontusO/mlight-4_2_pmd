@@ -33,7 +33,7 @@
  */
 #pragma codeseg UIP_BANK
 
-//#define PRINT_A
+#define PRINT_A
 
 #include "system.h"
 #include "uip.h"
@@ -92,7 +92,9 @@ static const struct parameter_table parmtab[] = {
   PARAM_ENTRY("cb13", set_tslist),
   PARAM_ENTRY("cb14", set_tslist),
   PARAM_ENTRY("cb15", set_tslist),
+  PARAM_ENTRY("tscmd", set_tscmd),
   /* Create time event parameters */
+  PARAM_ENTRY("tsx", set_tsx),
   PARAM_ENTRY("tsname", set_tsname),
   PARAM_ENTRY("tsena", set_tsenable),
   PARAM_ENTRY("tstim", set_tstime),
@@ -166,6 +168,32 @@ PARAM_FUNC (set_tslist)
 }
 
 /*---------------------------------------------------------------------------*/
+/*
+ * The tsx parameter is a hidden parameter that indicates wether the user
+ * pressed the modify button on the tevents.shtml page. It is an absolute
+ * pointer to the time_spec entry that is being edited. */
+PARAM_FUNC (set_tsx)
+{
+  time_spec_t *ts;
+
+  buffer = skip_to_char(buffer, '=');
+  if (*buffer == ISO_and)
+    return;
+  ts = (time_spec_t __xdata *)atoi(buffer);
+
+  /* We'we got to be careful that the read value is appropriate, so check
+   * that it falls within the array of time_spec_t's */
+  if (ts < &sys_cfg.time_events[0] ||
+      ts > &sys_cfg.time_events[0] + sizeof sys_cfg.time_events) {
+    A_(printf (__FILE__ " Error, invalid ts value !\n");)
+    return;
+  }
+  /* Need to clear the weekday entry */
+  ts->weekday  = 0;
+  s->parms.ts = ts;
+}
+
+/*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_tsname)
 {
   char i = 8;
@@ -225,9 +253,6 @@ PARAM_FUNC (set_tsday)
 {
   u8_t day;
 
-  IDENTIFIER_NOT_USED (s);
-  IDENTIFIER_NOT_USED (buffer);
-
   if (s->parms.ts) {
     buffer = skip_to_char(buffer, '=');
     buffer -= 2;
@@ -235,6 +260,54 @@ PARAM_FUNC (set_tsday)
     s->parms.ts->weekday |= (1 << day);
     A_(printf (__FILE__ " Day: %d\n", day);)
     ts_update = TRUE;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_tscmd)
+{
+  u16_t lst=1;
+  u8_t i;
+  time_spec_t *ts = &sys_cfg.time_events[0];
+
+  buffer = skip_to_char(buffer, '=');
+
+  if (strncmp("delete", buffer, 6) == 0) {
+    /* Go through all time events */
+    for (i=0; i<NMBR_TIME_EVENTS; i++) {
+      /* Check only used entries */
+      if (ts->status & TIME_EVENT_ENTRY_USED) {
+        /* Check if this entry is on the delete list */
+        if (s->parms.tslist & lst)
+          ts->status &= ~TIME_EVENT_ENTRY_USED;
+      }
+      /* Move to next entry */
+      lst <<= 1;
+      /* Move to next active entry in the list */
+      ts++;
+    }
+    /* Write new configuration to flash */
+    write_config_to_flash();
+  } else {
+    A_(printf (__FILE__ " Setting the modify property");)
+    s->parms.tsmodify = TRUE;
+    /* Look for the entry to modify */
+    for (i=0; i<NMBR_TIME_EVENTS; i++) {
+      /* Check only used entries */
+      if (ts->status & TIME_EVENT_ENTRY_USED) {
+        /* Check if this entry is in the tslist */
+        if (s->parms.tslist & lst) {
+          /* Set the ts entry to modify */
+          s->parms.ts = ts;
+          /* We only use the first entry so break here */
+          break;
+        }
+      }
+      /* Move to next entry */
+      lst <<= 1;
+      /* Move to next active entry in the list */
+      ts++;
+    }
   }
 }
 
@@ -382,7 +455,7 @@ PARAM_FUNC (set_interval)
 PARAM_FUNC (set_timevalue)
 {
   IDENTIFIER_NOT_USED (s);
-  /* Here we need to parse the time value and store it before creating a 32 bit
+  /* Here we need to parse the time value and store it before creating a 32 __bit
     * binary time value
     * Note that if the option to use a time server we do not parse these values
     */
@@ -405,7 +478,7 @@ PARAM_FUNC (set_timevalue)
 PARAM_FUNC (set_datevalue)
 {
   IDENTIFIER_NOT_USED (s);
-  /* Here we need to parse the date value and store it before creating a 32 bit
+  /* Here we need to parse the date value and store it before creating a 32 __bit
     * binary time value
     * Note that if the option to use a time server we do not parse these values
     */
@@ -466,28 +539,6 @@ PARAM_FUNC (set_save)
       A_(printf (__FILE__ " Performing a planned software reset !\n");)
       RSTSRC |= 0x10; // Force a software reset
     }
-  } if (strncmp("Delete", buffer, 6) == 0) {
-    u16_t lst=1;
-    u8_t i;
-    time_spec_t *ts = &sys_cfg.time_events[0];
-
-    /* Go through all time events */
-    for (i=0; i<NMBR_TIME_EVENTS; i++) {
-      /* Check only used entries */
-      if (ts->status & TIME_EVENT_ENTRY_USED) {
-        /* Check if this entry is on the delete list */
-        if (s->parms.tslist & lst) {
-          /* Delete entry */
-          ts->status &= ~TIME_EVENT_ENTRY_USED;
-        }
-      }
-      /* Move to next entry */
-      lst <<= 1;
-      /* Move to next active entry in the list */
-      ts++;
-    }
-    /* Write new configuration to flash */
-    write_config_to_flash();
   }
 }
 
@@ -584,7 +635,7 @@ static u8_t parse_expr(struct httpd_state *s, char *buf)
   }
   return 0;
 }/*---------------------------------------------------------------------------*/
-void parse_input(struct httpd_state *s, char *buf) banked
+void parse_input(struct httpd_state *s, char *buf) __banked
 {
   static char token[128];
   char *tok;

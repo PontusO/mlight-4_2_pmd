@@ -76,9 +76,9 @@
 #define DM9000addressPort		0x8000
 #define DM9000dataPort			0x8100
 // decoding for DM9000 ADDRESS port-8bit-mode
-volatile xdata __at DM9000addressPort u8_t NIC_REG;
+volatile __xdata __at DM9000addressPort u8_t NIC_REG;
 // decoding for DM9000 DATA port-8bit-mode
-volatile xdata __at DM9000dataPort u8_t NIC_DAT;
+volatile __xdata __at DM9000dataPort u8_t NIC_DAT;
 
 #define DM9000_NCR		0x00	// Network Control Reg
 #define DM9000_NSR		0x01	// Network Status Reg
@@ -98,8 +98,8 @@ volatile xdata __at DM9000dataPort u8_t NIC_DAT;
 #define DM9000_WCR		0x0f	// Wakeup Control Reg
 #define DM9000_MAC_REG	0x10	// Contains our MAC regs up To 0x15
 #define DM9000_MLC_REG	0x16	// Contains our Multicast regs up To 0x1d
-#define DM9000_GPCR		0x1e	// General purpose control register GPUI-Control Bit 0: In, 1: OUT
-#define DM9000_GPR		0x1f	// General purpose register GPIO-Register, Bit0: Phy-Power, Bit 1,2,3: GPIO
+#define DM9000_GPCR		0x1e	// General purpose control register GPUI-Control __bit 0: In, 1: OUT
+#define DM9000_GPR		0x1f	// General purpose register GPIO-Register, Bit0: Phy-Power, __bit 1,2,3: GPIO
 #define DM9000_TRPAL	0x22	// TX SRAM Read Pointer Address Low Byte
 #define DM9000_TRPAH	0x23	// TX SRAM Read Pointer Address High Byte
 #define DM9000_RWPAL	0x24	// RX SRAM Write Pointer Address Low Byte
@@ -118,8 +118,8 @@ volatile xdata __at DM9000dataPort u8_t NIC_DAT;
 #define DM9000_MWRH		0xfb	// Memory Data Write_address Reg High Byte
 #define DM9000_TXPLL	0xfc	// TX Packet length Low byte
 #define DM9000_TXPLH	0xfd	// TX Packet length High byte
-#define DM9000_ISR		0xfe	// Interrupt status Reg.
-#define DM9000_IMR		0xff	// Interrupt mask Reg.
+#define DM9000_ISR		0xfe	// __interrupt status Reg.
+#define DM9000_IMR		0xff	// __interrupt mask Reg.
 
 #define DM9000_EEPROM			0x00	// EEPROM Control Select
 #define DM9000_autoload_addr	0x03

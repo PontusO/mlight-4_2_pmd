@@ -36,7 +36,7 @@
 
 /*
  * Do not change TMR_RUNNING to any other value that 0.
- * Doing so requires you to rewrite the interrupt timer logic as well.
+ * Doing so requires you to rewrite the __interrupt timer logic as well.
  * The other values may be changed and arranged in other ways.
  */
 enum timer_stat {

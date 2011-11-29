@@ -84,9 +84,9 @@ static void write_new_verification_word(int ver);
 void load_network_params(void);
 
 //-----------------------------------------------------------------------------
-// Non-interrupt delay approx 1mS to 255mS
+// Non-__interrupt delay approx 1mS to 255mS
 //-----------------------------------------------------------------------------
-void wait_ms(u8_t count) banked
+void wait_ms(u8_t count) __banked
 {
   u16_t i;
 
@@ -101,7 +101,7 @@ void flash_write_config(void)
   ENTER_CRITICAL_SECTION;
 
   SFRPAGE = CONFIG_PAGE;
-  CCH0CN =  CCH0CN & 0x01;  /* set CHBLKW(CCH0CN.0) bit*/
+  CCH0CN =  CCH0CN & 0x01;  /* set CHBLKW(CCH0CN.0) __bit*/
 
   SFRPAGE = LEGACY_PAGE;
 
@@ -113,15 +113,15 @@ static void enter_flash_write(void)
   ENTER_CRITICAL_SECTION;
 
   SFRPAGE = LEGACY_PAGE;
-  FLSCL |= 0x01;          /* set FLWE(FLSCL.0) bit*/
-  PSCTL |= 0x01;          /* set PSWE(PSCTL.0) bit*/
+  FLSCL |= 0x01;          /* set FLWE(FLSCL.0) __bit*/
+  PSCTL |= 0x01;          /* set PSWE(PSCTL.0) __bit*/
 }
 
 static void exit_flash_write(void)
 {
   SFRPAGE = LEGACY_PAGE;
-  PSCTL &= ~0x01;         /* clear PSWE(PSCTL.0) bit*/
-  FLSCL &= ~0x01;         /* clear FLWE(FLSCL.0) bit*/
+  PSCTL &= ~0x01;         /* clear PSWE(PSCTL.0) __bit*/
+  FLSCL &= ~0x01;         /* clear FLWE(FLSCL.0) __bit*/
 
   EXIT_CRITICAL_SECTION;
 }
@@ -136,13 +136,13 @@ void erase_config_area(u8_t * erase_ptr, u8_t bank) __reentrant
   reg_bak = PSBANK;
   PSBANK = (PSBANK & 0xcf) | (bank << 4);
 
-  FLSCL |= 0x01;          /* set FLWE(FLSCL.0) bit*/
-  PSCTL |= 0x03;          /* set PSWE(PSCTL.0)  and PSEE(PSCTL.1) bit*/
+  FLSCL |= 0x01;          /* set FLWE(FLSCL.0) __bit*/
+  PSCTL |= 0x03;          /* set PSWE(PSCTL.0)  and PSEE(PSCTL.1) __bit*/
 
   *erase_ptr = 0x00;
 
-  PSCTL &= ~0x03;         /* clear PSWE(PSCTL.0)  and PSEE(PSCTL.1) bit*/
-  FLSCL &= ~0x01;         /* clear FLWE(FLSCL.0) bit*/
+  PSCTL &= ~0x03;         /* clear PSWE(PSCTL.0)  and PSEE(PSCTL.1) __bit*/
+  FLSCL &= ~0x01;         /* clear FLWE(FLSCL.0) __bit*/
 
   /* Allow for the device to erase the FLASH page */
   wait_ms(12);
@@ -213,7 +213,7 @@ static void write_new_verification_word(int ver)
   PSBANK = ((PSBANK | 0x10) & 0xDF); /* select COBANK = 01*/
 
   SFRPAGE = CONFIG_PAGE;
-  CCH0CN =  CCH0CN & 0x01;  /* clear CHBLKW(CCH0CN.0) bit*/
+  CCH0CN =  CCH0CN & 0x01;  /* clear CHBLKW(CCH0CN.0) __bit*/
   SFRPAGE = LEGACY_PAGE;
 
   enter_flash_write();
@@ -306,7 +306,7 @@ u8_t validate_config_flash(void)
 /* This is the config saved in the FLASH.
 We put it in the last page of the 64K flash. (BANK0 + COBANK1).
 According to the SDCC manual section 3.5, The compiler won't generate the code
-for a variable or const declared using absolute addressing. */
+for a variable or const declared __using absolute addressing. */
 static const __at(LAST_PAGE_ADDRESS) u8_t saved_cfg[1024]={0x0};
 
 /*

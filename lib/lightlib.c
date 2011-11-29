@@ -151,7 +151,7 @@ static u16_t calc_pwm (u8_t value) __reentrant
   acca = iexp (acca) - 0x10000;
   accb = 0x4C6B5CAL;
   mmul32 ();
-  /* Return the normalized 16-bit pwm value */
+  /* Return the normalized 16-__bit pwm value */
   return (u16_t)r.x16.w2;
 }
 
@@ -176,7 +176,7 @@ void init_ledlib(void) __reentrant __banked
 }
 
 /*
- * assign a value to he appropriate gpio bit on port 1
+ * assign a value to he appropriate gpio __bit on port 1
  */
 static void set_ledbit (u8_t ledbit, u8_t value) __reentrant
 {

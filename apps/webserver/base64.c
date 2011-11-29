@@ -65,7 +65,7 @@ DESIGN GOALS:	Specifically:
 		Generally:
 		This program is designed to survive:
 		Everything you need is in a single source file.
-		It compiles cleanly using a vanilla ANSI C compiler.
+		It compiles cleanly __using a vanilla ANSI C compiler.
 		It does its job correctly with a minimum of fuss.
 		The code is not overly clever, not overly simplistic
 		and not overly verbose.
@@ -216,7 +216,7 @@ static const char cd64[]="|$$$}rstuvwxyz{$$$$$$$>?@ABCDEFGHIJKLMNOPQRSTUVW$$$$$$
 /*
 ** encodeblock
 **
-** encode 3 8-bit binary bytes as 4 '6-bit' characters
+** encode 3 8-__bit binary bytes as 4 '6-__bit' characters
 */
 void encodeblock64( unsigned char in[3], unsigned char out[4], int len )
 {
@@ -231,7 +231,7 @@ void encodeblock64( unsigned char in[3], unsigned char out[4], int len )
 **
 ** base64 encode a stream adding padding and line breaks as per spec.
 */
-void encode64( const char *instr, char *outstr) // banked
+void encode64( const char *instr, char *outstr) // __banked
 {
     unsigned char in[3], out[4];
     int i, len;

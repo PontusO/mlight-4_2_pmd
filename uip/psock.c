@@ -178,7 +178,7 @@ data_acked(register struct psock *s) __reentrant
 }
 /*---------------------------------------------------------------------------*/
 PT_THREAD(psock_send(register struct psock *s, const char *buf,
-		     unsigned int len) banked)
+		     unsigned int len) __banked)
 {
   PT_BEGIN(&s->psockpt);
 
@@ -218,7 +218,7 @@ PT_THREAD(psock_send(register struct psock *s, const char *buf,
 /*---------------------------------------------------------------------------*/
 #ifdef INCLUDE_PSOCK_GEN_SEND
 PT_THREAD(psock_generator_send(register struct psock *s,
-			       unsigned short (*generate)(void *), void *arg) banked)
+			       unsigned short (*generate)(void *), void *arg) __banked)
 {
   PT_BEGIN(&s->psockpt);
 
@@ -250,13 +250,13 @@ PT_THREAD(psock_generator_send(register struct psock *s,
 #endif
 /*---------------------------------------------------------------------------*/
 u16_t
-psock_datalen(struct psock *psock) banked
+psock_datalen(struct psock *psock) __banked
 {
   return psock->bufsize - psock->buf.left;
 }
 /*---------------------------------------------------------------------------*/
 char
-psock_newdata(struct psock *s) banked
+psock_newdata(struct psock *s) __banked
 {
   if(s->readlen > 0) {
     /* There is data in the uip_appdata buffer that has not yet been
@@ -275,7 +275,7 @@ psock_newdata(struct psock *s) banked
   }
 }
 /*---------------------------------------------------------------------------*/
-PT_THREAD(psock_readto(register struct psock *psock, unsigned char c) banked)
+PT_THREAD(psock_readto(register struct psock *psock, unsigned char c) __banked)
 {
   PT_BEGIN(&psock->psockpt);
 
@@ -302,7 +302,7 @@ PT_THREAD(psock_readto(register struct psock *psock, unsigned char c) banked)
   PT_END(&psock->psockpt);
 }
 /*---------------------------------------------------------------------------*/
-PT_THREAD(psock_readbuf(register struct psock *psock) banked)
+PT_THREAD(psock_readbuf(register struct psock *psock) __banked)
 {
   PT_BEGIN(&psock->psockpt);
 
@@ -332,7 +332,7 @@ PT_THREAD(psock_readbuf(register struct psock *psock) banked)
 /*---------------------------------------------------------------------------*/
 void
 psock_init(register struct psock *psock, char *buffer,
-  unsigned int buffersize) banked
+  unsigned int buffersize) __banked
 {
   psock->state = STATE_NONE;
   psock->readlen = 0;

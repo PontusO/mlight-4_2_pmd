@@ -6,7 +6,7 @@
  * @{
  *
  * uIP is an implementation of the TCP/IP protocol stack intended for
- * small 8-bit and 16-bit microcontrollers.
+ * small 8-__bit and 16-__bit microcontrollers.
  *
  * uIP provides the necessary protocols for Internet communication,
  * with a very small code footprint and RAM requirements - the uIP
@@ -140,7 +140,7 @@ struct uip_eth_addr uip_ethaddr = {{0,0,0,0,0,0}};
 #endif
 
 #ifndef UIP_CONF_EXTERNAL_BUFFER
-u8_t xdata uip_buf[UIP_BUFSIZE + 2];   /* The packet buffer that contains
+u8_t __xdata uip_buf[UIP_BUFSIZE + 2];   /* The packet buffer that contains
 				    incoming packets. */
 #endif /* UIP_CONF_EXTERNAL_BUFFER */
 
@@ -167,10 +167,10 @@ u8_t uip_flags;     /* The uip_flags variable is used for
 struct uip_conn *uip_conn;   /* uip_conn always points to the current
 				connection. */
 
-xdata struct uip_conn uip_conns[UIP_CONNS];
+__xdata struct uip_conn uip_conns[UIP_CONNS];
 /* The uip_conns array holds all TCP
 connections. */
-xdata u16_t uip_listenports[UIP_LISTENPORTS];
+__xdata u16_t uip_listenports[UIP_LISTENPORTS];
 /* The uip_listenports list all currently
 listning ports. */
 #if UIP_UDP
@@ -182,10 +182,10 @@ static u16_t ipid;           /* Ths ipid variable is an increasing
 				number that is used for the IP ID
 				field. */
 
-void uip_setipid(u16_t id) banked { ipid = id;
+void uip_setipid(u16_t id) __banked { ipid = id;
                                   }
 
-static xdata u8_t iss[4];          /* The iss variable is used for the TCP
+static __xdata u8_t iss[4];          /* The iss variable is used for the TCP
 				initial sequence number. */
 
 #if UIP_ACTIVE_OPEN
@@ -194,7 +194,7 @@ static u16_t lastport;       /* Keeps track of the last port used for
 #endif /* UIP_ACTIVE_OPEN */
 
 /* Temporary variables. */
-xdata u8_t uip_acc32[4];
+__xdata u8_t uip_acc32[4];
 static u8_t c, opt;
 static u16_t tmp16;
 
@@ -312,13 +312,13 @@ chksum(u16_t sum, const u8_t *indata, u16_t len)
 }
 /*---------------------------------------------------------------------------*/
 u16_t
-uip_chksum(u16_t *indata, u16_t len) banked
+uip_chksum(u16_t *indata, u16_t len) __banked
 {
   return htons(chksum(0, (u8_t *)indata, len));
 }
 /*---------------------------------------------------------------------------*/
 #ifndef UIP_ARCH_IPCHKSUM
-u16_t uip_ipchksum(void) banked
+u16_t uip_ipchksum(void) __banked
 {
   u16_t sum;
 
@@ -364,14 +364,14 @@ uip_icmp6chksum(void)
 #endif /* UIP_CONF_IPV6 */
 /*---------------------------------------------------------------------------*/
 u16_t
-uip_tcpchksum(void) banked
+uip_tcpchksum(void) __banked
 {
   return upper_layer_chksum(UIP_PROTO_TCP);
 }
 /*---------------------------------------------------------------------------*/
 #if UIP_UDP_CHECKSUMS
 u16_t
-uip_udpchksum(void) banked
+uip_udpchksum(void) __banked
 {
   return upper_layer_chksum(UIP_PROTO_UDP);
 }
@@ -379,7 +379,7 @@ uip_udpchksum(void) banked
 #endif /* UIP_ARCH_CHKSUM */
 /*---------------------------------------------------------------------------*/
 void
-uip_init(void) banked
+uip_init(void) __banked
 {
   for (c = 0; c < UIP_LISTENPORTS; ++c) {
     uip_listenports[c] = 0;
@@ -406,7 +406,7 @@ uip_init(void) banked
 /*---------------------------------------------------------------------------*/
 #if UIP_ACTIVE_OPEN
 struct uip_conn *
-      uip_connect(u8_t *ripaddr, u16_t rport) banked
+      uip_connect(u8_t *ripaddr, u16_t rport) __banked
 {
   struct uip_conn *conn, *cconn;
 
@@ -473,7 +473,7 @@ again:
 /*---------------------------------------------------------------------------*/
 #if UIP_UDP
 struct uip_udp_conn *
-      uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport) banked
+      uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport) __banked
 {
   register struct uip_udp_conn *conn;
 
@@ -518,7 +518,7 @@ again:
 #endif /* UIP_UDP */
 /*---------------------------------------------------------------------------*/
 void
-uip_unlisten(u16_t port) banked
+uip_unlisten(u16_t port) __banked
 {
   for (c = 0; c < UIP_LISTENPORTS; ++c) {
     if (uip_listenports[c] == port) {
@@ -529,7 +529,7 @@ uip_unlisten(u16_t port) banked
 }
 /*---------------------------------------------------------------------------*/
 void
-uip_listen(u16_t port) banked
+uip_listen(u16_t port) __banked
 {
   for (c = 0; c < UIP_LISTENPORTS; ++c) {
     if (uip_listenports[c] == 0) {
@@ -683,7 +683,7 @@ uip_add_rcv_nxt(u16_t n)
 }
 /*---------------------------------------------------------------------------*/
 void
-uip_process(u8_t flag) banked
+uip_process(u8_t flag) __banked
 {
   register struct uip_conn *uip_connr = uip_conn;
 
@@ -1603,7 +1603,7 @@ tcp_send_finack:
       /* If uip_len > 0 we have TCP data in the packet, and we flag this
          by setting the UIP_NEWDATA flag and update the sequence number
          we acknowledge. If the application has stopped the dataflow
-         using uip_stop(), we must not accept any data packets from the
+         __using uip_stop(), we must not accept any data packets from the
          remote host. */
       if (uip_len > 0 && !(uip_connr->tcpstateflags & UIP_STOPPED)) {
         uip_flags |= UIP_NEWDATA;
@@ -1883,13 +1883,13 @@ drop:
 }
 /*---------------------------------------------------------------------------*/
 u16_t
-htons(u16_t val) banked
+htons(u16_t val) __banked
 {
   return HTONS(val);
 }
 /*---------------------------------------------------------------------------*/
 void
-uip_send(const void *indata, int len) banked
+uip_send(const void *indata, int len) __banked
 {
   if (len > 0) {
     uip_slen = len;

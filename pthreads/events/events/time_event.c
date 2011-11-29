@@ -43,7 +43,7 @@ char *time_event_name = "Time Event";
 /*
  * Initialize the time_event pthread
  */
-void init_time_event(time_event_t *time_event) __reentrant banked
+void init_time_event(time_event_t *time_event) __reentrant __banked
 {
   memset (time_event, 0, sizeof *time_event);
   /* Initialize the event data */
@@ -92,7 +92,7 @@ char add_time_event (time_spec_t *ts)
   return 0;
 }
 
-PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant banked)
+PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
 {
   PT_BEGIN(&time_event->pt);
 

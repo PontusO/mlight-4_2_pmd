@@ -1,15 +1,29 @@
 %!: /header.html
-<center>
 <h1>Time Events</h1><hr color="#258D92" size="2" width="90%">
-<form><center><table width="90%" class="mytab">
-<tr>
-  <th>Mark</th><th>Enabled</th><th>Name</th><th>Event Time</th><th>Schedule</th>
+<form name="A"><center><table width="90%" class="mytab">
+<script language="Javascript">
+<!--
+function OnModify(){
+document.A.tscmd.value = "modify";
+document.A.action = "tentry.shtml";
+document.A.submit();
+return true;}
+function OnDelete() {
+document.A.tscmd.value = "delete";
+document.A.action = "tevents.shtml";
+document.A.submit();
+return true;}
+-->
+</script>
+<noscript>You need Javascript enabled for this to work</noscript>
+<tr><th>Mark</th><th>Enabled</th><th>Name</th><th>Event Time</th><th>Schedule</th>
 </tr>%! te-get-time-events
 </table></center>
+<input type="hidden" name="tscmd" value="">
 <hr color="#258D92" size="2" width="90%"><br>
-<input type="submit" name="submit" value="Modify">
+<input type="button" name="submod" value="Modify" onClick="return OnModify();">
 <button type="button" onClick="location='tentry.shtml';">Create New</button>
-<button type="submit" name="submit" value="Delete">Delete</button>
+<input type="button" name="subdel" value="Delete" onClick="return OnDelete();">
 </form>
 %!: /footer.html
 

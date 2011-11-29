@@ -2,7 +2,7 @@
  * \defgroup uipopt Configuration options for uIP
  * @{
  *
- * uIP is configured using the per-project configuration file
+ * uIP is configured __using the per-project configuration file
  * uipopt.h. This file contains all compile-time options for uIP and
  * should be tweaked to match each specific project. The uIP
  * distribution contains a documented example "uipopt.h" that can be
@@ -482,10 +482,10 @@ void uip_log(char *msg);
  * \name Appication specific configurations
  * @{
  *
- * An uIP application is implemented using a single application
+ * An uIP application is implemented __using a single application
  * function that is called by uIP whenever a TCP/IP event occurs. The
  * name of this function must be registered with uIP at compile time
- * using the UIP_APPCALL definition.
+ * __using the UIP_APPCALL definition.
  *
  * uIP applications can store the application state within the
  * uip_conn structure by specifying the type of the application

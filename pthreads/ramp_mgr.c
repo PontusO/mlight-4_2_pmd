@@ -50,7 +50,7 @@ char *ramp_states_str[] = {"Steady", "Increasing", "Decreasing"};
 /*
  * Initialize the ramp manager
  */
-void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked
+void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked
 {
   u8_t channel = rmgr->channel;
 
@@ -68,7 +68,7 @@ void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked
   }
 }
 
-ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked
+ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant __banked
 {
   ramp_mgr_t *ptr;
 
@@ -82,7 +82,7 @@ ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked
   return ptr;
 }
 
-char *get_ramp_state (ramp_mgr_t *rmgr) __reentrant banked
+char *get_ramp_state (ramp_mgr_t *rmgr) __reentrant __banked
 {
   return ramp_states_str[rmgr->state];
 }
@@ -152,7 +152,7 @@ exit:
   PT_END (&ramp->pt);
 }
 
-PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked)
+PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked)
 {
   PT_BEGIN(&rmgr->pt);
 
@@ -207,7 +207,7 @@ PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked)
 
 #if 0
 /*
- * The timer 2 interrupt routine
+ * The timer 2 __interrupt routine
  */
 void TIMER2_ISR (void) __interrupt TF2_VECTOR __using 2
 {

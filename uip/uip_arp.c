@@ -125,7 +125,7 @@ static u8_t tmpage;
  */
 /*-----------------------------------------------------------------------------------*/
 void
-uip_arp_init(void) __reentrant banked
+uip_arp_init(void) __reentrant __banked
 {
   for (i = 0; i < UIP_ARPTAB_SIZE; ++i) {
     memset(arp_table[i].ipaddr, 0, 4);
@@ -142,7 +142,7 @@ uip_arp_init(void) __reentrant banked
  */
 /*-----------------------------------------------------------------------------------*/
 void
-uip_arp_timer(void) __reentrant banked
+uip_arp_timer(void) __reentrant __banked
 {
   struct arp_entry *tabptr;
 
@@ -234,7 +234,7 @@ uip_arp_update(u16_t *ipaddr, struct uip_eth_addr *ethaddr) __reentrant
 /*-----------------------------------------------------------------------------------*/
 #if 0
 void
-uip_arp_ipin(void) banked
+uip_arp_ipin(void) __banked
 {
   uip_len -= sizeof(struct uip_eth_hdr);
 
@@ -277,7 +277,7 @@ uip_arp_ipin(void) banked
  */
 /*-----------------------------------------------------------------------------------*/
 void
-uip_arp_arpin(void) __reentrant banked
+uip_arp_arpin(void) __reentrant __banked
 {
 
   if (uip_len < sizeof(struct arp_hdr)) {
@@ -353,7 +353,7 @@ uip_arp_arpin(void) __reentrant banked
  */
 /*-----------------------------------------------------------------------------------*/
 void
-uip_arp_out(void) __reentrant banked
+uip_arp_out(void) __reentrant __banked
 {
   struct arp_entry *tabptr = NULL;
 

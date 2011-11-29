@@ -40,7 +40,7 @@ typedef struct pthread_template_p {
   struct pt pt;
 } pthread_template_t;
 
-void init_pthread_template(pthread_template_t *pthread_template) __reentrant banked;
-PT_THREAD(handle_pthread_template(pthread_template_t *pthread_template) __reentrant banked);
+void init_pthread_template(pthread_template_t *pthread_template) __reentrant __banked;
+PT_THREAD(handle_pthread_template(pthread_template_t *pthread_template) __reentrant __banked);
 
 #endif // PTHREAD_TEMPLATE_H_INCLUDED

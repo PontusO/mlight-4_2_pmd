@@ -34,8 +34,8 @@
 #include "util.h"
 #include "Httpd.h"
 
-/* convert two hex nibbles to 8-bit value */
-u8_t hexstr2value(u8_t  *str) banked
+/* convert two hex nibbles to 8-__bit value */
+u8_t hexstr2value(u8_t  *str) __banked
 {
    u8_t val;
 
@@ -64,7 +64,7 @@ u8_t hexstr2value(u8_t  *str) banked
 
 /* convert a decimal string to one-byte value.
 return the number of digitals. */
-u8_t decimal2byte(u8_t  *str, u8_t *val) banked
+u8_t decimal2byte(u8_t  *str, u8_t *val) __banked
 {
    u8_t i;
    u8_t negative=0;
@@ -93,8 +93,8 @@ u8_t decimal2byte(u8_t  *str, u8_t *val) banked
    return (i+1+negative);
 }
 
-/* convert a decimal string to 16-bit positive integer */
-void decimal2word(u8_t  *str, u16_t *val) banked
+/* convert a decimal string to 16-__bit positive integer */
+void decimal2word(u8_t  *str, u16_t *val) __banked
 {
    u8_t i;
 
@@ -114,7 +114,7 @@ void decimal2word(u8_t  *str, u16_t *val) banked
 }
 
 /* search a value in an array */
-u8_t search_value(u8_t *str, u8_t value, u8_t len) banked
+u8_t search_value(u8_t *str, u8_t value, u8_t len) __banked
 {
    u8_t i;
    for(i=0; i<len; i++, str++)
@@ -126,7 +126,7 @@ u8_t search_value(u8_t *str, u8_t value, u8_t len) banked
 }
 
 /* parse mac address */
-void parse_mac(u8_t * buf, u8_t *str) banked
+void parse_mac(u8_t * buf, u8_t *str) __banked
 {
    u8_t i;
    for(i=0; i<6; i++)
@@ -137,7 +137,7 @@ void parse_mac(u8_t * buf, u8_t *str) banked
 }
 
 /* URL string copy, additional \0 will be added to the end of the destination string */
-void url_str_cpy(u8_t *dest, u8_t *src, u16_t len) banked
+void url_str_cpy(u8_t *dest, u8_t *src, u16_t len) __banked
 {
    u16_t i;
    for(i=0; i<len; i++)
@@ -160,9 +160,9 @@ void url_str_cpy(u8_t *dest, u8_t *src, u16_t len) banked
 }
 
 //-----------------------------------------------------------------------------
-// Non-interrupt delay approx 1mS to 255mS
+// Non-__interrupt delay approx 1mS to 255mS
 //-----------------------------------------------------------------------------
-void wait_ms(u8_t count) banked
+void wait_ms(u8_t count) __banked
 {
   u16_t i;
 
@@ -171,7 +171,7 @@ void wait_ms(u8_t count) banked
 	}
 }
 
-void wait_us(u8_t count) banked
+void wait_us(u8_t count) __banked
 {
    u8_t i;
     for ( ; count > 0; count--) {

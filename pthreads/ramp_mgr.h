@@ -71,9 +71,9 @@ typedef struct {
   char state;
 } ramp_mgr_t;
 
-void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked;
-ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked;
-char *get_ramp_state (ramp_mgr_t *rmgr) __reentrant banked;
-PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant banked);
+void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked;
+ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant __banked;
+char *get_ramp_state (ramp_mgr_t *rmgr) __reentrant __banked;
+PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked);
 
 #endif // RAMP_MGR_H_INCLUDED

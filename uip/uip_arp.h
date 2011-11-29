@@ -77,14 +77,14 @@ struct uip_eth_hdr {
 
 /* The uip_arp_init() function must be called before any of the other
    ARP functions. */
-void uip_arp_init(void) __reentrant banked;
+void uip_arp_init(void) __reentrant __banked;
 
 /* The uip_arp_ipin() function should be called whenever an IP packet
    arrives from the Ethernet. This function refreshes the ARP table or
    inserts a new mapping if none exists. The function assumes that an
    IP packet with an Ethernet header is present in the uip_buf buffer
    and that the length of the packet is in the uip_len variable. */
-/*void uip_arp_ipin(void) banked;*/
+/*void uip_arp_ipin(void) __banked;*/
 #define uip_arp_ipin()
 
 /* The uip_arp_arpin() should be called when an ARP packet is received
@@ -93,7 +93,7 @@ void uip_arp_init(void) __reentrant banked;
    uip_arp_arpin() function returns, the contents of the uip_buf
    buffer should be sent out on the Ethernet if the uip_len variable
    is > 0. */
-void uip_arp_arpin(void) __reentrant banked;
+void uip_arp_arpin(void) __reentrant __banked;
 
 /* The uip_arp_out() function should be called when an IP packet
    should be sent out on the Ethernet. This function creates an
@@ -105,11 +105,11 @@ void uip_arp_arpin(void) __reentrant banked;
    request and we rely on TCP to retransmit the packet that was
    overwritten. In any case, the uip_len variable holds the length of
    the Ethernet frame that should be transmitted. */
-void uip_arp_out(void) __reentrant banked;
+void uip_arp_out(void) __reentrant __banked;
 
 /* The uip_arp_timer() function should be called every ten seconds. It
    is responsible for flushing old entries in the ARP table. */
-void uip_arp_timer(void) __reentrant banked;
+void uip_arp_timer(void) __reentrant __banked;
 
 /** @} */
 

@@ -76,7 +76,7 @@
  * Handle outgoing packets.
  *
  * This function inspects an outgoing packet in the uip_buf buffer and
- * sends it out using the uip_fw_output() function. If the packet is a
+ * sends it out __using the uip_fw_output() function. If the packet is a
  * full-sized TCP segment it will be split into two segments and
  * transmitted separately. This function should be called instead of
  * the actual device driver output function, or the uip_fw_output()

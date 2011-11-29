@@ -47,12 +47,12 @@ static const char *absval_name = "Set absolute light level";
 /*
  * Initialize the absval_mgr pthread
  */
-void init_absval_mgr(absval_mgr_t *absval_mgr) __reentrant banked
+void init_absval_mgr(absval_mgr_t *absval_mgr) __reentrant __banked
 {
   PT_INIT(&absval_mgr->pt);
 
   absvalmgr.base.type = EVENT_ACTION_MANAGER;
-  absvalmgr.base.name = absval_name;
+  absvalmgr.base.name = (char*)absval_name;
   absvalmgr.props = ACT_PRP_ABSOLUTE_VALUE;
   absvalmgr.vt.stop_action = absval_stop;
   absvalmgr.vt.trigger_action = absval_trigger;
@@ -77,7 +77,7 @@ void absval_trigger (void *input)
   ledlib_set_light_abs (&led_params);
 }
 
-PT_THREAD(handle_absval_mgr(absval_mgr_t *absval_mgr) __reentrant banked)
+PT_THREAD(handle_absval_mgr(absval_mgr_t *absval_mgr) __reentrant __banked)
 {
   PT_BEGIN(&absval_mgr->pt);
 

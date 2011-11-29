@@ -30,6 +30,6 @@
 #ifndef PACKET_DEMUX_H_INCLUDED
 #define PACKET_DEMUX_H_INCLUDED
 
-void tcp_app_demux(void) banked;
+void tcp_app_demux(void) __banked;
 
 #endif // PACKET_DEMUX_H_INCLUDED

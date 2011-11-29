@@ -45,7 +45,7 @@ typedef struct adc_event_p {
   int prev_pot_val[CFG_NUM_POTS];
 } adc_event_t;
 
-void init_adc_event(adc_event_t *adc_event) __reentrant banked;
-PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant banked);
+void init_adc_event(adc_event_t *adc_event) __reentrant __banked;
+PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked);
 
 #endif // adc_event_H_INCLUDED

@@ -185,14 +185,14 @@ typedef uip_ip4addr_t uip_ipaddr_t;
  * This function should be called at boot up to initilize the uIP
  * TCP/IP stack.
  */
-void uip_init(void) banked;
+void uip_init(void) __banked;
 
 /**
  * uIP initialization function.
  *
  * This function may be used at boot time to set the initial ip_id.
  */
-void uip_setipid(u16_t id) banked;
+void uip_setipid(u16_t id) __banked;
 
 /** @} */
 
@@ -355,7 +355,7 @@ void uip_setipid(u16_t id) banked;
  \endcode
  *
  * \note As for the uip_periodic() function, special care has to be
- * taken when using uIP together with ARP and Ethernet:
+ * taken when __using uIP together with ARP and Ethernet:
  \code
   for(i = 0; i < UIP_UDP_CONNS; i++) {
     uip_udp_periodic(i);
@@ -419,7 +419,7 @@ void uip_setipid(u16_t id) banked;
  }
  \endcode
  */
-extern u8_t xdata uip_buf[UIP_BUFSIZE+2];
+extern u8_t __xdata uip_buf[UIP_BUFSIZE+2];
 
 /** @} */
 
@@ -439,32 +439,32 @@ extern u8_t xdata uip_buf[UIP_BUFSIZE+2];
  * Start listening to the specified port.
  *
  * \note Since this function expects the port number in network byte
- * order, a conversion using HTONS() or htons() is necessary.
+ * order, a conversion __using HTONS() or htons() is necessary.
  *
  \code
  uip_listen(HTONS(80));
  \endcode
  *
- * \param port A 16-bit port number in network byte order.
+ * \param port A 16-__bit port number in network byte order.
  */
-void uip_listen(u16_t port) banked;
+void uip_listen(u16_t port) __banked;
 
 /**
  * Stop listening to the specified port.
  *
  * \note Since this function expects the port number in network byte
- * order, a conversion using HTONS() or htons() is necessary.
+ * order, a conversion __using HTONS() or htons() is necessary.
  *
  \code
  uip_unlisten(HTONS(80));
  \endcode
  *
- * \param port A 16-bit port number in network byte order.
+ * \param port A 16-__bit port number in network byte order.
  */
-void uip_unlisten(u16_t port) banked;
+void uip_unlisten(u16_t port) __banked;
 
 /**
- * Connect to a remote host using TCP.
+ * Connect to a remote host __using TCP.
  *
  * This function is used to start a new connection to the specified
  * port on the specied host. It allocates a new connection identifier,
@@ -478,7 +478,7 @@ void uip_unlisten(u16_t port) banked;
  * has been configured by defining UIP_ACTIVE_OPEN to 1 in uipopt.h.
  *
  * \note Since this function requires the port number to be in network
- * byte order, a conversion using HTONS() or htons() is necessary.
+ * byte order, a conversion __using HTONS() or htons() is necessary.
  *
  \code
  uip_ipaddr_t ipaddr;
@@ -489,13 +489,13 @@ void uip_unlisten(u16_t port) banked;
  *
  * \param ripaddr The IP address of the remote hot.
  *
- * \param port A 16-bit port number in network byte order.
+ * \param port A 16-__bit port number in network byte order.
  *
  * \return A pointer to the uIP connection identifier for the new connection,
  * or NULL if no connection could be allocated.
  *
  */
-struct uip_conn *uip_connect(u8_t *ripaddr, u16_t port) banked;
+struct uip_conn *uip_connect(u8_t *ripaddr, u16_t port) __banked;
 
 /**
  * \internal
@@ -524,7 +524,7 @@ struct uip_conn *uip_connect(u8_t *ripaddr, u16_t port) banked;
  * \note This function does not guarantee that the sent data will
  * arrive at the destination. If the data is lost in the network, the
  * application will be invoked with the uip_rexmit() event being
- * set. The application will then have to resend the data using this
+ * set. The application will then have to resend the data __using this
  * function.
  *
  * \param data A pointer to the data which is to be sent.
@@ -533,7 +533,7 @@ struct uip_conn *uip_connect(u8_t *ripaddr, u16_t port) banked;
  *
  * \hideinitializer
  */
-void uip_send(const void *data, int len) banked;
+void uip_send(const void *mdata, int len) __banked;
 
 /**
  * The length of any incoming data that is currently avaliable (if avaliable)
@@ -571,7 +571,7 @@ void uip_send(const void *data, int len) banked;
  * Abort the current connection.
  *
  * This function will abort (reset) the current connection, and is
- * usually used when an error has occured that prevents using the
+ * usually used when an error has occured that prevents __using the
  * uip_close() function.
  *
  * \hideinitializer
@@ -693,7 +693,7 @@ void uip_send(const void *data, int len) banked;
  * Reduces to non-zero if the previously sent data has been lost in
  * the network, and the application should retransmit it. The
  * application should send the exact same data as it did the last
- * time, using the uip_send() function.
+ * time, __using the uip_send() function.
  *
  * \hideinitializer
  */
@@ -739,7 +739,7 @@ void uip_send(const void *data, int len) banked;
  *
  * This function sets up a new UDP connection. The function will
  * automatically allocate an unused local port for the new
- * connection. However, another port can be chosen by using the
+ * connection. However, another port can be chosen by __using the
  * uip_udp_bind() call, after the uip_udp_new() function has been
  * called.
  *
@@ -761,7 +761,7 @@ void uip_send(const void *data, int len) banked;
  * \return The uip_udp_conn structure for the new connection or NULL
  * if no connection could be allocated.
  */
-struct uip_udp_conn *uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport) banked;
+struct uip_udp_conn *uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport) __banked;
 
 /**
  * Removed a UDP connection.
@@ -841,7 +841,7 @@ struct uip_udp_conn *uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport) banked;
                   } while(0)
 
 /**
- * Construct an IPv6 address from eight 16-bit words.
+ * Construct an IPv6 address from eight 16-__bit words.
  *
  * This function constructs an IPv6 address.
  *
@@ -1053,7 +1053,7 @@ struct uip_udp_conn *uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport) banked;
 #define uip_ipaddr4(addr) (htons(((u16_t *)(addr))[1]) & 0xff)
 
 /**
- * Convert 16-bit quantity from host byte order to network byte order.
+ * Convert 16-__bit quantity from host byte order to network byte order.
  *
  * This macro is primarily used for converting constants from host
  * byte order to network byte order. For converting variables to
@@ -1072,14 +1072,14 @@ struct uip_udp_conn *uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport) banked;
 #endif /* HTONS */
 
 /**
- * Convert 16-bit quantity from host byte order to network byte order.
+ * Convert 16-__bit quantity from host byte order to network byte order.
  *
  * This function is primarily used for converting variables from host
  * byte order to network byte order. For converting constants to
  * network byte order, use the HTONS() macro instead.
  */
 #ifndef htons
-u16_t htons(u16_t val) banked;
+u16_t htons(u16_t val) __banked;
 #endif /* htons */
 #ifndef ntohs
 #define ntohs htons
@@ -1194,7 +1194,7 @@ extern struct uip_conn uip_conns[UIP_CONNS];
  */
 
 /**
- * 4-byte array used for the 32-bit sequence number calculations.
+ * 4-byte array used for the 32-__bit sequence number calculations.
  */
 extern u8_t uip_acc32[4];
 
@@ -1342,7 +1342,7 @@ extern u8_t uip_flags;
  *
  * The actual uIP function which does all the work.
  */
-void uip_process(u8_t flag) banked;
+void uip_process(u8_t flag) __banked;
 
 /* The following flags are passed as an argument to the uip_process()
    function. They are used to distinguish between the two cases where
@@ -1535,7 +1535,7 @@ extern uip_ipaddr_t uip_hostaddr, uip_netmask, uip_draddr;
 
 
 /**
- * Representation of a 48-bit Ethernet address.
+ * Representation of a 48-__bit Ethernet address.
  */
 struct uip_eth_addr {
   u8_t addr[6];
@@ -1545,7 +1545,7 @@ struct uip_eth_addr {
  * Calculate the Internet checksum over a buffer.
  *
  * The Internet checksum is the one's complement of the one's
- * complement sum of all 16-bit words in the buffer.
+ * complement sum of all 16-__bit words in the buffer.
  *
  * See RFC1071.
  *
@@ -1557,7 +1557,7 @@ struct uip_eth_addr {
  *
  * \return The Internet checksum of the buffer.
  */
-u16_t uip_chksum(u16_t *buf, u16_t len) banked;
+u16_t uip_chksum(u16_t *buf, u16_t len) __banked;
 
 /**
  * Calculate the IP header checksum of the packet header in uip_buf.
@@ -1568,7 +1568,7 @@ u16_t uip_chksum(u16_t *buf, u16_t len) banked;
  * \return The IP header checksum of the IP header in the uip_buf
  * buffer.
  */
-u16_t uip_ipchksum(void) banked;
+u16_t uip_ipchksum(void) __banked;
 
 /**
  * Calculate the TCP checksum of the packet in uip_buf and uip_appdata.
@@ -1579,7 +1579,7 @@ u16_t uip_ipchksum(void) banked;
  * \return The TCP checksum of the TCP segment in uip_buf and pointed
  * to by uip_appdata.
  */
-u16_t uip_tcpchksum(void) banked;
+u16_t uip_tcpchksum(void) __banked;
 
 /**
  * Calculate the UDP checksum of the packet in uip_buf and uip_appdata.
@@ -1590,7 +1590,7 @@ u16_t uip_tcpchksum(void) banked;
  * \return The UDP checksum of the UDP segment in uip_buf and pointed
  * to by uip_appdata.
  */
-u16_t uip_udpchksum(void) banked;
+u16_t uip_udpchksum(void) __banked;
 
 
 #endif /* __UIP_H__ */

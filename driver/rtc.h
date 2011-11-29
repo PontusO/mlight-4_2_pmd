@@ -50,7 +50,7 @@ struct pmdtime {
   /*
    * Status bits
    *   Bit0 - Am or Pm indicator, 0=Am, 1=Pm
-   *          This bit is don't care if 24 hour format is selected
+   *          This __bit is don't care if 24 hour format is selected
    */
   u8_t status;
 };
@@ -82,32 +82,32 @@ struct time_client {
 
 extern struct rtc rtc;
 extern struct time_client tc;
-extern bit RTC_SECOND_EVENT;
+extern __bit RTC_SECOND_EVENT;
 
 /*
  * Interface declarations
  */
-void init_rtc(void) banked;
-void start_rtc(void) banked;
-void stop_rtc(void) banked;
-void print_datetime_formated(char *buf) __reentrant banked;
-void print_time_formated(char *buf) __reentrant banked;
-void print_date_formated(char *buf) __reentrant banked;
+void init_rtc(void) __banked;
+void start_rtc(void) __banked;
+void stop_rtc(void) __banked;
+void print_datetime_formated(char *buf) __reentrant __banked;
+void print_time_formated(char *buf) __reentrant __banked;
+void print_date_formated(char *buf) __reentrant __banked;
 u8_t day_of_week(int y, int m, int d) __reentrant;
 char *day_of_week_str (u8_t day) __reentrant;
 
 
-void time_appcall(void) banked;
-unsigned long get_g_time(void) banked;
-void set_g_time(struct time_param *tp) __reentrant banked;
+void time_appcall(void) __banked;
+unsigned long get_g_time(void) __banked;
+void set_g_time(struct time_param *tp) __reentrant __banked;
 
-void binary_to_dat(struct time_param *tp) __reentrant banked;
-void dat_to_binary(struct time_param *tp) __reentrant banked;
-// void translate_system_rtc (struct time_param *tp, rtc_data_t *hw_rtc) __reentrant banked;
-extern PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked);
-extern PT_THREAD(handle_rtc(struct rtc *rtc) __reentrant banked);
+void binary_to_dat(struct time_param *tp) __reentrant __banked;
+void dat_to_binary(struct time_param *tp) __reentrant __banked;
+// void translate_system_rtc (struct time_param *tp, rtc_data_t *hw_rtc) __reentrant __banked;
+extern PT_THREAD(handle_time_client(struct time_client *tc) __reentrant __banked);
+extern PT_THREAD(handle_rtc(struct rtc *rtc) __reentrant __banked);
 
-extern bit RTC_GET_TIME_EVENT;
+extern __bit RTC_GET_TIME_EVENT;
 extern struct time_param *RTC_SET_HW_RTC;
 
 #endif // RTC_H_INCLUDED

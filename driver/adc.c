@@ -119,7 +119,7 @@ void ADC_ISR (void) __interrupt AD0INT_VECTOR __using 2
  * This function will run an average algorithm on the samples in the specified
  * buffer and return the averaged value.
  */
-u16_t adc_get_average(u8_t channel) __reentrant banked
+u16_t adc_get_average(u8_t channel) __reentrant __banked
 {
   u16_t tmp;
 
@@ -137,7 +137,7 @@ u16_t adc_get_average(u8_t channel) __reentrant banked
  *
  * This function returns the last value that was collected from the A/D converter
  */
-u16_t adc_get_last_sample(u8_t channel) __reentrant banked
+u16_t adc_get_last_sample(u8_t channel) __reentrant __banked
 {
   u16_t tmp;
   ADC_INT_OFF();
@@ -149,7 +149,7 @@ u16_t adc_get_last_sample(u8_t channel) __reentrant banked
 /*
  * Get temperature value from averaged value
  */
-int get_temperature(u8_t channel) __reentrant banked
+int get_temperature(u8_t channel) __reentrant __banked
 {
   int adc = adc_get_average(channel);
   int sample = adc_get_last_sample(channel);
@@ -163,10 +163,10 @@ int get_temperature(u8_t channel) __reentrant banked
 /*
  * Timer3_Init Used to control the ADC0 sample rate.
  *
- * Timer 3 will be set to using sysclk / 12 (= 1.7MHz)
+ * Timer 3 will be set to __using sysclk / 12 (= 1.7MHz)
  *
  */
-void Timer3_Init (int counts) __reentrant banked
+void Timer3_Init (int counts) __reentrant __banked
 {
 #if BUILD_TARGET == IET912X
   unsigned char store = SFRPAGE;    /* Save the SFR register */
@@ -205,7 +205,7 @@ void adc_init(void)
   adc[4].channel = 8;  /* Chip temp sensor */
 #endif
 
-  /* Initialize the 12 bit A/D Converter */
+  /* Initialize the 12 __bit A/D Converter */
   SFRPAGE = ADC0_PAGE;
   ADC0CN = 0x80 | 0x04;
   ADC0CF = 0xF8 | 0x00;

@@ -1,18 +1,29 @@
 %!: /header.html
 <h1>New Time Event</h1><hr color="#258D92" size="2" width="90%">
 <form action="tevents.shtml"><center><table width="90%" class="mytab">
-<tr><td>Event Name</td><td colspan="8"><input type="text" name="tsname" size="16" maxlength="8" value=""></td></tr>
-<tr><td>Enabled</td><td colspan="8"><input type="checkbox" name="tsena" checked></td></tr>
-<tr><td>Enter Time (ex. 21:50)</td><td colspan="8"><input type="text" name="tstim" size="6" maxlength="5" value="%! get-cur-tim
+<input type="hidden" name="tsx" value="%! get-tsx
+">
+<tr><td>Event Name</td><td colspan="8"><input type="text" name="tsname" size="16" maxlength="8" value="%! get-tsname
+"></td></tr>
+<tr><td>Enabled</td><td colspan="8"><input type="checkbox" name="tsena" %! get-tschecked
+></td></tr>
+<tr><td>Enter Time (ex. 21:50)</td><td colspan="8"><input type="text" name="tstim" size="6" maxlength="5" value="%! get-tstime
 "></td></tr>
 <tr><td>Schedule</td>
-<td><div>Mon<br><input type="checkbox" name="tsd6"></div></td>
-<td><div>Tue<br><input type="checkbox" name="tsd5"></div></td>
-<td><div>Wed<br><input type="checkbox" name="tsd4"></div></td>
-<td><div>Thu<br><input type="checkbox" name="tsd3"></div></td>
-<td><div>Fri<br><input type="checkbox" name="tsd2"></div></td>
-<td><div>Sat<br><input type="checkbox" name="tsd1"></div></td>
-<td><div>Sun<br><input type="checkbox" name="tsd7"></div></td>
+<td><div>Mon<br><input type="checkbox" name="tsd6" %! get-tsday 6
+></div></td>
+<td><div>Tue<br><input type="checkbox" name="tsd5" %! get-tsday 5
+></div></td>
+<td><div>Wed<br><input type="checkbox" name="tsd4" %! get-tsday 4
+></div></td>
+<td><div>Thu<br><input type="checkbox" name="tsd3" %! get-tsday 3
+></div></td>
+<td><div>Fri<br><input type="checkbox" name="tsd2" %! get-tsday 2
+></div></td>
+<td><div>Sat<br><input type="checkbox" name="tsd1" %! get-tsday 1
+></div></td>
+<td><div>Sun<br><input type="checkbox" name="tsd7" %! get-tsday 7
+></div></td>
 </tr>
 </center></table>
 <hr color="#258D92" size="2" width="90%"><br>

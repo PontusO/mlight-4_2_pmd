@@ -67,9 +67,9 @@
 // Function PROTOTYPES
 //-----------------------------------------------------------------------------
 
-void Timer0_ISR (void) interrupt TF0_VECTOR;
-extern void SMBus_ISR (void) interrupt SMB0_VECTOR;
-extern void rtc_isr(void) interrupt TF3_VECTOR;
+void Timer0_ISR (void) __interrupt TF0_VECTOR;
+extern void SMBus_ISR (void) __interrupt SMB0_VECTOR;
+extern void rtc_isr(void) __interrupt TF3_VECTOR;
 void ADC_ISR (void) __interrupt AD0INT_VECTOR __using 2;
 void PCA_ISR (void) __interrupt PCA_VECTOR __using 2;
 
@@ -80,11 +80,11 @@ extern timer_cb timer_cbs[NUMBER_OF_SWTIMERS];
 //-----------------------------------------------------------------------------
 u16_t half_Sec;
 u16_t ten_Secs;
-static near u8_t tmcnt;
+static __near u8_t tmcnt;
 
-bit TX_EventPending;	        // the DM9000 hardware receive event
-bit ARP_EventPending;         // trigger the arp timer event
-bit callback_kicker;
+__bit TX_EventPending;	        // the DM9000 hardware receive event
+__bit ARP_EventPending;         // trigger the arp timer event
+__bit callback_kicker;
 
 //-----------------------------------------------------------------------------
 // Call the main application
@@ -113,10 +113,10 @@ void cleanup(void)
 }
 
 // ---------------------------------------------------------------------------
-// Timer 0 interrupt handler. Every 10ms
+// Timer 0 __interrupt handler. Every 10ms
 //   For this ISR to work on a IET912X module SFRGCN must be set to 0x01.
 // ---------------------------------------------------------------------------
-void Timer0_ISR (void) interrupt TF0_VECTOR using 0
+void Timer0_ISR (void) __interrupt TF0_VECTOR __using 0
 {
   TL0 = (-((SYSCLK/12)/100) & 0x00ff);  // Load timer 0 to give
   TH0 = (-((SYSCLK/12)/100) >> 8);      // 20MHz/12/100 = approx 10mS

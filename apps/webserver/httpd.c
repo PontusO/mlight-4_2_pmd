@@ -106,7 +106,7 @@ PT_THREAD(send_file(struct httpd_state *s) __reentrant)
   PSOCK_BEGIN(&s->sout);
 
   do {
-    PSOCK_GENERATOR_SEND(&s->sout, generate_part_of_file, s);
+    PSOCK_GENERATOR_SEND(&s->sout, (void*)generate_part_of_file, s);
     s->file.len -= s->len;
     s->file.fsdata += s->len;
   } while (s->file.len > 0);
@@ -351,7 +351,7 @@ handle_connection(struct httpd_state *s) __reentrant
 }
 /*---------------------------------------------------------------------------*/
 void
-httpd_appcall(void) banked
+httpd_appcall(void) __banked
 {
   struct httpd_state *s = (struct httpd_state *)&(uip_conn->appstate);
 
@@ -388,7 +388,7 @@ httpd_appcall(void) banked
  *             called at system boot-up.
  */
 void
-httpd_init(void) banked
+httpd_init(void) __banked
 {
   uip_listen(htons(sys_cfg.http_port));
 }

@@ -89,12 +89,12 @@ enum I2cBussError {
 // Function PROTOTYPES
 //------------------------------------------------------------------------------------
 
-void init_i2c(void) banked;
-PT_THREAD(SM_Send(struct i2c *i2c) banked);
-PT_THREAD(SM_Receive(struct i2c *i2c) banked);
-u8_t nos_i2c_read(struct i2c *i2c) __reentrant banked;
-u8_t nos_i2c_write(struct i2c *i2c) __reentrant banked;
-u8_t is_smbus_busy(void) banked;
+void init_i2c(void) __banked;
+PT_THREAD(SM_Send(struct i2c *i2c) __banked);
+PT_THREAD(SM_Receive(struct i2c *i2c) __banked);
+u8_t nos_i2c_read(struct i2c *i2c) __reentrant __banked;
+u8_t nos_i2c_write(struct i2c *i2c) __reentrant __banked;
+u8_t is_smbus_busy(void) __banked;
 
 #endif /* I2C_H_INCLUDED */
 

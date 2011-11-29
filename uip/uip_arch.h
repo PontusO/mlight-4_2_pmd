@@ -8,7 +8,7 @@
  * @{
  *
  * The functions in the architecture specific module implement the IP
- * check sum and 32-bit additions.
+ * check sum and 32-__bit additions.
  *
  * The IP checksum calculation is the most computationally expensive
  * operation in the TCP/IP stack and it therefore pays off to
@@ -64,30 +64,30 @@
 #include "uip.h"
 
 /**
- * Carry out a 32-bit addition.
+ * Carry out a 32-__bit addition.
  *
  * Because not all architectures for which uIP is intended has native
- * 32-bit arithmetic, uIP uses an external C function for doing the
- * required 32-bit additions in the TCP protocol processing. This
+ * 32-__bit arithmetic, uIP uses an external C function for doing the
+ * required 32-__bit additions in the TCP protocol processing. This
  * function should add the two arguments and place the result in the
  * global variable uip_acc32.
  *
- * \note The 32-bit integer pointed to by the op32 parameter and the
+ * \note The 32-__bit integer pointed to by the op32 parameter and the
  * result in the uip_acc32 variable are in network byte order (big
  * endian).
  *
- * \param op32 A pointer to a 4-byte array representing a 32-bit
+ * \param op32 A pointer to a 4-byte array representing a 32-__bit
  * integer in network byte order (big endian).
  *
- * \param op16 A 16-bit integer in host byte order.
+ * \param op16 A 16-__bit integer in host byte order.
  */
-void uip_add32(u8_t *op32, u16_t op16) __reentrant banked;
+void uip_add32(u8_t *op32, u16_t op16) __reentrant __banked;
 
 /**
  * Calculate the Internet checksum over a buffer.
  *
  * The Internet checksum is the one's complement of the one's
- * complement sum of all 16-bit words in the buffer.
+ * complement sum of all 16-__bit words in the buffer.
  *
  * See RFC1071.
  *
@@ -128,9 +128,9 @@ u16_t uip_ipchksum(void);
  * \return The TCP checksum of the TCP segment in uip_buf and pointed
  * to by uip_appdata.
  */
-u16_t uip_tcpchksum(void) banked;
+u16_t uip_tcpchksum(void) __banked;
 
-u16_t uip_udpchksum(void) banked;
+u16_t uip_udpchksum(void) __banked;
 
 /** @} */
 /** @} */

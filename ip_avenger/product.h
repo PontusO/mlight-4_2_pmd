@@ -30,6 +30,6 @@
 #ifndef PMD_H_INCLUDED
 #define PMD_H_INCLUDED
 
-void pmd(void) banked;
+void pmd(void) __banked;
 
 #endif // PMD_H_INCLUDED

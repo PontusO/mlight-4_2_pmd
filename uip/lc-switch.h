@@ -57,7 +57,7 @@
 #ifndef __LC_SWITCH_H__
 #define __LC_SWTICH_H__
 
-/* WARNING! lc implementation using switch() does not work if an
+/* WARNING! lc implementation __using switch() does not work if an
    LC_SET() is done within another switch() statement! */
 
 /** \hideinitializer */

@@ -65,8 +65,8 @@ struct time_state {
   u8_t inputbuffer[4];
 };
 
-bit RTC_GET_TIME_EVENT;
-bit RTC_GET_FAILED;
+__bit RTC_GET_TIME_EVENT;
+__bit RTC_GET_FAILED;
 struct time_param *RTC_SET_HW_RTC;
 
 static const u8_t days_in_month[] =
@@ -74,21 +74,21 @@ static const u8_t days_in_month[] =
 static char *weekdays[] =
   {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 
-void binary_to_dat(struct time_param *tp) __reentrant banked;
+void binary_to_dat(struct time_param *tp) __reentrant __banked;
 
 struct time_state s;
 
-void start_rtc(void) banked
+void start_rtc(void) __banked
 {
   TR3 = 1;
 }
 
-void stop_rtc(void) banked
+void stop_rtc(void) __banked
 {
   TR3 = 0;
 }
 
-void init_rtc(void) banked
+void init_rtc(void) __banked
 {
 #if BUILD_TARGET == IET912X
   SFRPAGE = TMR3_PAGE;                  // Set the correct SFR page
@@ -124,7 +124,7 @@ void init_rtc(void) banked
  * Getter for getting the current binary time value.
  *
  ************************************************************************************/
-unsigned long get_g_time(void) banked
+unsigned long get_g_time(void) __banked
 {
   unsigned long t;
   /* Disable timer 3 interrupts momentarily */
@@ -142,7 +142,7 @@ unsigned long get_g_time(void) banked
  * Setter for setting the current binary time value.
  *
  ************************************************************************************/
-void set_g_time(struct time_param *tp) __reentrant banked
+void set_g_time(struct time_param *tp) __reentrant __banked
 {
   /* Disable timer 3 interrupts momentarily */
   EIE2 &= ~1;
@@ -156,7 +156,7 @@ void set_g_time(struct time_param *tp) __reentrant banked
  * Function for printing the current date to the specified buffer.
  *
  ************************************************************************************/
-void print_date_formated(char *buf) __reentrant banked
+void print_date_formated(char *buf) __reentrant __banked
 {
   struct time_param tp;
 
@@ -175,7 +175,7 @@ void print_date_formated(char *buf) __reentrant banked
  * Function for printing the current time to the specified buffer.
  *
  ************************************************************************************/
-void print_time_formated(char *buf) __reentrant banked
+void print_time_formated(char *buf) __reentrant __banked
 {
   struct time_param tp;
 
@@ -193,7 +193,7 @@ void print_time_formated(char *buf) __reentrant banked
  * Function for printing the current time to the specified buffer.
  *
  ************************************************************************************/
-void print_datetime_formated(char *buf) __reentrant banked
+void print_datetime_formated(char *buf) __reentrant __banked
 {
   struct time_param tp;
   u8_t dow;
@@ -283,21 +283,21 @@ static void increment_day(struct pmdtime *time) __reentrant
   }
 }
 
-static xdata unsigned long second;
-static xdata unsigned long minute;
-static xdata unsigned long hour;
-static xdata int day;
-static xdata int month;
-static xdata int year;
-static xdata long binval;
+static __xdata unsigned long second;
+static __xdata unsigned long minute;
+static __xdata unsigned long hour;
+static __xdata int day;
+static __xdata int month;
+static __xdata int year;
+static __xdata long binval;
 
-static xdata unsigned long whole_minutes;
-static xdata unsigned long whole_hours;
-static xdata long whole_days;
+static __xdata unsigned long whole_minutes;
+static __xdata unsigned long whole_hours;
+static __xdata long whole_days;
 
 /*************************************************************************************
  *
- * This function converts a 32-bit binary time value to something understandable.
+ * This function converts a 32-__bit binary time value to something understandable.
  *
  * To call this function, create an instance of a time_param struct, fill the b_time
  * (binary time) with the time that you want to convert. Then call this function.
@@ -311,7 +311,7 @@ static xdata long whole_days;
  *    binary_to_dat(&tp);
  *
  ************************************************************************************/
-void binary_to_dat(struct time_param *tp) __reentrant banked
+void binary_to_dat(struct time_param *tp) __reentrant __banked
 {
   /*
    * Calculate the time first
@@ -368,7 +368,7 @@ void binary_to_dat(struct time_param *tp) __reentrant banked
 }
 /*************************************************************************************
  *
- * This function converts the human readable part of a date to a 32-bit number.
+ * This function converts the human readable part of a date to a 32-__bit number.
  *
  * To call this function, create an instance of a time_param struct, fill the pmdtime
  * structure with the date and time that you want to convert. Then call this function.
@@ -388,7 +388,7 @@ void binary_to_dat(struct time_param *tp) __reentrant banked
  *    binary_time = tp.b_time;      // Retrieve the binary time value
  *
  ************************************************************************************/
-void dat_to_binary(struct time_param *tp) __reentrant banked
+void dat_to_binary(struct time_param *tp) __reentrant __banked
 {
   /* Set up before calculations start */
   year = tp->time.year-1;
@@ -518,11 +518,11 @@ static void translate_system_rtc (struct time_param *tp, rtc_data_t *hw_rtc) __r
  *
  * This thread is responsible for responding to RTC_GET_TIME_EVENT's.
  * When the event is received the client will, after a initial 4 second delay, connect
- * to a RFC-868 compliant TIME server using a TCP connect.
+ * to a RFC-868 compliant TIME server __using a TCP connect.
  *
  ************************************************************************************/
 static char str[10];
-PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked)
+PT_THREAD(handle_time_client(struct time_client *tc) __reentrant __banked)
 {
   PT_BEGIN(&tc->pt);
 
@@ -636,7 +636,7 @@ PT_THREAD(handle_time_client(struct time_client *tc) __reentrant banked)
  * Takes care of the TIME server response.
  *
  * This thread is called when the TIME server responds. It will take care of the
- * 32-bit binary value, convert it to a value suitable for our system and load the
+ * 32-__bit binary value, convert it to a value suitable for our system and load the
  * rtc with the new value.
  *
  ************************************************************************************/
@@ -678,7 +678,7 @@ static PT_THREAD(time_thread(void))
  * coming from uip.
  *
  ************************************************************************************/
-void time_appcall(void) banked
+void time_appcall(void) __banked
 {
   A_(printf(__FILE__ " time_appcall\n");)
 

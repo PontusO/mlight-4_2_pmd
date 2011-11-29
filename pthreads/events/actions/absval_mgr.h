@@ -50,7 +50,7 @@ typedef struct absval_mgr_p {
   struct pt pt;
 } absval_mgr_t;
 
-void init_absval_mgr(absval_mgr_t *absval_mgr) __reentrant banked;
-PT_THREAD(handle_absval_mgr(absval_mgr_t *absval_mgr) __reentrant banked);
+void init_absval_mgr(absval_mgr_t *absval_mgr) __reentrant __banked;
+PT_THREAD(handle_absval_mgr(absval_mgr_t *absval_mgr) __reentrant __banked);
 
 #endif // absval_mgr_H_INCLUDED

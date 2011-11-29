@@ -50,9 +50,9 @@ struct adc {
 };
 
 void adc_init(void);
-void adc_start_conversion(u8_t channel) __reentrant banked;
-u16_t adc_get_average(u8_t channel) __reentrant banked;
-u16_t adc_get_last_sample(u8_t channel) __reentrant banked;
-int get_temperature(u8_t channel) __reentrant banked;
+void adc_start_conversion(u8_t channel) __reentrant __banked;
+u16_t adc_get_average(u8_t channel) __reentrant __banked;
+u16_t adc_get_last_sample(u8_t channel) __reentrant __banked;
+int get_temperature(u8_t channel) __reentrant __banked;
 
 #endif // ADC_H_INCLUDED

@@ -53,7 +53,7 @@ act_absolute_data_t abs_data;
 /*
  * Initialize the adc_event pthread
  */
-void init_adc_event(adc_event_t *adc_event) __reentrant banked
+void init_adc_event(adc_event_t *adc_event) __reentrant __banked
 {
   char i;
 
@@ -61,7 +61,7 @@ void init_adc_event(adc_event_t *adc_event) __reentrant banked
 
   /* Initialize the event data */
   adcevent.base.type = EVENT_EVENT_PROVIDER;
-  adcevent.base.name = adc_name;
+  adcevent.base.name = (char*)adc_name;
   adcevent.priv = (act_absolute_data_t *)abs_data;
   adcevent.signal = 0;
 
@@ -71,7 +71,7 @@ void init_adc_event(adc_event_t *adc_event) __reentrant banked
 
 }
 
-PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant banked)
+PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
 {
   PT_BEGIN(&adc_event->pt);
 

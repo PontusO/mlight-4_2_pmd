@@ -54,12 +54,12 @@
 
 extern static u16_t half_Sec;
 extern static u16_t ten_Secs;
-extern static near u8_t tmcnt;
+extern static __near u8_t tmcnt;
 
-extern bit TX_EventPending;	          // the DM9000 hardware receive event
-extern bit ARP_EventPending;          // trigger the arp timer event
-extern bit digit_select;
-extern bit callback_kicker;
+extern __bit TX_EventPending;	          // the DM9000 hardware receive event
+extern __bit ARP_EventPending;          // trigger the arp timer event
+extern __bit digit_select;
+extern __bit callback_kicker;
 
 #define UPDATE_INTERVAL   25
 
@@ -83,7 +83,7 @@ time_event_t    time_event;
 //
 //	This is the PMD application
 // ---------------------------------------------------------------------------
-void pmd(void) banked
+void pmd(void) __banked
 {
   unsigned int i;
   unsigned char update = UPDATE_INTERVAL;
@@ -96,7 +96,7 @@ void pmd(void) banked
   half_Sec = UIP_TX_TIMER;
   ten_Secs = UIP_ARP_TIMER;
 
-  Timer0_Init();            // 10 mSec interrupt rate
+  Timer0_Init();            // 10 mSec __interrupt rate
 
   sys_uart_init(BAUD_115200);  // Init the system print uart
   init_i2c();
@@ -169,7 +169,7 @@ void pmd(void) banked
   init_adc_event(&adc_event);
   /* Here's a test rule */
   test_rule.base.type = EVENT_RULE;
-  test_rule.base.name = "Test Rule";
+  test_rule.base.name = (char*)"Test Rule";
   /* Just for testing, this will be the first event provider registered */
   test_rule.event = 0;
   /* Just for testing, this will be the first action manager registered */
@@ -301,10 +301,10 @@ void pmd(void) banked
 }
 
 //-----------------------------------------------------------------------------
-// Timer0_Init - sets up 10 mS RT interrupt
+// Timer0_Init - sets up 10 mS RT __interrupt
 //-----------------------------------------------------------------------------
 //
-// Configure Timer0 to 16-bit generate an interrupt every 10 ms
+// Configure Timer0 to 16-__bit generate an __interrupt every 10 ms
 //
 void Timer0_Init (void)
 {
@@ -318,7 +318,7 @@ void Timer0_Init (void)
   TL0 = (-((SYSCLK/12)/100) & 0x00ff);  // Load timer 0 to give
   TH0 = (-((SYSCLK/12)/100) >> 8);      // 20MHz/12/100 = approx 10mS
   TR0 = TRUE;					                  // start Timer0
-  PT0 = TRUE;					                  // T0 Interrupt Priority high
+  PT0 = TRUE;					                  // T0 __interrupt Priority high
   ET0 = TRUE;					                  // enable Timer0 interrupts
 #if BUILD_TARGET == IET912X
   SFRPAGE = LEGACY_PAGE;                // Reset to legacy SFR page

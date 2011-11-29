@@ -45,7 +45,7 @@
 #include "httpd-fsdata.c"
 
 #if HTTPD_FS_STATISTICS
-static xdata u16_t count[HTTPD_FS_NUMFILES];
+static __xdata u16_t count[HTTPD_FS_NUMFILES];
 #endif /* HTTPD_FS_STATISTICS */
 
 /*-----------------------------------------------------------------------------------*/

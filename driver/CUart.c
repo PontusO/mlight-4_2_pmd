@@ -73,12 +73,12 @@ void uart0_init(u8_t baud) __reentrant
 #endif
   if ((baud == BAUD_UNDEFINED) || (baud >= BAUD_END))
     return; // Return if the wanted baudrate is out of bounds
-  TMOD |= 0x20; // TMOD: timer 1, mode 2, 8-bit reload
+  TMOD |= 0x20; // TMOD: timer 1, mode 2, 8-__bit reload
   TH1 = baudrates0[baud-1]; // set Timer1 reload value for baudrate
   TR1 = 1; // start Timer1
   CKCON |= 0x10; // Timer1 uses SYSCLK as time base
 
-  SCON0 = 0x50; // SCON0: mode 1, 8-bit UART, enable RX
+  SCON0 = 0x50; // SCON0: mode 1, 8-__bit UART, enable RX
 #if BUILD_TARGET == IET912X
   SSTA0 = 0x10; // Set baud rate doubler.
 #else
@@ -132,7 +132,7 @@ void uart1_init(u8_t baud) __reentrant
   if ((baud == BAUD_UNDEFINED) || (baud >= BAUD_END))
     return; // Return if the wanted baudrate is out of bounds
 #if BUILD_TARGET == IET902X
-  /* Mode 1, Check Stop Bit */
+  /* Mode 1, Check Stop __bit */
   SCON1 = 0x50;
 
   /* Set timer4 to do 9600 baud for UART1 */
@@ -158,7 +158,7 @@ void uart1_init(u8_t baud) __reentrant
   /* Start Timer 1 */
   TR1     = 1;
 
-  /* Setup UART1 as an 8 bit UART */
+  /* Setup UART1 as an 8 __bit UART */
   SFRPAGE = UART1_PAGE;
   SCON1   = 0x50;
   TI1     = 1;
@@ -183,7 +183,7 @@ void putchar1(char chr)
 {
   P1_4 = 1;
   SFRPAGE = UART1_PAGE;
-  /* First wait for the tx_busy flag to be cleared by the interrupt */
+  /* First wait for the tx_busy flag to be cleared by the __interrupt */
   while (!TI1);
   TI1   = 0;
   SBUF1 = chr;
@@ -194,7 +194,7 @@ void putchar1(char chr)
 *
 * Function: UART1_ISR
 *
-* UART1 interrupt handler
+* UART1 __interrupt handler
 *
 * FIXME: Rewrite to a more generic ISR
 *

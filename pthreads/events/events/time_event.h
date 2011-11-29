@@ -36,12 +36,12 @@
 #define TIME_EVENT_NAME_LEN 8
 
 /**
- * This is a bit field with the following functions
+ * This is a __bit field with the following functions
  *
- * Bit 0 - Indicates if the user has enabled or disabled the time event.
+ * __bit 0 - Indicates if the user has enabled or disabled the time event.
  *         0 means that the event is disabled
  *         1 means that the event is enabled
- * Bit 1 - Indicates if this entry holds a valid time event entry or not
+ * __bit 1 - Indicates if this entry holds a valid time event entry or not
  *         0 means that the entry has not yet been configured or has been
  *           deleted.
  *         1 indicates that the entry is configured and valid.
@@ -51,6 +51,18 @@ typedef enum {
   TIME_EVENT_ENTRY_USED = 0x02
 } time_event_status_t;
 
+/**
+ * Time specification for the time event
+ *
+ * The weekday entry is coded as follows.
+ *   __bit 6 = Sunday
+ *   __bit 5 = Monday
+ *   __bit 4 = Tuesday
+ *   __bit 3 = Wednesday
+ *   __bit 2 = Thursday
+ *   __bit 1 = Friday
+ *   __bit 0 = Saturday
+ */
 typedef struct {
   time_event_status_t status;
   char name[TIME_EVENT_NAME_LEN+1]; /* Allow for a 0 terminator */

@@ -81,7 +81,13 @@ HTTPD_CGI_CALL(f_get_ip_num, "get-ip-num", get_ip_num);
 HTTPD_CGI_CALL(f_get_check_box, "get-check", get_check_box);
 HTTPD_CGI_CALL(f_get_string, "get-string", get_string);
 HTTPD_CGI_CALL(f_get_int, "get-int", get_int);
+
 HTTPD_CGI_CALL(f_get_time_events, "te-get-time-events", get_time_events);
+HTTPD_CGI_CALL(f_get_tsname, "get-tsname", get_tsname);
+HTTPD_CGI_CALL(f_get_tschecked, "get-tschecked", get_tschecked);
+HTTPD_CGI_CALL(f_get_tstime, "get-tstime", get_tstime);
+HTTPD_CGI_CALL(f_get_tsday, "get-tsday", get_tsday);
+HTTPD_CGI_CALL(f_get_tsx, "get-tsx", get_tsx);
 
 HTTPD_CGI_CALL(f_set_level, "set-level", set_level);
 HTTPD_CGI_CALL(f_get_level, "get-level", get_level);
@@ -103,6 +109,11 @@ static const struct httpd_cgi_call *calls[] = {
   &L_get_rtc,
   &L_set_param,
   &f_get_time_events,
+  &f_get_tsname,
+  &f_get_tschecked,
+  &f_get_tstime,
+  &f_get_tsday,
+  &f_get_tsx,
   &f_set_level,
   &f_get_level,
   &f_start_ramp,
@@ -295,13 +306,14 @@ PT_THREAD(get_rtc(struct httpd_state *s, char *ptr) __reentrant)
  *
  */
 static char *weekdays[] =
-  {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+  {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+static u8_t order[] = {0x20,0x10,0x08,0x04,0x02,0x02,0x40};
 static unsigned short generate_time_events(void *arg) __reentrant
 {
   struct httpd_state *s = (struct httpd_state *)arg;
   time_spec_t *ts;
   int i;
-  u8_t j, day_mask;
+  u8_t j;
 
   ts = &sys_cfg.time_events[s->i];
   i = sprintf((char *)uip_appdata,
@@ -311,14 +323,14 @@ static unsigned short generate_time_events(void *arg) __reentrant
   i += sprintf((char *)uip_appdata+i, "<td>%s</td>", ts->name);
   i += sprintf((char *)uip_appdata+i, "<td>Time %02d:%02d</td>", ts->hrs, ts->min);
   i += sprintf((char *)uip_appdata+i, "<td>Weekdays: ");
+
   /* Resolve week days */
-  day_mask = 0x40;
   for (j=0;j<7;j++) {
-    if (ts->weekday & day_mask) {
+    if (ts->weekday & order[j]) {
       i += sprintf((char *)uip_appdata+i, "%s ", weekdays[j]);
     }
-    day_mask >>= 1;
   }
+
   sprintf((char *)uip_appdata+i, "</td></tr>");
   return strlen(uip_appdata);
 }
@@ -344,6 +356,86 @@ PT_THREAD(get_time_events(struct httpd_state *s, char *ptr) __reentrant)
   PSOCK_END(&s->sout);
 }
 #pragma restore
+
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(get_tsname(struct httpd_state *s, char *ptr) __reentrant)
+{
+  IDENTIFIER_NOT_USED (ptr);
+
+  PSOCK_BEGIN(&s->sout);
+  if (s->parms.ts && s->parms.tsmodify) {
+    sprintf ((char*)uip_appdata, "%s", s->parms.ts->name);
+    PSOCK_SEND_STR(&s->sout, uip_appdata);
+  }
+  PSOCK_END(&s->sout);
+}
+
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(get_tschecked(struct httpd_state *s, char *ptr) __reentrant)
+{
+  IDENTIFIER_NOT_USED (ptr);
+  PSOCK_BEGIN(&s->sout);
+  if (s->parms.ts && s->parms.tsmodify) {
+    if (s->parms.ts->status & TIME_EVENT_ENABLED) {
+      sprintf ((char*)uip_appdata, "checked");
+      PSOCK_SEND_STR(&s->sout, uip_appdata);
+    }
+  }
+  PSOCK_END(&s->sout);
+}
+
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(get_tstime(struct httpd_state *s, char *ptr) __reentrant)
+{
+  IDENTIFIER_NOT_USED (ptr);
+  PSOCK_BEGIN(&s->sout);
+  if (s->parms.ts && s->parms.tsmodify) {
+    sprintf ((char*)uip_appdata, "%02d:%02d",
+             s->parms.ts->hrs, s->parms.ts->min);
+    PSOCK_SEND_STR(&s->sout, uip_appdata);
+  }
+  PSOCK_END(&s->sout);
+}
+
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(get_tsday(struct httpd_state *s, char *ptr) __reentrant)
+{
+  u8_t check_box, day;
+
+  while (*ptr != ' ')
+    ptr++;
+  ptr++;
+  check_box = atoi(ptr)-1;
+  day = 1 << check_box;
+
+  PSOCK_BEGIN(&s->sout);
+  if (s->parms.ts && s->parms.tsmodify) {
+    if (day & s->parms.ts->weekday) {
+      sprintf ((char*)uip_appdata, "checked");
+      PSOCK_SEND_STR(&s->sout, uip_appdata);
+    }
+  }
+  PSOCK_END(&s->sout);
+}
+
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(get_tsx(struct httpd_state *s, char *ptr) __reentrant)
+{
+  IDENTIFIER_NOT_USED (ptr);
+  PSOCK_BEGIN(&s->sout);
+
+  if (s->parms.ts && s->parms.tsmodify) {
+    sprintf ((char*)uip_appdata, "%d", (int)s->parms.ts);
+    PSOCK_SEND_STR(&s->sout, uip_appdata);
+  }
+
+  PSOCK_END(&s->sout);
+}
 
 /*---------------------------------------------------------------------------*/
 static
@@ -673,7 +765,7 @@ PT_THREAD(get_string(struct httpd_state *s, char *ptr) __reentrant)
         if (rmgr) {
           string = get_ramp_state(rmgr);
         } else {
-          string = "Invalid string !";
+          string = (char*)"Invalid string !";
         }
       }
       break;

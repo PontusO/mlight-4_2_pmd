@@ -56,6 +56,7 @@ struct cgi_parameters {
   u8_t num_parms;
   time_spec_t *ts;
   u16_t tslist;
+  u8_t tsmodify;
 };
 extern struct cgi_parameters cgi_parms_ctrl;
 
@@ -76,8 +77,8 @@ struct httpd_state {
   struct cgi_parameters parms;
 };
 
-void httpd_init(void) banked;
-void httpd_appcall(void) banked;
+void httpd_init(void) __banked;
+void httpd_appcall(void) __banked;
 
 /*
 void httpd_log(char *msg);
