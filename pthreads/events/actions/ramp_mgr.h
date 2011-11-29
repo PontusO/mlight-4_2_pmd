@@ -37,6 +37,16 @@
 #define RAMP_CMD_START  0x01
 #define RAMP_CMD_STOP   0x02
 
+/*
+ * This data structure defines the data required by this action manager.
+ * It should be implemented by the event provider that intends to
+ * communicate with this manager.
+ */
+typedef struct act_ramp_data_s {
+  char channel;
+  int value;
+} act_ramp_data_t;
+
 enum ramp_state {
   STEADY = 0,
   INCREASING,

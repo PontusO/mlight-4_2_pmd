@@ -205,6 +205,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pthreads\events\actions\absval_mgr.h" />
+		<Unit filename="..\pthreads\events\actions\ramp_mgr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\events\actions\ramp_mgr.h" />
 		<Unit filename="..\pthreads\events\core\event_switch.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -217,10 +221,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pthreads\events\events\time_event.h" />
-		<Unit filename="..\pthreads\ramp_mgr.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\pthreads\ramp_mgr.h" />
 		<Unit filename="..\pthreads\template\pthread_template.c">
 			<Option compilerVar="CC" />
 			<Option compile="0" />
