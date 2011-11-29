@@ -29,6 +29,9 @@
 				<Option object_output="obj\Debug\" />
 				<Option type="1" />
 				<Option compiler="sdcc" />
+				<Compiler>
+					<Add option="--debug" />
+				</Compiler>
 			</Target>
 			<Target title="Release">
 				<Option output="bin\Release\Uip1" prefix_auto="1" extension_auto="1" />
@@ -205,6 +208,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pthreads\events\actions\absval_mgr.h" />
+		<Unit filename="..\pthreads\events\actions\ramp_mgr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\events\actions\ramp_mgr.h" />
 		<Unit filename="..\pthreads\events\core\event_switch.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -217,10 +224,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pthreads\events\events\time_event.h" />
-		<Unit filename="..\pthreads\ramp_mgr.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\pthreads\ramp_mgr.h" />
 		<Unit filename="..\pthreads\template\pthread_template.c">
 			<Option compilerVar="CC" />
 			<Option compile="0" />

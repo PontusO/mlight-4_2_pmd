@@ -59,6 +59,7 @@ typedef struct event_base_s {
  */
 typedef enum action_properties_e {
   ACT_PRP_ABSOLUTE_VALUE = 0x01,
+  ACT_PRP_RAMP_VALUE = 0x02,
 } action_properties_t;
 
 /**

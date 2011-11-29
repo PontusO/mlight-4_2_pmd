@@ -40,6 +40,10 @@
 #include "lightlib.h"
 #include "swtimers.h"
 
+/* Function prototypes */
+void ramp_stop (void);
+void ramp_trigger (void *ldata);
+
 /*
  * Locally used data
  */
@@ -47,12 +51,23 @@ static ramp_mgr_t *ramp_mgr_tab[CFG_NUM_PWM_DRIVERS];
 static u8_t num_mgrs = 0;
 char *ramp_states_str[] = {"Steady", "Increasing", "Decreasing"};
 
+/* The action manager handle */
+static action_mgr_t  rampmgr;
+static const char *ramp_name = "Ramp light";
+
 /*
  * Initialize the ramp manager
  */
 void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked
 {
   u8_t channel = rmgr->channel;
+
+  rampmgr.base.type = EVENT_ACTION_MANAGER;
+  rampmgr.base.name = ramp_name;
+  rampmgr.props = ACT_PRP_RAMP_VALUE;
+  rampmgr.vt.stop_action = ramp_stop;
+  rampmgr.vt.trigger_action = ramp_trigger;
+
 
   if (channel < CFG_NUM_PWM_DRIVERS) {
     A_(printf (__FILE__ " Initializing ramp mgr %p on channel %d\n",
@@ -68,7 +83,26 @@ void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked
   }
 }
 
-ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant __banked
+/* No thread (yet) to interupt so we don't do anything here */
+void ramp_stop (void)
+{
+}
+
+/* Set new data */
+void ramp_trigger (void *input)
+{
+  ld_param_t led_params;
+  act_ramp_data_t *rampdata = (act_ramp_data_t *)input;
+
+  A_(printf(__FILE__ " Channel %d, Value %04x\n",
+          (int)rampdata->channel,
+          rampdata->value);)
+  led_params.channel = rampdata->channel;
+  led_params.level_absolute = rampdata->value;
+  ledlib_set_light_abs (&led_params);
+}
+
+ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked
 {
   ramp_mgr_t *ptr;
 
