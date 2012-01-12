@@ -1,0 +1,119 @@
+%!: /header.html
+<SCRIPT TYPE="text/javascript">
+<!--
+function setLayer(whichLayer, mode)
+{
+  var elem, vis;
+
+  if( document.getElementById )
+    elem = document.getElementById( whichLayer );
+  else if( document.all )
+      elem = document.all[whichLayer];
+  else if( document.layers )
+    elem = document.layers[whichLayer];
+  vis = elem.style;
+
+  if (mode == 'on')
+    vis.display = 'block';
+  else
+    vis.display = 'none';
+}
+
+function hideLayers()
+{
+  setLayer ('abs', 'off');
+  setLayer ('invalid', 'off');
+  setLayer ('ramp', 'off');
+}
+
+function enLayer(layer)
+{
+  hideLayers();
+  setLayer (layer, 'on');
+}
+
+function setData (frm)
+{
+  var evt=frm.evt.options[frm.evt.selectedIndex].value;
+  var act=frm.act.options[frm.act.selectedIndex].value;
+
+  if (evt != -1 && act != -1) {
+    /* Only evaluate if both selections are active */
+    var etype = evt >> 16;
+    var atype = act >> 16;
+    /* Rules */
+    if (etype == 1 && atype == 1) {
+      enLayer ('abs');
+    } else if (etype == 1 && atype == 2) {
+      enLayer ('invalid');
+      frm.submit.disabled=true;
+      return;
+    } else if (etype == 2 && atype == 1) {
+      enLayer ('abs');
+    } else if (etype == 2 && atype == 2) {
+      enLayer ('ramp');
+    }
+    frm.submit.disabled=false;
+  } else {
+    hideLayers();
+    frm.submit.disabled=true;
+  }
+}
+//-->
+</SCRIPT>
+
+<h1>New Event Route</h1><hr color="#258D92" size="2" width="90%">
+<form>
+
+<center>
+<div><table width="90%" class="mytab"><col style="width:40%" />
+<input type="hidden" name="ner" value="%! get-ner
+">
+<tr><td>Route Name</td><td><input type="text" name="mapname" size="16" maxlength="8" value="%! get-mapname
+"></td></tr>
+<tr><td>Enabled</td><td><input type="checkbox" name="mapenabled" %! get-mapenabled
+></td></tr>
+<tr><td>Select Event provider</td><td>
+<select name="evt" onchange="setData(this.form);">
+<option value="-1">(Select an event provider)</option>%! get-evntfuncs 0
+</select>
+</td></tr>
+<tr><td>Select Action Manager</td><td>
+<select name="act" onchange="setData(this.form);">
+<option value="-1">(Select an action manager)</option>%! get-evntfuncs 1
+</select>
+</td></tr>
+</table></div>
+
+<div id="abs" style="display:none">
+<hr color="#258D92" size="2" width="90%"><table width="90%" class="mytab">
+<col style="width:40%" /><tr><td>Output Channel</td>
+<td><select name="aochan"><option value="1">1</option><option value="2">2</option>
+<option value="3">3</option><option value="4">4</option></select></td></tr>
+<tr><td>Output Level Preset</td><td><input type="text" name="aolevel" size="6" maxlength="5"></td></tr>
+</table>
+</div>
+
+<div id="ramp" style="display:none">
+<hr color="#258D92" size="2" width="90%"><table width="90%" class="mytab">
+<col style="width:40%" /><tr><td>Output Channel</td>
+<td><select name="rochan"><option value="1">1</option><option value="2">2</option>
+<option value="3">3</option><option value="4">4</option></select>
+</td></tr>
+<tr><td>Ramp to Level (0-100)</td><td><input type="text" name="rlevel" size="6" maxlength="5"></td></tr>
+<tr><td>Ramp Rate (1-10)</td><td><input type="text" name="rrate" size="3" maxlength="2"></td></tr>
+<tr><td>Ramp Step (1-10)</td><td><input type="text" name="rstep" size="3" maxlength="2"></td></tr>
+</table>
+</div>
+
+<div id="invalid" style="display:none">
+<hr color="#258D92" size="2" width="90%">Invalid Combination of event provider and action manager
+</div>
+
+<hr color="#258D92" size="2" width="90%"><br>
+<input type="submit" name="submit" value="Save" disabled>
+<input type="reset" name="reset" value="Reset">
+</center></form>
+<br>
+%!: /footer.html
+

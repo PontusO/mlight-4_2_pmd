@@ -44,7 +44,7 @@
  * $Id: httpd-cgi.c,v 1.2 2006/06/11 21:46:37 adam Exp $
  *
  */
-//#define PRINT_A
+#define PRINT_A
 
 #include "uip.h"
 #include "psock.h"
@@ -89,10 +89,14 @@ HTTPD_CGI_CALL(f_get_tstime, "get-tstime", get_tstime);
 HTTPD_CGI_CALL(f_get_tsday, "get-tsday", get_tsday);
 HTTPD_CGI_CALL(f_get_tsx, "get-tsx", get_tsx);
 
+HTTPD_CGI_CALL(f_map_get_events, "map-get-events", map_get_events);
+
 HTTPD_CGI_CALL(f_set_level, "set-level", set_level);
 HTTPD_CGI_CALL(f_get_level, "get-level", get_level);
 HTTPD_CGI_CALL(f_start_ramp, "start-ramp", start_ramp);
 HTTPD_CGI_CALL(f_stop_ramp, "stop-ramp", stop_ramp);
+
+HTTPD_CGI_CALL(f_get_evntfuncs, "get-evntfuncs", get_evntfuncs);
 
 static const struct httpd_cgi_call *calls[] = {
   &f_get_ip_num,
@@ -114,10 +118,12 @@ static const struct httpd_cgi_call *calls[] = {
   &f_get_tstime,
   &f_get_tsday,
   &f_get_tsx,
+  &f_map_get_events,
   &f_set_level,
   &f_get_level,
   &f_start_ramp,
   &f_stop_ramp,
+  &f_get_evntfuncs,
   NULL
 };
 
@@ -154,6 +160,7 @@ PT_THREAD(set_level(struct httpd_state *s, char *ptr) __reentrant)
   PSOCK_SEND_STR(&s->sout, uip_appdata);
   PSOCK_END(&s->sout);
 }
+
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(get_level(struct httpd_state *s, char *ptr) __reentrant)
@@ -406,13 +413,14 @@ PT_THREAD(get_tsday(struct httpd_state *s, char *ptr) __reentrant)
 {
   u8_t check_box, day;
 
+  PSOCK_BEGIN(&s->sout);
+
   while (*ptr != ' ')
     ptr++;
   ptr++;
   check_box = atoi(ptr)-1;
   day = 1 << check_box;
 
-  PSOCK_BEGIN(&s->sout);
   if (s->parms.ts && s->parms.tsmodify) {
     if (day & s->parms.ts->weekday) {
       sprintf ((char*)uip_appdata, "checked");
@@ -436,6 +444,115 @@ PT_THREAD(get_tsx(struct httpd_state *s, char *ptr) __reentrant)
 
   PSOCK_END(&s->sout);
 }
+
+/*---------------------------------------------------------------------------*/
+static unsigned short generate_event_map(void *arg) __reentrant
+{
+  struct httpd_state *s = (struct httpd_state *)arg;
+  rule_t *r = (rule_t *)s->ptr;
+  event_prv_t *ep;
+  action_mgr_t *am;
+  int i;
+
+  ep = r->event;
+  am = r->action;
+  i = sprintf((char *)uip_appdata,
+              "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td>", s->i);
+  i += sprintf((char *)uip_appdata+i,
+              "<td>%s</td>", (r->base.enabled) ? "Yes" : "No");
+  i += sprintf((char *)uip_appdata+i, "<td>%s</td>", ep->base.name);
+  i += sprintf((char *)uip_appdata+i, "<td>%s</td>", am->base.name);
+  i += sprintf((char *)uip_appdata+i, "<td>None</td>");
+  i += sprintf((char *)uip_appdata+i, "</td></tr>");
+
+  if (i > UIP_BUFSIZE) {
+    A_(printf (__FILE__ "@generate_event_map: Buffer overrun, we are fucked !\n");)
+  }
+  return strlen(uip_appdata);
+}
+
+#pragma save
+#pragma nogcse
+static
+PT_THREAD(map_get_events(struct httpd_state *s, char *ptr) __reentrant)
+{
+  IDENTIFIER_NOT_USED(ptr);
+
+  PSOCK_BEGIN(&s->sout);
+
+  s->parms.iter.type = EVENT_RULE;
+  if (evnt_iter_create(&s->parms.iter)) {
+    A_(printf (__FILE__ " Error when creating iterator !\n");)
+  } else {
+    s->ptr = evnt_iter_get_first_entry(&s->parms.iter);
+    s->i = 0;
+    while (s->ptr) {
+      PSOCK_GENERATOR_SEND (&s->sout, generate_event_map, s);
+      s->ptr = (event_prv_t *)evnt_iter_get_next_entry(&s->parms.iter);
+      s->i++;
+    }
+  }
+
+  PSOCK_END(&s->sout);
+}
+#pragma restore
+
+/*---------------------------------------------------------------------------*/
+static unsigned short generate_event_functions(void *arg) __reentrant
+{
+  struct httpd_state *s = (struct httpd_state *)arg;
+  void *ep = (void *)s->ptr;
+  unsigned long num = 0;
+
+  switch (GET_EVENT_BASE(ep).type)
+  {
+    case 1:
+      num |= (int)ep;
+      num |= (unsigned long)(((event_prv_t*)ep)->type) << 16;
+      break;
+    case 2:
+      num |= (int)ep;
+      num |= (unsigned long)(((action_mgr_t*)ep)->type) << 16;
+      break;
+    default:
+      /* TODO: Implement getting rule from number, if necessery */
+      A_(printf (__FILE__ " You need to implement new features dude !\n");)
+      break;
+  }
+
+  if (sprintf((char *)uip_appdata,
+              "<option value=\"%ld\">%s</option>", num, GET_EVENT_BASE(ep).name)
+              > UIP_BUFSIZE) {
+    A_(printf (__FILE__ "@generate_event_functions: Buffer overrun, we are fucked !\n");)
+  }
+  return strlen(uip_appdata);
+}
+
+#pragma save
+#pragma nogcse
+static
+PT_THREAD(get_evntfuncs(struct httpd_state *s, char *ptr) __reentrant)
+{
+  PSOCK_BEGIN(&s->sout);
+
+  while (*ptr != ' ')
+    ptr++;
+  ptr++;
+  s->parms.iter.type = !atoi(ptr) ? EVENT_EVENT_PROVIDER : EVENT_ACTION_MANAGER;
+
+  if (evnt_iter_create(&s->parms.iter)) {
+    A_(printf (__FILE__ " Error when creating iterator !\n");)
+  } else {
+    s->ptr = evnt_iter_get_first_entry(&s->parms.iter);
+    while (s->ptr) {
+      PSOCK_GENERATOR_SEND (&s->sout, generate_event_functions, s);
+      s->ptr = (event_prv_t *)evnt_iter_get_next_entry(&s->parms.iter);
+    }
+  }
+
+  PSOCK_END(&s->sout);
+}
+#pragma restore
 
 /*---------------------------------------------------------------------------*/
 static

@@ -43,6 +43,7 @@
 		<Compiler>
 			<Add option="--model-large" />
 			<Add option="-mmcs51" />
+			<Add option="--debug" />
 			<Add option="--Werror" />
 			<Add option="-DCONFIG_BANKED=1" />
 			<Add option="-DHAVE_FLASH=1" />
@@ -93,6 +94,7 @@
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\set_level.cgi" />
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\start_ramp.cgi" />
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\stop_ramp.cgi" />
+		<Unit filename="..\apps\webserver\httpd-fs\cmap.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\events.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\footer.html" />
 		<Unit filename="..\apps\webserver\httpd-fs\header.html" />

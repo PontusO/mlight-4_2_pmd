@@ -57,6 +57,7 @@ struct cgi_parameters {
   time_spec_t *ts;
   u16_t tslist;
   u8_t tsmodify;
+  evnt_iter_t iter;
 };
 extern struct cgi_parameters cgi_parms_ctrl;
 
@@ -72,9 +73,10 @@ struct httpd_state {
   char *scriptptr;
   int scriptlen;
   unsigned short content_length;
-  int i;    /* Free agent, can be used by cgi's to create loops */
   u8_t is_authorized;
   struct cgi_parameters parms;
+  int i;      /* Free agent, can be used by cgi's to create loops */
+  void *ptr;  /* Free agent, can freely be used by cgi's */
 };
 
 void httpd_init(void) __banked;

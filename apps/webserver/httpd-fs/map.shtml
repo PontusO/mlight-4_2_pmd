@@ -1,7 +1,31 @@
 %!: /header.html
 <center>
-<h1>Event Mapping</h1><hr color="#258D92" size="4" width="75%">
-Comming Soon
+<h1>Event Mapping</h1><hr color="#258D92" size="2" width="90%">
+<form name="A"><center><table width="90%" class="mytab">
+<script language="Javascript">
+<!--
+function OnModify(){
+document.A.mapcmd.value = "modify";
+document.A.action = "tentry.shtml";
+document.A.submit();
+return true;}
+function OnDelete() {
+document.A.mapcmd.value = "delete";
+document.A.action = "tevents.shtml";
+document.A.submit();
+return true;}
+-->
+</script>
+<noscript>You need Javascript enabled for this to work</noscript>
+<tr><th>Mark</th><th>Enabled</th><th>Event Provider</th><th>Action Manager</th><th>Schedule</th>
+</tr>%! map-get-events
+</table></center>
+<input type="hidden" name="mapcmd" value="">
+<hr color="#258D92" size="2" width="90%"><br>
+<input type="button" name="submod" value="Modify" onClick="return OnModify();">
+<button type="button" onClick="location='cmap.shtml';">Create New</button>
+<input type="button" name="subdel" value="Delete" onClick="return OnDelete();">
+</form>
 </center>
 %!: /footer.html
 

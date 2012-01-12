@@ -53,7 +53,7 @@ char *ramp_states_str[] = {"Steady", "Increasing", "Decreasing"};
 
 /* The action manager handle */
 static action_mgr_t  rampmgr;
-static const char *ramp_name = "Ramp light";
+static const char *ramp_name = "Light Ramp";
 
 /*
  * Initialize the ramp manager
@@ -63,11 +63,11 @@ void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked
   u8_t channel = rmgr->channel;
 
   rampmgr.base.type = EVENT_ACTION_MANAGER;
+  rampmgr.type = ATYPE_RAMP_ACTION;
   rampmgr.base.name = ramp_name;
-  rampmgr.props = ACT_PRP_RAMP_VALUE;
+//  rampmgr.props = ACT_PRP_RAMP_VALUE;
   rampmgr.vt.stop_action = ramp_stop;
   rampmgr.vt.trigger_action = ramp_trigger;
-
 
   if (channel < CFG_NUM_PWM_DRIVERS) {
     A_(printf (__FILE__ " Initializing ramp mgr %p on channel %d\n",
@@ -184,6 +184,26 @@ exit:
     free_timer(ramp->timer);
   }
   PT_END (&ramp->pt);
+}
+
+PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *rctrl) __reentrant __banked)
+{
+  PT_BEGIN(&rctrl->pt);
+
+  rctrl->signal = 0;
+
+  if (evnt_register_handle(&rampmgr) < 0) {
+    rampmgr.base.type = EVENT_ACTION_MANAGER;
+    A_(printf (__FILE__ " Could not register event !\n");)
+  }
+
+  while (1)
+  {
+    /* Wait for a ramp command to arrive */
+    PT_WAIT_UNTIL (&rctrl->pt, rctrl->signal);
+  }
+
+  PT_END(&rctrl->pt);
 }
 
 PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked)

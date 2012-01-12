@@ -42,8 +42,11 @@
  * It should be implemented by the event provider that intends to
  * communicate with this manager.
  */
-typedef struct act_ramp_data_s {
+typedef struct {
   char channel;
+  unsigned char rampto;
+  unsigned char rate;
+  unsigned char step;
   int value;
 } act_ramp_data_t;
 
@@ -81,9 +84,15 @@ typedef struct {
   char state;
 } ramp_mgr_t;
 
+typedef struct {
+  struct pt pt;
+  char signal;
+} ramp_ctrl_t;
+
 void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked;
 ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant __banked;
 char *get_ramp_state (ramp_mgr_t *rmgr) __reentrant __banked;
 PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked);
+PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *rctrl) __reentrant __banked);
 
 #endif // RAMP_MGR_H_INCLUDED

@@ -28,7 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-//#define PRINT_A
+#define PRINT_B
 
 #include "system.h"
 #include "pt.h"
@@ -60,6 +60,53 @@ void init_event_switch(event_thread_t *et)
 }
 
 /* **************************** Events ***********************************/
+/**
+ * Lookup the ID number from a supplied pointer. If the provider was
+ * found the corresponding ID is returned, otherwise -1 is returned.
+ */
+/* TODO: Rewrite to handle all event types */
+char get_num_from_event (event_prv_t *ptr) __reentrant __banked
+{
+  u8_t i;
+
+  for (i=0; i<MAX_NR_EVENT_PROVIDERS; i++) {
+    if (event_table[i] && event_table[i] == ptr)
+      return i;
+  }
+  return -1;
+}
+
+/**
+ * Lookup the ID number from a supplied pointer. If the provider was
+ * found the corresponding ID is returned, otherwise -1 is returned.
+ */
+char get_num_from_action (action_mgr_t *ptr) __reentrant __banked
+{
+  u8_t i;
+
+  for (i=0; i<MAX_NR_EVENT_PROVIDERS; i++) {
+    if (action_table[i] && action_table[i] == ptr)
+      return i;
+  }
+  return -1;
+}
+
+event_prv_t *get_event_from_num (u8_t entry) __reentrant __banked
+{
+  if (entry < MAX_NR_EVENT_PROVIDERS)
+    return event_table[entry];
+  else
+    return NULL;
+}
+
+action_mgr_t *get_action_from_num (u8_t entry) __reentrant __banked
+{
+  if (entry < MAX_NR_ACTION_MGRS)
+    return action_table[entry];
+  else
+    return NULL;
+}
+
 static char find_first_free_entry(void **table, char max)
 {
   char i;
@@ -72,21 +119,21 @@ static char find_first_free_entry(void **table, char max)
   return -1;
 }
 
-/**
+/*
  * This function will register both event providers and action managers
  * as well as rules in the event switch. The supplied handle need to be
  * initialized with the correct handle type before calling this function.
  * Example of how to register an action manager:
  *
-  static action_mgr_t  absvalmgr;
-
-  absvalmgr.base.type = EVENT_ACTION_MANAGER;
-  absvalmgr.base.name = "A cool action manager";  // This is for the GUI
-  absvalmgr.props = ACT_PRP_ABSOLUTE_VALUE;
-  absvalmgr.vt.stop_action = absval_stop;
-  absvalmgr.vt.trigger_action = absval_trigger;
-
-  evnt_register_handle (&absvalmgr);
+ * static action_mgr_t  absvalmgr;
+ *
+ * absvalmgr.base.type = EVENT_ACTION_MANAGER;
+ * absvalmgr.base.name = "A cool action manager";  // This is for the GUI
+ * absvalmgr.props = ACT_PRP_ABSOLUTE_VALUE;
+ * absvalmgr.vt.stop_action = absval_stop;
+ * absvalmgr.vt.trigger_action = absval_trigger;
+ *
+ * evnt_register_handle (&absvalmgr);
  *
  */
 char evnt_register_handle(void *handle) __reentrant
@@ -122,12 +169,15 @@ char evnt_register_handle(void *handle) __reentrant
   B_(printf(__FILE__ " Using pointer %p, setting element %p\n", ptr, &ptr[tmp]);)
   ptr[tmp] = (void*)handle;
   peb->enabled = 1;
-  pctr++;
+  /* This gets optimized out */
+  // **pctr++;
+  /* This does not */
+  *pctr += 1;
 
   return tmp;
 }
 
-/**
+/*
  * This function will unregister the specified handle from the event switch.
  * Probably most needed for rules configuration but can be used for dynamic
  * event providers and action managers as well.
@@ -149,6 +199,78 @@ char unregister_event_pvdr(char entry) __reentrant
   return 0;
 }
 
+/*
+ * Configure an iterator for iterating through a specified table.
+ */
+char evnt_iter_create (evnt_iter_t *iter) __reentrant __banked
+{
+  iter->cur = 0;
+  iter->num = 0;
+  iter->tptr = NULL;
+
+  return 0;
+}
+
+/*
+ * Get the first entry from the specified table.
+ * The result must be cast to the proper type by the caller.
+ * It will return a NULL result if something went wrong or
+ * if there is no first entry.
+ */
+void *evnt_iter_get_first_entry(evnt_iter_t *iter) __reentrant __banked
+{
+  void *ptr;
+  char *pctr;
+
+  B_(printf (__FILE__ " Getting first entry, type=%d\n", (int)iter->type);)
+  switch (iter->type) {
+    case EVENT_EVENT_PROVIDER:
+      ptr = (void*)event_table;
+      pctr = &nr_registered_events;
+      break;
+    case EVENT_ACTION_MANAGER:
+      ptr = (void*)action_table;
+      pctr = &nr_registered_actions;
+      break;
+    case EVENT_RULE:
+      ptr = (void*)rule_table;
+      pctr = &nr_registered_rules;
+      break;
+    default:
+      A_(printf(__FILE__ " Error: Incorrect event type entered !\n");)
+      return NULL;
+  }
+
+  /* Update the iterator with information about the table */
+  iter->cur = 0;
+  iter->tptr = ptr;
+  iter->num = *pctr;
+  B_(printf (__FILE__ " %p - cur: %d, tot: %d, ptr: %p",
+             iter, (int)iter->cur, (int)iter->num, iter->tptr);)
+  B_(printf (" retptr %p\n", iter->tptr[iter->cur]);)
+
+  return iter->tptr[iter->cur];
+}
+
+/*
+ * Get the next active entry from the specified table
+ * The result must be cast to the proper type by the caller.
+ * It will return a NULL result when there are no more entries in the table.
+ */
+void *evnt_iter_get_next_entry(evnt_iter_t *iter) __reentrant __banked
+{
+  B_(printf (__FILE__ " cur: %d, tot: %d\n", (int)iter->cur, (int)iter->num);)
+  while (++iter->cur < iter->num) {
+    if (iter->tptr[iter->cur]) {
+      B_(printf (__FILE__ " %p - Returning item %d\n", iter, (int)iter->cur);)
+      return iter->tptr[iter->cur];
+    } else {
+      B_(printf (__FILE__ " %p - No entry at %d\n", iter, (int)iter->cur);)
+    }
+  }
+  return NULL;
+}
+
 /* ***************************** Event machine ****************************/
 /*
  * Go through the list of event signals and return as soon as the
@@ -160,7 +282,7 @@ char unregister_event_pvdr(char entry) __reentrant
  * possibly be a problem in a system with very high loads on certain
  * event providers.
  */
-static char query_events()
+static event_prv_t *query_events()
 {
   char i;
 
@@ -171,28 +293,28 @@ static char query_events()
       A_(printf (__FILE__ " Event Provider %d, Signal Content %d\n",
               i, event_table[i]->signal);)
       event_table[i]->signal = 0;
-      return i;
+      return event_table[i];
     }
   }
   /* Indicate that no event has occured */
-  return -1;
+  return NULL;
 }
 
 /*
  * Map an action from a given event
  *
- * At the moment multiple action providers for one event provider is not
+ * At the moment multiple action managers for one event provider is not
  * supported. Is this a requirement ????
  */
-static char get_action_from_event(char event)
+static action_mgr_t *get_action_from_event(void *event)
 {
   char i;
 
   for (i=0; i<MAX_NR_RULES; i++)
     if ((rule_table[i]->base.enabled) &&     // Make sure entry is enabled
         (rule_table[i]->event == event))     // and that the event match
-      return i;
-  return -1;
+      return rule_table[i]->action;
+  return NULL;
 }
 
 /**
@@ -209,14 +331,14 @@ PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant)
   A_(printf(__FILE__ " Started the event switch !\n");)
 
   while (1) {
-    PT_WAIT_UNTIL(&et->pt, (et->current_event = query_events()) != -1);
+    PT_WAIT_UNTIL(&et->pt, (et->current_event = query_events()) != NULL);
     A_(printf(__FILE__ " Received an event !\n");)
     et->new_action = get_action_from_event(et->current_event);
-    if (et->new_action != -1) {
+    if (et->new_action != NULL) {
       /* Stop any ongoing action in the action manager */
-      action_table[et->new_action]->vt.stop_action();
+      et->new_action->vt.stop_action();
       /* And execute the new trigger with data from the event provider */
-      action_table[et->new_action]->vt.trigger_action(event_table[et->current_event]->priv);
+      et->new_action->vt.trigger_action(et->current_event->act_data);
     } else {
       A_(printf(__FILE__ " Warning: No action mapped to event %d\n", et->current_event);)
     }

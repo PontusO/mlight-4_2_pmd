@@ -28,7 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-//#define PRINT_A     // Enable A prints
+#define PRINT_A     // Enable A prints
 
 #include <stdlib.h>
 
@@ -44,11 +44,14 @@
 #define ADC_RESOLUTION    10
 #define VALUE_SHIFT       (16 - ADC_RESOLUTION)
 
+/* Local prototypes */
+void *adc_event_get_dptr(void);
+
 /* Event handle */
-static event_prv_t adcevent;
-static const char *adc_name = "Potentiometer Input";
-/* Event data */
-act_absolute_data_t abs_data;
+static event_prv_t adcevents[4];
+static const char *adc_names[4] =
+  { "Potentiometer Channel 1", "Potentiometer Channel 2",
+    "Potentiometer Channel 3", "Potentiometer Channel 4" };
 
 /*
  * Initialize the adc_event pthread
@@ -60,24 +63,31 @@ void init_adc_event(adc_event_t *adc_event) __reentrant __banked
   PT_INIT(&adc_event->pt);
 
   /* Initialize the event data */
-  adcevent.base.type = EVENT_EVENT_PROVIDER;
-  adcevent.base.name = (char*)adc_name;
-  adcevent.priv = (act_absolute_data_t *)abs_data;
-  adcevent.signal = 0;
+  for (i=0; i<CFG_NUM_POTS; i++) {
+    adcevents[i].base.type = EVENT_EVENT_PROVIDER;
+    adcevents[i].type = ETYPE_POTENTIOMETER_EVENT;
+    adcevents[i].base.name = (char*)adc_names[i];
+//    adcevents[i].evt_data = (adc_input_t *)&adc_input[i];
+    adcevents[i].signal = 0;
+    adcevents[i].vt.get_edptr = adc_event_get_dptr;
+  }
 
   /* This will ensure that the light settings will update on start */
   for (i=0;i<CFG_NUM_POTS;i++)
     adc_event->prev_pot_val[i] = 100;
-
 }
 
 PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
 {
+  char i;
+
   PT_BEGIN(&adc_event->pt);
 
   /* Register the event provider */
-  evnt_register_handle(&adcevent);
-  A_(printf (__FILE__ " Starting adc_event pthread, handle ptr %p!\n", &adcevent);)
+  for (i=0; i<CFG_NUM_POTS; i++)
+    evnt_register_handle(&adcevents[i]);
+
+  A_(printf (__FILE__ " Starting adc_event pthread, handle ptr %p!\n", &adcevents);)
 
   while (1)
   {
@@ -104,10 +114,13 @@ PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
       if (adc_event->pot_val >= 0xff00)
         adc_event->pot_val = 0xffff;
       A_(printf (__FILE__ " pot_val = %04x\n", adc_event->pot_val);)
-      /* Update event data and signal */
-      abs_data.channel = adc_event->channel;
-      abs_data.value = adc_event->pot_val;
-      adcevent.signal = 1;
+
+      /* Get the related data pointer from the event system */
+      adc_event->dptr = (adc_input_t*)event_get_dptr (&adcevents[i]);
+
+      adc_event->dptr.
+      put[adc_event->channel].abs_data.value = adc_event->pot_val;
+      adcevents[adc_event->channel].signal = 1;
       adc_event->prev_pot_val[adc_event->channel] = temp;
     }
   }

@@ -32,12 +32,18 @@
 #define adc_event_H_INCLUDED
 
 #include "pt.h"
+#include <absval_mgr.h>
+#include <ramp_mgr.h>
 
 #define CFG_NUM_POTS    4
 
 /*
  * Data types used by the adc_event
  */
+typedef struct {
+  unsigned char channel;    /* Potentiometer channel */
+} adc_input_data_t;
+
 typedef struct adc_event_p {
   struct pt pt;
   char channel;

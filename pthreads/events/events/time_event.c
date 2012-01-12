@@ -48,8 +48,10 @@ void init_time_event(time_event_t *time_event) __reentrant __banked
   memset (time_event, 0, sizeof *time_event);
   /* Initialize the event data */
   time_event->event.base.type = EVENT_EVENT_PROVIDER;
+  time_event->event.type = ETYPE_TIME_EVENT;
   time_event->event.base.name = time_event_name;
-  time_event->event.priv = NULL;  /* For, now. Should point to the real event data */
+  time_event->event.evt_data = NULL;  /* For, now. Should point to the real event data */
+  time_event->event.act_data = NULL;  /* For, now. Should point to the real event data */
   time_event->event.signal = 0;
 
   PT_INIT(&time_event->pt);
@@ -98,7 +100,9 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
 
   A_(printf (__FILE__ " Starting time_event pthread!\n");)
   /* Register us as a event provider */
-  evnt_register_handle(&time_event->event);
+  if (evnt_register_handle(&time_event->event) < 0) {
+    A_(printf (__FILE__ " Could not register event !\n");)
+  }
 
   while (1)
   {
