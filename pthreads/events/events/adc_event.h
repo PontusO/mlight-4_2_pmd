@@ -32,8 +32,8 @@
 #define adc_event_H_INCLUDED
 
 #include "pt.h"
-#include <absval_mgr.h>
-#include <ramp_mgr.h>
+#include "absval_mgr.h"
+#include "ramp_mgr.h"
 
 #define CFG_NUM_POTS    4
 
@@ -44,10 +44,13 @@ typedef struct {
   unsigned char channel;    /* Potentiometer channel */
 } adc_input_data_t;
 
-typedef struct adc_event_p {
+typedef struct {
   struct pt pt;
   char channel;
   int pot_val;
+  void *adptr;
+  /* For some reason the compiler won't allow the next line */
+  /* rule_action_data_t *adptr; */
   int prev_pot_val[CFG_NUM_POTS];
 } adc_event_t;
 

@@ -34,8 +34,9 @@
 
 #include "system.h"
 #include "iet_debug.h"
-#include "adc_event.h"
+
 #include "event_switch.h"
+#include "adc_event.h"
 #include "absval_mgr.h"
 #include "adc.h"
 
@@ -67,9 +68,7 @@ void init_adc_event(adc_event_t *adc_event) __reentrant __banked
     adcevents[i].base.type = EVENT_EVENT_PROVIDER;
     adcevents[i].type = ETYPE_POTENTIOMETER_EVENT;
     adcevents[i].base.name = (char*)adc_names[i];
-//    adcevents[i].evt_data = (adc_input_t *)&adc_input[i];
     adcevents[i].signal = 0;
-    adcevents[i].vt.get_edptr = adc_event_get_dptr;
   }
 
   /* This will ensure that the light settings will update on start */
@@ -114,14 +113,20 @@ PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
       if (adc_event->pot_val >= 0xff00)
         adc_event->pot_val = 0xffff;
       A_(printf (__FILE__ " pot_val = %04x\n", adc_event->pot_val);)
-
-      /* Get the related data pointer from the event system */
-      adc_event->dptr = (adc_input_t*)event_get_dptr (&adcevents[i]);
-
-      adc_event->dptr.
-      put[adc_event->channel].abs_data.value = adc_event->pot_val;
-      adcevents[adc_event->channel].signal = 1;
       adc_event->prev_pot_val[adc_event->channel] = temp;
+
+      /* Get the action data pointer from the rule manager */
+      adc_event->adptr =
+        rule_get_action_dptr (&adcevents[adc_event->channel]);
+
+      /* There is no need to different between different action managers here
+       * since adc events are only compatible with the absolute data manager */
+      ((rule_action_data_t *)(adc_event->adptr))->abs_data.value = adc_event->pot_val;
+
+      /* Send the signal */
+      if (event_send_signal (&adcevents[adc_event->channel]) == -1) {
+        A_(printf (__FILE__ " Warning: Failed to send signal !\n");)
+      }
     }
   }
 

@@ -459,7 +459,7 @@ static unsigned short generate_event_map(void *arg) __reentrant
   i = sprintf((char *)uip_appdata,
               "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td>", s->i);
   i += sprintf((char *)uip_appdata+i,
-              "<td>%s</td>", (r->base.enabled) ? "Yes" : "No");
+              "<td>%s</td>", (r->status == RULE_STATUS_ENABLED) ? "Yes" : "No");
   i += sprintf((char *)uip_appdata+i, "<td>%s</td>", ep->base.name);
   i += sprintf((char *)uip_appdata+i, "<td>%s</td>", am->base.name);
   i += sprintf((char *)uip_appdata+i, "<td>None</td>");

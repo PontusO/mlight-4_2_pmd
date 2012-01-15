@@ -76,7 +76,6 @@ ramp_mgr_t      ramp_mgr[4];
 event_thread_t  event_thread;
 absval_mgr_t    absval_mgr;
 adc_event_t     adc_event;
-rule_t          test_rule;
 time_event_t    time_event;
 
 // ---------------------------------------------------------------------------
@@ -168,15 +167,7 @@ void pmd(void) __banked
   init_absval_mgr(&absval_mgr);
   /* Event providers */
   init_adc_event(&adc_event);
-  /* Here's a test rule */
-  test_rule.base.type = EVENT_RULE;
-  test_rule.base.name = (char*)"Test Rule";
-  /* Just for testing, this will be the first event provider registered */
-  test_rule.event = 0;
-  /* Just for testing, this will be the first action manager registered */
-  test_rule.action = 0;
-  A_(printf(__FILE__ " Test rule ptr %p\n", &test_rule);)
-  evnt_register_handle(&test_rule);
+  /* Time events */
   init_time_event (&time_event);
 
   while(1)

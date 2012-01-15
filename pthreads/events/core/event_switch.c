@@ -40,8 +40,6 @@ static  char nr_registered_actions;
 static  action_mgr_t *action_table[MAX_NR_ACTION_MGRS];
 static  char nr_registered_events;
 static  event_prv_t *event_table[MAX_NR_EVENT_PROVIDERS];
-static  char nr_registered_rules;
-static  rule_t *rule_table[MAX_NR_RULES];
 
 void init_event_switch(event_thread_t *et)
 {
@@ -49,14 +47,11 @@ void init_event_switch(event_thread_t *et)
 
   nr_registered_actions = 0;
   nr_registered_events = 0;
-  nr_registered_rules = 0;
   memset (action_table, 0, sizeof *action_table);
   memset (event_table, 0, sizeof *event_table);
-  memset (rule_table, 0, sizeof *rule_table);
 
   B_(printf(__FILE__ " Action table ptr %p\n", action_table);)
   B_(printf(__FILE__ " Event table ptr %p\n", event_table);)
-  B_(printf(__FILE__ " Rule table ptr %p\n", rule_table);)
 }
 
 /* **************************** Events ***********************************/
@@ -155,11 +150,6 @@ char evnt_register_handle(void *handle) __reentrant
       ptr = (void*)action_table;
       pctr = &nr_registered_actions;
       break;
-    case EVENT_RULE:
-      tmp = find_first_free_entry((void*)rule_table, MAX_NR_RULES);
-      ptr = (void*)rule_table;
-      pctr = &nr_registered_rules;
-      break;
     default:
       A_(printf(__FILE__ " Error: Incorrect event type entered !\n");)
       return -1;
@@ -200,6 +190,27 @@ char unregister_event_pvdr(char entry) __reentrant
 }
 
 /*
+ * Set the signal for the supplied event provider instance.
+ * If the provider is not found, return -1 as an error.
+ */
+char event_send_signal (event_prv_t *ep)
+{
+  u8_t i;
+
+  /* Do a look up of the event provide */
+  for (i=0; i<MAX_NR_EVENT_PROVIDERS; i++) {
+    if (event_table[i] == ep) {
+      /* ep is a valid event provider pointer, so send the signal */
+      ep->signal = 1;
+      return i;
+    }
+  }
+  return -1;
+
+}
+
+
+/*
  * Configure an iterator for iterating through a specified table.
  */
 char evnt_iter_create (evnt_iter_t *iter) __reentrant __banked
@@ -231,10 +242,6 @@ void *evnt_iter_get_first_entry(evnt_iter_t *iter) __reentrant __banked
     case EVENT_ACTION_MANAGER:
       ptr = (void*)action_table;
       pctr = &nr_registered_actions;
-      break;
-    case EVENT_RULE:
-      ptr = (void*)rule_table;
-      pctr = &nr_registered_rules;
       break;
     default:
       A_(printf(__FILE__ " Error: Incorrect event type entered !\n");)
@@ -271,77 +278,3 @@ void *evnt_iter_get_next_entry(evnt_iter_t *iter) __reentrant __banked
   return NULL;
 }
 
-/* ***************************** Event machine ****************************/
-/*
- * Go through the list of event signals and return as soon as the
- * first event is found. Currently this function supports up to 128 events.
- * Currently a return value of -1 indicates that no event was detected.
- *
- * As it is implemented at the moment it will always process the event
- * provider with the highest priority (= registration order). This could
- * possibly be a problem in a system with very high loads on certain
- * event providers.
- */
-static event_prv_t *query_events()
-{
-  char i;
-
-  for (i=0; i<MAX_NR_EVENT_PROVIDERS; i++) {
-    if ((event_table[i]->base.enabled) &&   // Make sure entry is enabled
-        (event_table[i]->signal)) {         // Check if signal has been triggered
-      /* Reset signal */
-      A_(printf (__FILE__ " Event Provider %d, Signal Content %d\n",
-              i, event_table[i]->signal);)
-      event_table[i]->signal = 0;
-      return event_table[i];
-    }
-  }
-  /* Indicate that no event has occured */
-  return NULL;
-}
-
-/*
- * Map an action from a given event
- *
- * At the moment multiple action managers for one event provider is not
- * supported. Is this a requirement ????
- */
-static action_mgr_t *get_action_from_event(void *event)
-{
-  char i;
-
-  for (i=0; i<MAX_NR_RULES; i++)
-    if ((rule_table[i]->base.enabled) &&     // Make sure entry is enabled
-        (rule_table[i]->event == event))     // and that the event match
-      return rule_table[i]->action;
-  return NULL;
-}
-
-/**
- * This is the actual event_switch.
- * This thread will wait for a signal to come in from any of the registered
- * event providers. It will then look in the rules table to see if the
- * incoming event has an action manager connected to it and if so signal
- * the action manager that an event has occured.
- */
-PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant)
-{
-  PT_BEGIN(&et->pt);
-
-  A_(printf(__FILE__ " Started the event switch !\n");)
-
-  while (1) {
-    PT_WAIT_UNTIL(&et->pt, (et->current_event = query_events()) != NULL);
-    A_(printf(__FILE__ " Received an event !\n");)
-    et->new_action = get_action_from_event(et->current_event);
-    if (et->new_action != NULL) {
-      /* Stop any ongoing action in the action manager */
-      et->new_action->vt.stop_action();
-      /* And execute the new trigger with data from the event provider */
-      et->new_action->vt.trigger_action(et->current_event->act_data);
-    } else {
-      A_(printf(__FILE__ " Warning: No action mapped to event %d\n", et->current_event);)
-    }
-  }
-  PT_END(&et->pt);
-}

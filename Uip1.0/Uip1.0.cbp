@@ -218,6 +218,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pthreads\events\core\event_switch.h" />
+		<Unit filename="..\pthreads\events\core\rule_mgr.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="..\pthreads\events\events\adc_event.c">
 			<Option compilerVar="CC" />
 		</Unit>

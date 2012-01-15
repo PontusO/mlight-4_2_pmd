@@ -93,6 +93,7 @@
 #define MAX_NR_ACTION_MGRS      5
 #define MAX_NR_EVENT_PROVIDERS  20
 #define MAX_NR_RULES            20
+#define RULE_NAME_LENGTH        8
 
 typedef enum {
   EVENT_EVENT_PROVIDER = 1,
@@ -146,7 +147,6 @@ typedef enum {
  * stop method.
  */
 typedef struct {
-  void *(*get_adptr)(void) __reentrant; /* Get action data pointer */
   void (*stop_action)(void) __reentrant;
   void (*trigger_action)(void* action_data) __reentrant;
 } action_vt_t;
@@ -163,12 +163,6 @@ typedef struct {
 } action_mgr_t;
 
 /**
- * An event provider can implement these methods.
- */
-typedef struct {
-  void *(*get_edptr)(void) __reentrant; /** Get event data pointer */
-} event_vt_t;
-/**
  * The event provider handle.
  * All event providers need to create its own instance of this data
  * structure and fill out the fields before registering the handle
@@ -177,14 +171,19 @@ typedef struct {
 typedef struct {
   event_base_t base;  /** Base structure */
   event_event_t type; /** The particular event trype */
+  void *rule;       /** Parent rule */
   void *evt_data;     /** Pointer to Event Data */
   void *act_data;     /** Pointer to Action Data */
   char signal;
-  event_vt_t vt;
 } event_prv_t;
 
+typedef enum {
+  RULE_STATUS_DISABLED = 0x00,
+  RULE_STATUS_ENABLED = 0x01
+} rule_status_t;
+
 /**
- * This union holds a collection of all action manager data types
+ * This union holds a collection of all event provider data types
  * available in the system.
  */
 typedef union {
@@ -194,6 +193,7 @@ typedef union {
  * This union holds a collection of all action manager data types
  * available in the system.
  */
+
 typedef union {
   act_absolute_data_t abs_data;
   act_ramp_data_t ramp_data;
@@ -201,15 +201,15 @@ typedef union {
 
 /**
  * The rule handle.
- * All rules need to have its own copy of this data structure.
  */
 typedef struct {
-  event_base_t base;              /** Base structure */
+  rule_status_t status;
+  char name[RULE_NAME_LENGTH+1];
   event_prv_t *event;             /** Pointer to connected event */
   action_mgr_t *action;           /** Pointer to action manager */
   unsigned char scenario;         /** Even/Action combination */
-  rule_event_data_t event_data;   /** Data instance for event */
-  rule_action_data_t action_data; /** Data instance for action */
+  rule_event_data_t event_data;   /** Data instance for event providers*/
+  rule_action_data_t action_data; /** Data instance for action managers*/
 } rule_t;
 
 /**
@@ -225,6 +225,7 @@ typedef struct {
 /* Protothread structure */
 typedef struct {
   struct pt pt;
+  rule_t *triggered_rule;
   event_prv_t *current_event;
   action_mgr_t *new_action;
 } event_thread_t;
@@ -238,6 +239,11 @@ void *evnt_iter_get_first_entry(evnt_iter_t *iter) __reentrant __banked;
 void *evnt_iter_get_next_entry(evnt_iter_t *iter) __reentrant __banked;
 char get_num_from_event (event_prv_t *ptr) __reentrant __banked;
 char get_num_from_action (action_mgr_t *ptr) __reentrant __banked;
+action_mgr_t *rule_get_action_from_event (event_prv_t *ep);
+char event_send_signal (event_prv_t *ep);
+rule_t *query_events(void);
 PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant);
+
+void *rule_get_action_dptr (event_prv_t *ep);
 
 #endif // EVENT_SWITCH_H_INCLUDED
