@@ -29,7 +29,7 @@
  */
 
 #pragma codeseg APP_BANK
-#define PRINT_A     // Enable A prints
+//#define PRINT_A     // Enable A prints
 
 #include "system.h"
 #include "flash.h"
@@ -100,9 +100,7 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
 
   A_(printf (__FILE__ " Starting time_event pthread!\n");)
   /* Register us as a event provider */
-  if (evnt_register_handle(&time_event->event) < 0) {
-    A_(printf (__FILE__ " Could not register event !\n");)
-  }
+  evnt_register_handle(&time_event->event);
 
   while (1)
   {
@@ -125,7 +123,7 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
           A_(printf (__FILE__ " Handling a time event !\n");)
             /* "Sound the alarm", note that the event need to be initialized before
              * being sent */
-            // time_event->event.signal = 1;
+            event_send_signal (&time_event->event);
         }
         time_event->time_spec++;
       }

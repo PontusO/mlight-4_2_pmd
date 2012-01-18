@@ -33,7 +33,7 @@
 
 #include "system.h"
 #include "time_event.h"
-#include <rule_mgr.h>
+#include "event_switch.h"
 
 void flash_write_config(void);
 /* write flash */
@@ -56,8 +56,8 @@ struct sys_config
   char password[9];               /* Authentication password */
   u8_t nmbr_time_events;          /* The number of time events in the table */
   time_spec_t time_events[16];    /* Array of time events */
-  u8_t nmbr_of_rule;              /* Hold the number of registered rules */
-  rule_t rules[16];               /* Array of rules */
+  u8_t nmbr_of_rules;             /* Hold the number of registered rules */
+  rule_t rules[MAX_NR_RULES];     /* Array of rules */
 };
 
 #define CONFIG_MEM_SIZE ((u16_t)sizeof(struct sys_config))

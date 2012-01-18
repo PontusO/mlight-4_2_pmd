@@ -1,6 +1,3 @@
-#ifdef CONFIG_BANKED
-#pragma codeseg  UIP_BANK
-#endif
 /*
  * Copyright (c) 2004, Adam Dunkels and the Swedish Institute of
  * Computer Science.
@@ -35,7 +32,7 @@
  * $Id: uiplib.c,v 1.2 2006/06/12 08:00:31 adam Exp $
  *
  */
-
+#pragma codeseg  APP_BANK
 
 #include "uip.h"
 #include "uiplib.h"

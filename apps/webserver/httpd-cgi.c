@@ -44,7 +44,7 @@
  * $Id: httpd-cgi.c,v 1.2 2006/06/11 21:46:37 adam Exp $
  *
  */
-#define PRINT_A
+//#define PRINT_A
 
 #include "uip.h"
 #include "psock.h"
@@ -465,9 +465,6 @@ static unsigned short generate_event_map(void *arg) __reentrant
   i += sprintf((char *)uip_appdata+i, "<td>None</td>");
   i += sprintf((char *)uip_appdata+i, "</td></tr>");
 
-  if (i > UIP_BUFSIZE) {
-    A_(printf (__FILE__ "@generate_event_map: Buffer overrun, we are fucked !\n");)
-  }
   return strlen(uip_appdata);
 }
 
@@ -480,15 +477,14 @@ PT_THREAD(map_get_events(struct httpd_state *s, char *ptr) __reentrant)
 
   PSOCK_BEGIN(&s->sout);
 
-  s->parms.iter.type = EVENT_RULE;
-  if (evnt_iter_create(&s->parms.iter)) {
+  if (rule_iter_create(&s->parms.iter)) {
     A_(printf (__FILE__ " Error when creating iterator !\n");)
   } else {
-    s->ptr = evnt_iter_get_first_entry(&s->parms.iter);
+    s->ptr = rule_iter_get_first_entry(&s->parms.iter);
     s->i = 0;
     while (s->ptr) {
       PSOCK_GENERATOR_SEND (&s->sout, generate_event_map, s);
-      s->ptr = (event_prv_t *)evnt_iter_get_next_entry(&s->parms.iter);
+      s->ptr = (rule_t *)rule_iter_get_next_entry(&s->parms.iter);
       s->i++;
     }
   }
@@ -520,11 +516,9 @@ static unsigned short generate_event_functions(void *arg) __reentrant
       break;
   }
 
-  if (sprintf((char *)uip_appdata,
-              "<option value=\"%ld\">%s</option>", num, GET_EVENT_BASE(ep).name)
-              > UIP_BUFSIZE) {
-    A_(printf (__FILE__ "@generate_event_functions: Buffer overrun, we are fucked !\n");)
-  }
+  sprintf((char *)uip_appdata,
+              "<option value=\"%ld\">%s</option>", num, GET_EVENT_BASE(ep).name);
+
   return strlen(uip_appdata);
 }
 

@@ -54,12 +54,11 @@ void init_absval_mgr(absval_mgr_t *absval_mgr) __reentrant __banked
   absvalmgr.base.type = EVENT_ACTION_MANAGER;
   absvalmgr.type = ATYPE_ABSOLUTE_ACTION;
   absvalmgr.base.name = (char*)absval_name;
-//  absvalmgr.props = ACT_PRP_ABSOLUTE_VALUE;
   absvalmgr.vt.stop_action = absval_stop;
   absvalmgr.vt.trigger_action = absval_trigger;
 }
 
-/* No thread (yet) to interupt so we don't do anything here */
+/* No thread (yet) to interrupt so we don't do anything here */
 void absval_stop (void)
 {
 }

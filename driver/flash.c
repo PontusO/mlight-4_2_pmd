@@ -35,6 +35,7 @@
 #include "string.h"
 #include "iet_debug.h"
 #include "time_event.h"
+#include "event_switch.h"
 
 /* This defines how many bytes there are in a flash page */
 #define FLASH_PAGE_SIZE     1024
@@ -353,6 +354,10 @@ void load_sys_config(void)
 void load_default_config(void)
 {
   memcpy(&sys_cfg, &default_cfg, CONFIG_MEM_SIZE);
+  /* Silly thing here, since it is not possible to define values in the rule
+   * entries due to the unknown size of the data unions, we need to clear this
+   * data programatically. */
+  clear_all_rules();
 }
 
 // EOF

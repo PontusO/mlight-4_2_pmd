@@ -27,11 +27,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#pragma codeseg APP_BANK
+#define PRINT_A
 
-#include <system.h>
-#include <flash.h>
-#include <iet_debug.h>
-#include <event_switch.h>
+#include <string.h>
+
+#include "system.h"
+#include "flash.h"
+#include "iet_debug.h"
+#include "event_switch.h"
 
 /* ***************************** Event machine ****************************/
 /*
@@ -44,6 +48,22 @@
  * possibly be a problem in a system with very high loads on certain
  * event providers. Some kind of round robin should be considered.
  */
+
+/*
+ * Look for the first free rule entry in the table and return a pointer
+ * to it to the caller.
+ */
+rule_t *rule_find_free_entry(void) __reentrant __banked
+{
+  u8_t i;
+
+  for (i=0; i<MAX_NR_RULES; i++) {
+    if (sys_cfg.rules[i].status == RULE_STATUS_FREE) {
+      return &sys_cfg.rules[i];
+    }
+  }
+  return NULL;
+}
 
 /*
  * Generic function for looking up a specific event provider
@@ -59,18 +79,19 @@ static char rule_lookup_event (event_prv_t *ep)
   }
   return -1;
 }
+
 /*
  * This function will lookup the action connected to a specific event provider
  * in the rule table. If the event provider was not found, NULL will be
- * returned. This
+ * returned.
  */
-void *rule_get_action_dptr (event_prv_t *ep)
+union rule_action_data *rule_get_action_dptr (event_prv_t *ep) __reentrant
 {
   char i;
 
   if ((i = rule_lookup_event(ep)) != -1) {
     if (sys_cfg.rules[i].status == RULE_STATUS_ENABLED)
-      return (void*)sys_cfg.rules[i].action_data;
+      return (union rule_action_data *)sys_cfg.rules[i].action_data;
   }
   return NULL;
 }
@@ -79,7 +100,7 @@ void *rule_get_action_dptr (event_prv_t *ep)
  * event provider which has been triggered. If found it will return the
  * associated rule.
  */
-rule_t *query_events(void)
+static rule_t *query_events(void)
 {
   char i;
 
@@ -126,4 +147,64 @@ PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant)
     }
   }
   PT_END(&et->pt);
+}
+
+/*
+ * Configure an iterator for iterating through the rule table.
+ */
+char rule_iter_create (evnt_iter_t *iter) __reentrant __banked
+{
+  iter->cur = 0;
+  iter->num = 0;
+  iter->tptr = NULL;
+
+  return 0;
+}
+
+/*
+ * Get the first entry from the specified table.
+ * The result must be cast to the proper type by the caller.
+ * It will return a NULL result if something went wrong or
+ * if there is no first entry = empty.
+ */
+rule_t *rule_iter_get_first_entry(evnt_iter_t *iter) __reentrant __banked
+{
+  u8_t i;
+
+  /* Look for the first non empty entry */
+  for (i=0; i<MAX_NR_RULES; i++) {
+    if (sys_cfg.rules[i].status != RULE_STATUS_FREE) {
+      iter->cur = i;
+      return &sys_cfg.rules[i];
+    }
+  }
+  return NULL;
+}
+
+/*
+ * Get the next active entry from the specified table
+ * The result must be cast to the proper type by the caller.
+ * It will return a NULL result when there are no more entries in the table.
+ */
+rule_t *rule_iter_get_next_entry(evnt_iter_t *iter) __reentrant __banked
+{
+  while (++iter->cur < MAX_NR_RULES) {
+    if (sys_cfg.rules[iter->cur].status != RULE_STATUS_FREE) {
+      A_(printf (__FILE__ " %p - Returning item %d\n", iter, (int)iter->cur);)
+      return &sys_cfg.rules[iter->cur];
+    }
+  }
+  return NULL;
+}
+
+/*
+ * Clear all rule entries in the sys_cfg area.
+ */
+void clear_all_rules(void) __reentrant __banked
+{
+  u8_t i;
+
+  for (i=0; i<MAX_NR_RULES; i++) {
+    memset (&sys_cfg.rules[i], 0, sizeof (rule_t));
+  }
 }

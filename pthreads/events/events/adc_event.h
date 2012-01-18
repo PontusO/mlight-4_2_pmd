@@ -34,6 +34,7 @@
 #include "pt.h"
 #include "absval_mgr.h"
 #include "ramp_mgr.h"
+#include "event_switch.h"
 
 #define CFG_NUM_POTS    4
 
@@ -48,9 +49,7 @@ typedef struct {
   struct pt pt;
   char channel;
   int pot_val;
-  void *adptr;
-  /* For some reason the compiler won't allow the next line */
-  /* rule_action_data_t *adptr; */
+  union rule_action_data *adptr;
   int prev_pot_val[CFG_NUM_POTS];
 } adc_event_t;
 

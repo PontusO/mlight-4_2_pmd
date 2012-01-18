@@ -29,7 +29,7 @@
  */
 #pragma codeseg APP_BANK
 
-#define PRINT_A     // Enable A prints
+//#define PRINT_A     // Enable A prints
 //#define PRINT_B     // Spam prints
 
 #include <system.h>

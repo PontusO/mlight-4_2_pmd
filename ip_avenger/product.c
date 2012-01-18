@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#define PRINT_A
+//#define PRINT_A
 //#define PRINT_B
 //#define PRINT_C
 

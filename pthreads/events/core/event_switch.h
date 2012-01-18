@@ -95,6 +95,10 @@
 #define MAX_NR_RULES            20
 #define RULE_NAME_LENGTH        8
 
+/* Structure prototypes */
+struct rule;
+
+/* Event switch types */
 typedef enum {
   EVENT_EVENT_PROVIDER = 1,
   EVENT_ACTION_MANAGER,
@@ -159,6 +163,7 @@ typedef struct {
 typedef struct {
   event_base_t base;
   event_action_t type;
+  struct rule *rule;
   action_vt_t vt;
 } action_mgr_t;
 
@@ -171,46 +176,47 @@ typedef struct {
 typedef struct {
   event_base_t base;  /** Base structure */
   event_event_t type; /** The particular event trype */
-  void *rule;       /** Parent rule */
+  struct rule *rule;  /** Parent rule */
   void *evt_data;     /** Pointer to Event Data */
   void *act_data;     /** Pointer to Action Data */
   char signal;
 } event_prv_t;
 
 typedef enum {
-  RULE_STATUS_DISABLED = 0x00,
-  RULE_STATUS_ENABLED = 0x01
+  RULE_STATUS_FREE = 0x00,
+  RULE_STATUS_DISABLED = 0x01,
+  RULE_STATUS_ENABLED = 0x02
 } rule_status_t;
 
 /**
  * This union holds a collection of all event provider data types
  * available in the system.
  */
-typedef union {
+union rule_event_data {
   adc_input_data_t adc_data;
 } rule_event_data_t;
+
 /**
  * This union holds a collection of all action manager data types
  * available in the system.
  */
-
-typedef union {
+union rule_action_data {
   act_absolute_data_t abs_data;
   act_ramp_data_t ramp_data;
-} rule_action_data_t;
+};
 
 /**
  * The rule handle.
  */
-typedef struct {
+struct rule {
   rule_status_t status;
-  char name[RULE_NAME_LENGTH+1];
   event_prv_t *event;             /** Pointer to connected event */
   action_mgr_t *action;           /** Pointer to action manager */
-  unsigned char scenario;         /** Even/Action combination */
-  rule_event_data_t event_data;   /** Data instance for event providers*/
-  rule_action_data_t action_data; /** Data instance for action managers*/
-} rule_t;
+  unsigned int scenario;          /** Even/Action combination */
+  union rule_event_data event_data;   /** Data instance for event providers*/
+  union rule_action_data action_data; /** Data instance for action managers*/
+};
+typedef struct rule rule_t;
 
 /**
  * Iterator type structure
@@ -244,6 +250,10 @@ char event_send_signal (event_prv_t *ep);
 rule_t *query_events(void);
 PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant);
 
-void *rule_get_action_dptr (event_prv_t *ep);
-
+union rule_action_data *rule_get_action_dptr (event_prv_t *ep) __reentrant;
+rule_t *rule_find_free_entry(void) __reentrant __banked;
+char rule_iter_create (evnt_iter_t *iter) __reentrant __banked;
+rule_t *rule_iter_get_first_entry(evnt_iter_t *iter) __reentrant __banked;
+rule_t *rule_iter_get_next_entry(evnt_iter_t *iter) __reentrant __banked;
+void clear_all_rules(void) __reentrant __banked;
 #endif // EVENT_SWITCH_H_INCLUDED

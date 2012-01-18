@@ -63,16 +63,11 @@ function setData (frm)
 </SCRIPT>
 
 <h1>New Event Route</h1><hr color="#258D92" size="2" width="90%">
-<form>
+<form action="map.shtml">
 
 <center>
 <div><table width="90%" class="mytab"><col style="width:40%" />
-<input type="hidden" name="ner" value="%! get-ner
-">
-<tr><td>Route Name</td><td><input type="text" name="mapname" size="16" maxlength="8" value="%! get-mapname
-"></td></tr>
-<tr><td>Enabled</td><td><input type="checkbox" name="mapenabled" %! get-mapenabled
-></td></tr>
+<tr><td>Enabled</td><td><input type="checkbox" name="mapenabled"></td></tr>
 <tr><td>Select Event provider</td><td>
 <select name="evt" onchange="setData(this.form);">
 <option value="-1">(Select an event provider)</option>%! get-evntfuncs 0
@@ -87,22 +82,21 @@ function setData (frm)
 
 <div id="abs" style="display:none">
 <hr color="#258D92" size="2" width="90%"><table width="90%" class="mytab">
-<col style="width:40%" /><tr><td>Output Channel</td>
-<td><select name="aochan"><option value="1">1</option><option value="2">2</option>
+<col style="width:40%" /><tr><td>Output Channel</td><td><select name="achannel"><option value="1">1</option><option value="2">2</option>
 <option value="3">3</option><option value="4">4</option></select></td></tr>
-<tr><td>Output Level Preset</td><td><input type="text" name="aolevel" size="6" maxlength="5"></td></tr>
+<tr><td>Output Level Preset</td><td><input type="text" name="alevel" size="6" maxlength="5"></td></tr>
 </table>
 </div>
 
 <div id="ramp" style="display:none">
 <hr color="#258D92" size="2" width="90%"><table width="90%" class="mytab">
 <col style="width:40%" /><tr><td>Output Channel</td>
-<td><select name="rochan"><option value="1">1</option><option value="2">2</option>
+<td><select name="channel"><option value="1">1</option><option value="2">2</option>
 <option value="3">3</option><option value="4">4</option></select>
 </td></tr>
-<tr><td>Ramp to Level (0-100)</td><td><input type="text" name="rlevel" size="6" maxlength="5"></td></tr>
-<tr><td>Ramp Rate (1-10)</td><td><input type="text" name="rrate" size="3" maxlength="2"></td></tr>
-<tr><td>Ramp Step (1-10)</td><td><input type="text" name="rstep" size="3" maxlength="2"></td></tr>
+<tr><td>Ramp to Level (0-100)</td><td><input type="text" name="rampto" size="6" maxlength="5"></td></tr>
+<tr><td>Ramp Rate (1-10)</td><td><input type="text" name="rate" size="3" maxlength="2"></td></tr>
+<tr><td>Ramp Step (1-10)</td><td><input type="text" name="step" size="3" maxlength="2"></td></tr>
 </table>
 </div>
 
@@ -111,6 +105,7 @@ function setData (frm)
 </div>
 
 <hr color="#258D92" size="2" width="90%"><br>
+<input type="hidden" name="wcmd" value="1">
 <input type="submit" name="submit" value="Save" disabled>
 <input type="reset" name="reset" value="Reset">
 </center></form>

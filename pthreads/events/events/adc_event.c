@@ -69,11 +69,9 @@ void init_adc_event(adc_event_t *adc_event) __reentrant __banked
     adcevents[i].type = ETYPE_POTENTIOMETER_EVENT;
     adcevents[i].base.name = (char*)adc_names[i];
     adcevents[i].signal = 0;
-  }
-
-  /* This will ensure that the light settings will update on start */
-  for (i=0;i<CFG_NUM_POTS;i++)
+    /* This will ensure that the light settings will update on start */
     adc_event->prev_pot_val[i] = 100;
+  }
 }
 
 PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
@@ -86,7 +84,7 @@ PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
   for (i=0; i<CFG_NUM_POTS; i++)
     evnt_register_handle(&adcevents[i]);
 
-  A_(printf (__FILE__ " Starting adc_event pthread, handle ptr %p!\n", &adcevents);)
+  A_(printf (__FILE__ " Starting adc_event pthread, handle ptr %p !\n", &adc_event);)
 
   while (1)
   {
@@ -119,13 +117,16 @@ PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
       adc_event->adptr =
         rule_get_action_dptr (&adcevents[adc_event->channel]);
 
-      /* There is no need to different between different action managers here
-       * since adc events are only compatible with the absolute data manager */
-      ((rule_action_data_t *)(adc_event->adptr))->abs_data.value = adc_event->pot_val;
+      /* Only do data transfers when there is an existing rule available */
+      if (adc_event->adptr) {
+        /* There is no need to different between different action managers here
+         * since adc events are only compatible with the absolute data manager */
+        adc_event->adptr->abs_data.value = adc_event->pot_val;
 
-      /* Send the signal */
-      if (event_send_signal (&adcevents[adc_event->channel]) == -1) {
-        A_(printf (__FILE__ " Warning: Failed to send signal !\n");)
+        /* Send the signal */
+        if (event_send_signal (&adcevents[adc_event->channel]) == -1) {
+          A_(printf (__FILE__ " Warning: Failed to send signal !\n");)
+        }
       }
     }
   }

@@ -28,7 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-#define PRINT_B
+#define PRINT_AB
 
 #include "system.h"
 #include "pt.h"
@@ -108,8 +108,10 @@ static char find_first_free_entry(void **table, char max)
 
   B_(printf(__FILE__ " table pointer %p\n", table);)
   for (i=0; i<max; i++) {
-    if (!table[i])
+    if (!table[i]) {
+      A_(printf (__FILE__ " Using entry %d\n", i);)
       return i;
+    }
   }
   return -1;
 }
@@ -134,36 +136,26 @@ static char find_first_free_entry(void **table, char max)
 char evnt_register_handle(void *handle) __reentrant
 {
   char tmp;
-  void **ptr;
-  char *pctr;
   event_base_t *peb = (event_base_t*)handle;
 
   A_(printf (__FILE__ " Registering %s\n", peb->name);)
   switch (peb->type) {
     case EVENT_EVENT_PROVIDER:
       tmp = find_first_free_entry((void*)event_table, MAX_NR_EVENT_PROVIDERS);
-      ptr = (void*)event_table;
-      pctr = &nr_registered_events;
+      if (tmp == -1) return -1;
+      event_table[tmp] = (event_prv_t *)handle;
+      nr_registered_events++;
       break;
     case EVENT_ACTION_MANAGER:
       tmp = find_first_free_entry((void*)action_table, MAX_NR_ACTION_MGRS);
-      ptr = (void*)action_table;
-      pctr = &nr_registered_actions;
+      if (tmp == -1) return -1;
+      action_table[tmp] = (action_mgr_t *)handle;
+      nr_registered_actions++;
       break;
     default:
       A_(printf(__FILE__ " Error: Incorrect event type entered !\n");)
       return -1;
   }
-  if (tmp == -1)
-    return -1;
-  B_(printf(__FILE__ " Using pointer %p, setting element %p\n", ptr, &ptr[tmp]);)
-  ptr[tmp] = (void*)handle;
-  peb->enabled = 1;
-  /* This gets optimized out */
-  // **pctr++;
-  /* This does not */
-  *pctr += 1;
-
   return tmp;
 }
 
@@ -206,9 +198,7 @@ char event_send_signal (event_prv_t *ep)
     }
   }
   return -1;
-
 }
-
 
 /*
  * Configure an iterator for iterating through a specified table.
@@ -226,7 +216,7 @@ char evnt_iter_create (evnt_iter_t *iter) __reentrant __banked
  * Get the first entry from the specified table.
  * The result must be cast to the proper type by the caller.
  * It will return a NULL result if something went wrong or
- * if there is no first entry.
+ * if there is no first entry = empty.
  */
 void *evnt_iter_get_first_entry(evnt_iter_t *iter) __reentrant __banked
 {

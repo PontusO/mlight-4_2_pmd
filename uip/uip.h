@@ -56,7 +56,7 @@
 #include "uipopt.h"
 
 /**
- * Repressentation of an IP address.
+ * Representation of an IP address.
  *
  */
 typedef u16_t uip_ip4addr_t[2];

@@ -43,6 +43,8 @@
  * A parameter structure for transfering parameters to xcgi commands
  */
 struct cgi_parameters {
+  u8_t achannel;
+  u8_t achannel_updated;
   u8_t channel;
   u8_t channel_updated;
   u8_t level;
@@ -58,6 +60,10 @@ struct cgi_parameters {
   u16_t tslist;
   u8_t tsmodify;
   evnt_iter_t iter;
+  unsigned long evt;
+  unsigned long act;
+  u8_t aochan;
+  u8_t aolevel;
 };
 extern struct cgi_parameters cgi_parms_ctrl;
 

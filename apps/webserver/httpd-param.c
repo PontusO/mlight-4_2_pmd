@@ -42,6 +42,7 @@
 #include "flash.h"
 #include "rtc.h"
 #include "iet_debug.h"
+#include "uiplib.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -105,8 +106,13 @@ static const struct parameter_table parmtab[] = {
   PARAM_ENTRY("tsd5", set_tsday),
   PARAM_ENTRY("tsd6", set_tsday),
   PARAM_ENTRY("tsd7", set_tsday),
+  /* Create route parameters */
+  PARAM_ENTRY("evt", set_evt),
+  PARAM_ENTRY("act", set_act),
+  PARAM_ENTRY("wcmd", set_wcmd),  /* Write command */
 	/* Parameters used in xcgi commands */
   PARAM_ENTRY("channel", cgi_set_channel),
+  PARAM_ENTRY("achannel", cgi_set_achannel),
   PARAM_ENTRY("level", cgi_set_level),
   PARAM_ENTRY("rampto", cgi_set_rampto),
   PARAM_ENTRY("rate", cgi_set_rate),
@@ -138,22 +144,74 @@ static char *skip_to_char(char *buf, char chr) __reentrant
   return buf;
 }
 
+
 /*---------------------------------------------------------------------------*/
-static void parse_ip(char *buf, uip_ipaddr_t *ip)
+PARAM_FUNC (set_evt)
 {
-  static u8_t octet[4];
+  buffer = skip_to_char(buffer, '=');
+  if (*buffer != ISO_and) {
+    s->parms.evt = atol(buffer);
+  }
+}
 
-  buf = skip_to_char(buf, '=');
-  octet[0] = atoi(buf);
-  buf = skip_to_char(buf, '.');
-  octet[1] = atoi(buf);
-  buf = skip_to_char(buf, '.');
-  octet[2] = atoi(buf);
-  buf = skip_to_char(buf, '.');
-  octet[3] = atoi(buf);
-  buf = skip_to_char(buf, '.');
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_act)
+{
+  buffer = skip_to_char(buffer, '=');
+  if (*buffer != ISO_and) {
+    s->parms.act = atol(buffer);
+  }
+}
 
-  uip_ipaddr(ip, octet[0],octet[1],octet[2],octet[3]);
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_wcmd)
+{
+  u8_t cmd;
+  IDENTIFIER_NOT_USED (s);
+
+  buffer = skip_to_char(buffer, '=');
+  if (*buffer == ISO_and)
+    return;
+  cmd = atoi(buffer);
+
+  switch (cmd)
+  {
+    case 1:
+    {
+      /* Create a new event map entry */
+      rule_t *rp = rule_find_free_entry();
+      if (rp) {
+        u8_t act = s->parms.act >> 16 & 0xff;
+        u8_t evt = s->parms.evt >> 16 & 0xff;
+        rp->event = (event_prv_t __xdata *)(s->parms.evt & 0xffff);
+        rp->action = (action_mgr_t __xdata *)(s->parms.act & 0xffff);
+        rp->status = RULE_STATUS_ENABLED;
+        rp->scenario = (unsigned int)evt << 8 | act;
+        switch (act)
+        {
+          /* Add new case statement for every new action manager */
+          case ATYPE_ABSOLUTE_ACTION:
+            rp->action_data.abs_data.channel = s->parms.achannel;
+            rp->action_data.abs_data.value = s->parms.level;
+            break;
+          case ATYPE_RAMP_ACTION:
+            rp->action_data.ramp_data.channel = s->parms.channel;
+            rp->action_data.ramp_data.rampto = s->parms.rampto;
+            rp->action_data.ramp_data.rate = s->parms.rate;
+            rp->action_data.ramp_data.step = s->parms.step;
+            break;
+          default:
+            A_(printf (__FILE__ " Incorrect action manager type !");)
+            break;
+        }
+      }
+      break;
+    }
+
+    default:
+      A_(printf (__FILE__ " Invalid wcmd value !\n");)
+      break;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -169,7 +227,7 @@ PARAM_FUNC (set_tslist)
 
 /*---------------------------------------------------------------------------*/
 /*
- * The tsx parameter is a hidden parameter that indicates wether the user
+ * The tsx parameter is a hidden parameter that indicates whether the user
  * pressed the modify button on the tevents.shtml page. It is an absolute
  * pointer to the time_spec entry that is being edited. */
 PARAM_FUNC (set_tsx)
@@ -332,16 +390,8 @@ PARAM_FUNC (set_device_id)
 PARAM_FUNC (set_ip)
 {
   static uip_ipaddr_t ip;
-
   IDENTIFIER_NOT_USED (s);
-
-  parse_ip(buffer, &ip);
-
-  /* Pack the result in the global parameter structure */
-  sys_cfg.ip_addr[0] = htons(ip[0]) >> 8;
-  sys_cfg.ip_addr[1] = htons(ip[0]) & 0xff;
-  sys_cfg.ip_addr[2] = htons(ip[1]) >> 8;
-  sys_cfg.ip_addr[3] = htons(ip[1]) & 0xff;
+  uiplib_ipaddrconv(buffer, (u8_t*)&sys_cfg.ip_addr);
   need_reset = TRUE;
 }
 
@@ -349,32 +399,16 @@ PARAM_FUNC (set_ip)
 PARAM_FUNC (set_netmask)
 {
   static uip_ipaddr_t ip;
-
   IDENTIFIER_NOT_USED (s);
-
-  parse_ip(buffer, &ip);
-
-  /* Pack the result in the global parameter structure */
-  sys_cfg.netmask[0] = htons(ip[0]) >> 8;
-  sys_cfg.netmask[1] = htons(ip[0]) & 0xff;
-  sys_cfg.netmask[2] = htons(ip[1]) >> 8;
-  sys_cfg.netmask[3] = htons(ip[1]) & 0xff;
+  uiplib_ipaddrconv(buffer, (u8_t*)&sys_cfg.netmask);
   need_reset = TRUE;
 }
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_gateway)
 {
   static uip_ipaddr_t ip;
-
   IDENTIFIER_NOT_USED (s);
-
-  parse_ip(buffer, &ip);
-
-  /* Pack the result in the global parameter structure */
-  sys_cfg.gw_addr[0] = htons(ip[0]) >> 8;
-  sys_cfg.gw_addr[1] = htons(ip[0]) & 0xff;
-  sys_cfg.gw_addr[2] = htons(ip[1]) >> 8;
-  sys_cfg.gw_addr[3] = htons(ip[1]) & 0xff;
+  uiplib_ipaddrconv(buffer, (u8_t*)&sys_cfg.gw_addr);
   need_reset = TRUE;
 }
 /*---------------------------------------------------------------------------*/
@@ -392,6 +426,7 @@ PARAM_FUNC (set_webport)
     need_reset = TRUE;
   }
 }
+
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (reset_time)
 {
@@ -418,16 +453,8 @@ PARAM_FUNC (enable_time)
 PARAM_FUNC (set_time)
 {
   static uip_ipaddr_t ip;
-
   IDENTIFIER_NOT_USED (s);
-
-  parse_ip(buffer, &ip);
-
-  /* Pack the result in the global parameter structure */
-  sys_cfg.time_server[0] = htons(ip[0]) >> 8;
-  sys_cfg.time_server[1] = htons(ip[0]) & 0xff;
-  sys_cfg.time_server[2] = htons(ip[1]) >> 8;
-  sys_cfg.time_server[3] = htons(ip[1]) & 0xff;
+  uiplib_ipaddrconv(buffer, (u8_t*)&sys_cfg.time_server);
 }
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_timeport)
@@ -478,7 +505,7 @@ PARAM_FUNC (set_timevalue)
 PARAM_FUNC (set_datevalue)
 {
   IDENTIFIER_NOT_USED (s);
-  /* Here we need to parse the date value and store it before creating a 32 __bit
+  /* Here we need to parse the date value and store it before creating a 32 bit
     * binary time value
     * Note that if the option to use a time server we do not parse these values
     */
@@ -576,6 +603,14 @@ PARAM_FUNC (set_password)
   *buffer = 0x00;
 }
 
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (cgi_set_achannel)
+{
+  buffer = skip_to_char(buffer, '=');
+  s->parms.achannel = atoi(buffer);
+  s->parms.achannel_updated = 1;
+  s->parms.num_parms++;
+}
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (cgi_set_channel)
 {
