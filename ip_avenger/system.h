@@ -54,6 +54,7 @@
 /*
  * Definitions of FLASH memory banks
  */
+#define SYS_BANK    0
 #define CONST_BANK  1
 #define UIP_BANK    2
 #define APP_BANK    3

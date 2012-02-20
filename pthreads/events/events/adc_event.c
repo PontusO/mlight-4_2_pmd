@@ -50,9 +50,10 @@ void *adc_event_get_dptr(void);
 
 /* Event handle */
 static event_prv_t adcevents[4];
+static const char *base_name = "A/D Input";
 static const char *adc_names[4] =
-  { "Potentiometer Channel 1", "Potentiometer Channel 2",
-    "Potentiometer Channel 3", "Potentiometer Channel 4" };
+  { "Pot Channel 1", "Pot Channel 2",
+    "Pot Channel 3", "Pot Channel 4" };
 
 /*
  * Initialize the adc_event pthread
@@ -67,7 +68,8 @@ void init_adc_event(adc_event_t *adc_event) __reentrant __banked
   for (i=0; i<CFG_NUM_POTS; i++) {
     adcevents[i].base.type = EVENT_EVENT_PROVIDER;
     adcevents[i].type = ETYPE_POTENTIOMETER_EVENT;
-    adcevents[i].base.name = (char*)adc_names[i];
+    adcevents[i].base.name = base_name;
+    adcevents[i].event_name = (char*)adc_names[i];
     adcevents[i].signal = 0;
     /* This will ensure that the light settings will update on start */
     adc_event->prev_pot_val[i] = 100;

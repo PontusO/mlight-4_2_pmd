@@ -71,7 +71,6 @@ void Timer0_Init (void);
  * Protothread instance data
  */
 but_mon_t       but_mon;
-ramp_ctrl_t     ramp_ctrl;
 ramp_mgr_t      ramp_mgr[4];
 event_thread_t  event_thread;
 absval_mgr_t    absval_mgr;
@@ -156,13 +155,13 @@ void pmd(void) __banked
   init_rtc();
   init_but_mon(&but_mon);
 
+  /* The event switch must be initialized before event providers and action mgrs. */
+  init_event_switch(&event_thread);
   /* Initialize all pwm ramp managers */
   for (i=0; i<CFG_NUM_PWM_DRIVERS; i++) {
-    ramp_mgr[i].channel = i;
+    ramp_mgr[i].channel = i; /* Default channel */
     init_ramp_mgr(&ramp_mgr[i]);
   }
-  init_event_switch(&event_thread);
-  /* Initialize all event action managers before the event providers */
   /* Event action managers */
   init_absval_mgr(&absval_mgr);
   /* Event providers */
@@ -280,7 +279,6 @@ void pmd(void) __banked
     PT_SCHEDULE(handle_kicker(&kicker));
     PT_SCHEDULE(handle_time_client(&tc));
     PT_SCHEDULE(handle_but_mon(&but_mon));
-    PT_SCHEDULE(handle_ramp_ctrl(&ramp_ctrl));
     for (i=0; i<CFG_NUM_PWM_DRIVERS; i++) {
       PT_SCHEDULE(handle_ramp_mgr(&ramp_mgr[i]));
     }

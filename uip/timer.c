@@ -1,5 +1,5 @@
 #ifdef CONFIG_BANKED
-#pragma codeseg  UIP_BANK
+#pragma codeseg  APP_BANK
 #endif
 /**
  * \addtogroup timer

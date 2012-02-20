@@ -162,10 +162,16 @@ typedef struct {
  */
 typedef struct {
   event_base_t base;
+  char *action_name;
   event_action_t type;
   struct rule *rule;
   action_vt_t vt;
 } action_mgr_t;
+
+/**
+ * Macro for accessing the action structure
+ */
+#define GET_ACTION(x) ((action_mgr_t *)x)
 
 /**
  * The event provider handle.
@@ -175,12 +181,16 @@ typedef struct {
  */
 typedef struct {
   event_base_t base;  /** Base structure */
+  char *event_name;   /** The name of the particular event */
   event_event_t type; /** The particular event trype */
   struct rule *rule;  /** Parent rule */
-  void *evt_data;     /** Pointer to Event Data */
-  void *act_data;     /** Pointer to Action Data */
   char signal;
 } event_prv_t;
+
+/**
+ * Macro for accessing the event structure
+ */
+#define GET_EVENT(x) ((event_prv_t *)x)
 
 typedef enum {
   RULE_STATUS_FREE = 0x00,

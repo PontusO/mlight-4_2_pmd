@@ -57,6 +57,7 @@ struct cgi_parameters {
   u8_t step_updated;
   u8_t num_parms;
   time_spec_t *ts;
+  rule_t *rp;
   u16_t tslist;
   u8_t tsmodify;
   evnt_iter_t iter;

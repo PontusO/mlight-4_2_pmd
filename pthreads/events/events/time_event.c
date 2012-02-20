@@ -40,27 +40,33 @@
 
 char *time_event_name = "Time Event";
 
+event_prv_t time_events[NMBR_TIME_EVENTS];
+
 /*
  * Initialize the time_event pthread
  */
 void init_time_event(time_event_t *time_event) __reentrant __banked
 {
   memset (time_event, 0, sizeof *time_event);
-  /* Initialize the event data */
-  time_event->event.base.type = EVENT_EVENT_PROVIDER;
-  time_event->event.type = ETYPE_TIME_EVENT;
-  time_event->event.base.name = time_event_name;
-  time_event->event.evt_data = NULL;  /* For, now. Should point to the real event data */
-  time_event->event.act_data = NULL;  /* For, now. Should point to the real event data */
-  time_event->event.signal = 0;
 
   PT_INIT(&time_event->pt);
 }
 
 /*
- * Look for a free time event entry in the list.
+ * Look for a free time event entry in the list. The function can also be instructed
+ * to return the index in the table to the caller, simply by supplying a pointer
+ * to an unsigned char. For instance the following call will not return a pointer.
+ *
+ *   ptr = get_first_free_time_event_entry(NULL);
+ *
+ * but this example will return the index of the first free entry to the caller.
+ *
+ *   unsigned char index;
+ *
+ *   ptr = get_first_free_time_event_entry(&index);
+ *
  */
-time_spec_t *get_first_free_time_event_entry(void) __reentrant __banked
+time_spec_t *get_first_free_time_event_entry(unsigned char *index) __reentrant __banked
 {
   time_spec_t *ptr;
   u8_t i;
@@ -68,8 +74,11 @@ time_spec_t *get_first_free_time_event_entry(void) __reentrant __banked
   ptr = &sys_cfg.time_events[0];
 
   for (i=0 ; i<NMBR_TIME_EVENTS ; i++) {
-    if (!(ptr->status & TIME_EVENT_ENTRY_USED))
+    if (!(ptr->status & TIME_EVENT_ENTRY_USED)) {
+      if (index)
+        *index = i;
       return ptr;
+    }
     ptr++;
   }
   return NULL;
@@ -83,24 +92,50 @@ time_spec_t *get_first_free_time_event_entry(void) __reentrant __banked
 char add_time_event (time_spec_t *ts)
 {
   time_spec_t *ptr;
+  u8_t index;
 
-  ptr = get_first_free_time_event_entry();
+  ptr = get_first_free_time_event_entry(&index);
   if (!ptr) {
     A_(printf (__FILE__ " No free entries left !\n");)
     return -1;
   }
   memcpy (ptr, ts, sizeof ts);
   ptr->status |= TIME_EVENT_ENTRY_USED;
+
+  /*
+   * Now update the event table with the new entry.
+   */
+  if (index >= NMBR_TIME_EVENTS) {
+    A_(printf (__FILE__ " Error in time event event structures !\n");)
+    return -1;
+  }
+
+  time_events[index].base.type = EVENT_EVENT_PROVIDER;
+  time_events[index].type = ETYPE_TIME_EVENT;
+  time_events[index].base.name = ts->name;
+  time_events[index].signal = 0;
+
   return 0;
 }
 
 PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
 {
+  u8_t i;
   PT_BEGIN(&time_event->pt);
 
   A_(printf (__FILE__ " Starting time_event pthread!\n");)
-  /* Register us as a event provider */
-  evnt_register_handle(&time_event->event);
+
+  /* Register all stored time event handles */
+  for (i=0;i<NMBR_TIME_EVENTS;i++) {
+    if (sys_cfg.time_events[i].status & TIME_EVENT_ENTRY_USED) {
+      time_events[i].base.type = EVENT_EVENT_PROVIDER;
+      time_events[i].type = ETYPE_TIME_EVENT;
+      time_events[i].base.name = time_event_name;
+      time_events[i].event_name = sys_cfg.time_events[i].name;
+      time_events[i].signal = 0;
+      evnt_register_handle(&time_events[i]);
+    }
+  }
 
   while (1)
   {
@@ -121,9 +156,7 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
             time_event->time_spec->min == tp.time.min &&
             tp.time.sec == 0) {
           A_(printf (__FILE__ " Handling a time event !\n");)
-            /* "Sound the alarm", note that the event need to be initialized before
-             * being sent */
-            event_send_signal (&time_event->event);
+          event_send_signal (&time_events[i]);
         }
         time_event->time_spec++;
       }

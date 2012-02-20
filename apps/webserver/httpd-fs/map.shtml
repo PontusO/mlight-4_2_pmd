@@ -6,12 +6,12 @@
 <!--
 function OnModify(){
 document.A.mapcmd.value = "modify";
-document.A.action = "tentry.shtml";
+document.A.action = "cmap.shtml";
 document.A.submit();
 return true;}
 function OnDelete() {
 document.A.mapcmd.value = "delete";
-document.A.action = "tevents.shtml";
+document.A.action = "map.shtml";
 document.A.submit();
 return true;}
 -->

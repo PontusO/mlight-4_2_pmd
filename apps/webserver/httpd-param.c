@@ -33,7 +33,7 @@
  */
 #pragma codeseg UIP_BANK
 
-#define PRINT_A
+//#define PRINT_A
 
 #include "system.h"
 #include "uip.h"
@@ -106,7 +106,10 @@ static const struct parameter_table parmtab[] = {
   PARAM_ENTRY("tsd5", set_tsday),
   PARAM_ENTRY("tsd6", set_tsday),
   PARAM_ENTRY("tsd7", set_tsday),
+  /* map.shtml */
+  PARAM_ENTRY("mapcmd", set_mapcmd),
   /* Create route parameters */
+  PARAM_ENTRY("mapenabled", set_mapenabled),
   PARAM_ENTRY("evt", set_evt),
   PARAM_ENTRY("act", set_act),
   PARAM_ENTRY("wcmd", set_wcmd),  /* Write command */
@@ -133,6 +136,7 @@ static u8_t min;
 static __bit need_time_update = FALSE;
 static __bit need_reset = FALSE;
 static __bit ts_update = FALSE;
+static __bit rp_update = FALSE;
 
 /*---------------------------------------------------------------------------*/
 static char *skip_to_char(char *buf, char chr) __reentrant
@@ -144,6 +148,64 @@ static char *skip_to_char(char *buf, char chr) __reentrant
   return buf;
 }
 
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_mapcmd)
+{
+  u16_t lst=1;
+  u8_t i;
+  rule_t *rp = &sys_cfg.rules[0];
+
+  buffer = skip_to_char(buffer, '=');
+
+  if (strncmp("delete", buffer, 6) == 0) {
+    /* Go through all time events */
+    for (i=0; i<MAX_NR_RULES; i++) {
+      /* Check only used entries */
+      if (rp->status != RULE_STATUS_FREE) {
+        /* Check if this entry is on the delete list */
+        if (s->parms.tslist & lst)
+          rp->status = RULE_STATUS_FREE;
+      }
+      /* Move to next entry */
+      lst <<= 1;
+      /* Move to next active entry in the list */
+      rp++;
+    }
+    /* Write new configuration to flash */
+    write_config_to_flash();
+  } else {
+    A_(printf (__FILE__ " Setting the modify property");)
+    s->parms.tsmodify = TRUE;
+    /* Look for the entry to modify */
+    for (i=0; i<MAX_NR_RULES; i++) {
+      /* Check only used entries */
+      if (rp->status != RULE_STATUS_FREE) {
+        /* Check if this entry is in the tslist */
+        if (s->parms.tslist & lst) {
+          /* Set the ts entry to modify */
+          s->parms.rp = rp;
+          /* We only use the first entry so break here */
+          break;
+        }
+      }
+      /* Move to next entry */
+      lst <<= 1;
+      /* Move to next active entry in the list */
+      rp++;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_mapenabled)
+{
+  if (s->parms.rp) {
+    buffer = skip_to_char(buffer, '=');
+    if (strncmp(buffer, "on", 2) == 0) {
+      s->parms.rp->status = RULE_STATUS_ENABLED;
+    }
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_evt)
@@ -167,7 +229,6 @@ PARAM_FUNC (set_act)
 PARAM_FUNC (set_wcmd)
 {
   u8_t cmd;
-  IDENTIFIER_NOT_USED (s);
 
   buffer = skip_to_char(buffer, '=');
   if (*buffer == ISO_and)
@@ -179,32 +240,33 @@ PARAM_FUNC (set_wcmd)
     case 1:
     {
       /* Create a new event map entry */
-      rule_t *rp = rule_find_free_entry();
-      if (rp) {
+      if (s->parms.rp) {
         u8_t act = s->parms.act >> 16 & 0xff;
         u8_t evt = s->parms.evt >> 16 & 0xff;
-        rp->event = (event_prv_t __xdata *)(s->parms.evt & 0xffff);
-        rp->action = (action_mgr_t __xdata *)(s->parms.act & 0xffff);
-        rp->status = RULE_STATUS_ENABLED;
-        rp->scenario = (unsigned int)evt << 8 | act;
+        s->parms.rp->event = (event_prv_t __xdata *)(s->parms.evt & 0xffff);
+        s->parms.rp->action = (action_mgr_t __xdata *)(s->parms.act & 0xffff);
+        s->parms.rp->status = RULE_STATUS_ENABLED;
+        s->parms.rp->scenario = (unsigned int)evt << 8 | act;
         switch (act)
         {
           /* Add new case statement for every new action manager */
           case ATYPE_ABSOLUTE_ACTION:
-            rp->action_data.abs_data.channel = s->parms.achannel;
-            rp->action_data.abs_data.value = s->parms.level;
+            s->parms.rp->action_data.abs_data.channel = s->parms.achannel;
+            s->parms.rp->action_data.abs_data.value = s->parms.level;
             break;
           case ATYPE_RAMP_ACTION:
-            rp->action_data.ramp_data.channel = s->parms.channel;
-            rp->action_data.ramp_data.rampto = s->parms.rampto;
-            rp->action_data.ramp_data.rate = s->parms.rate;
-            rp->action_data.ramp_data.step = s->parms.step;
+            s->parms.rp->action_data.ramp_data.channel = s->parms.channel;
+            s->parms.rp->action_data.ramp_data.rampto = s->parms.rampto;
+            s->parms.rp->action_data.ramp_data.rate = s->parms.rate;
+            s->parms.rp->action_data.ramp_data.step = s->parms.step;
             break;
           default:
             A_(printf (__FILE__ " Incorrect action manager type !");)
             break;
         }
       }
+      /* Write new configuration to flash */
+      write_config_to_flash();
       break;
     }
 
@@ -689,10 +751,16 @@ void parse_input(struct httpd_state *s, char *buf) __banked
   memset (&s->parms, 0, sizeof s->parms);
 
   /* In case these parameters belong to tentry.shtml */
-  s->parms.ts = get_first_free_time_event_entry();
+  s->parms.ts = get_first_free_time_event_entry(NULL);
   if (s->parms.ts) {
     memset (s->parms.ts, 0, sizeof *(s->parms.ts));
     ts_update = FALSE;
+  }
+
+  s->parms.rp = rule_find_free_entry();
+  if (s->parms.rp) {
+    memset (s->parms.rp, 0, sizeof *(s->parms.rp));
+    rp_update = FALSE;
   }
 
   while (*buf != ISO_space)

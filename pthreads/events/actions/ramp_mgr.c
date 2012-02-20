@@ -29,7 +29,7 @@
  */
 #pragma codeseg APP_BANK
 
-//#define PRINT_A     // Enable A prints
+#define PRINT_A     // Enable A prints
 
 #include "system.h"
 #include "iet_debug.h"
@@ -60,12 +60,12 @@ static const char *ramp_name = "Light Ramp";
  */
 void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked
 {
+  static first = 1;
   u8_t channel = rmgr->channel;
 
   rampmgr.base.type = EVENT_ACTION_MANAGER;
   rampmgr.type = ATYPE_RAMP_ACTION;
-  rampmgr.base.name = ramp_name;
-//  rampmgr.props = ACT_PRP_RAMP_VALUE;
+  rampmgr.action_name = ramp_name;
   rampmgr.vt.stop_action = ramp_stop;
   rampmgr.vt.trigger_action = ramp_trigger;
 
@@ -80,6 +80,13 @@ void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked
     num_mgrs++;
   } else {
     A_(printf ("Incorrect channel %d!\n", channel);)
+    return;
+  }
+
+  if (first && evnt_register_handle(&rampmgr) < 0) {
+    first = 0;
+    A_(printf (__FILE__ " Could not register ramp manager !\n");)
+    return;
   }
 }
 
@@ -88,18 +95,25 @@ void ramp_stop (void)
 {
 }
 
-/* Set new data */
+/*
+ * This is the trigger function that is called from the event switch.
+ */
 void ramp_trigger (void *input)
 {
-  ld_param_t led_params;
+  char rmgr;
   act_ramp_data_t *rampdata = (act_ramp_data_t *)input;
 
-  A_(printf(__FILE__ " Channel %d, Value %04x\n",
-          (int)rampdata->channel,
-          rampdata->value);)
-  led_params.channel = rampdata->channel;
-  led_params.level_absolute = rampdata->value;
-  ledlib_set_light_abs (&led_params);
+  A_(printf(__FILE__ " Starting ramp on channel %d\n",
+          (int)rampdata->channel);)
+  rmgr = rampdata->channel - 1;
+
+  /* Only update ramp managers if rmgr is within valid range */
+  if (rmgr < CFG_NUM_PWM_DRIVERS) {
+    ramp_mgr_tab[rmgr]->rampto = rampdata->rampto;
+    ramp_mgr_tab[rmgr]->rate = rampdata->rate;
+    ramp_mgr_tab[rmgr]->step = rampdata->step;
+    ramp_mgr_tab[rmgr]->signal = 1;
+  }
 }
 
 ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked
@@ -184,26 +198,6 @@ exit:
     free_timer(ramp->timer);
   }
   PT_END (&ramp->pt);
-}
-
-PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *rctrl) __reentrant __banked)
-{
-  PT_BEGIN(&rctrl->pt);
-
-  rctrl->signal = 0;
-
-  if (evnt_register_handle(&rampmgr) < 0) {
-    rampmgr.base.type = EVENT_ACTION_MANAGER;
-    A_(printf (__FILE__ " Could not register event !\n");)
-  }
-
-  while (1)
-  {
-    /* Wait for a ramp command to arrive */
-    PT_WAIT_UNTIL (&rctrl->pt, rctrl->signal);
-  }
-
-  PT_END(&rctrl->pt);
 }
 
 PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked)

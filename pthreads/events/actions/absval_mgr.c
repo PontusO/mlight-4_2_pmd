@@ -28,7 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-//#define PRINT_A     // Enable A prints
+#define PRINT_A     // Enable A prints
 
 #include "system.h"
 #include "iet_debug.h"
@@ -53,7 +53,7 @@ void init_absval_mgr(absval_mgr_t *absval_mgr) __reentrant __banked
 
   absvalmgr.base.type = EVENT_ACTION_MANAGER;
   absvalmgr.type = ATYPE_ABSOLUTE_ACTION;
-  absvalmgr.base.name = (char*)absval_name;
+  absvalmgr.action_name = (char*)absval_name;
   absvalmgr.vt.stop_action = absval_stop;
   absvalmgr.vt.trigger_action = absval_trigger;
 }
@@ -72,7 +72,7 @@ void absval_trigger (void *input)
   A_(printf(__FILE__ " Channel %d, Value %04x\n",
           (int)absdata->channel,
           absdata->value);)
-  led_params.channel = absdata->channel;
+  led_params.channel = absdata->channel-1;
   led_params.level_absolute = absdata->value;
   ledlib_set_light_abs (&led_params);
 }

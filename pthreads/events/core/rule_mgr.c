@@ -140,8 +140,10 @@ PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant)
       if (et->new_action->vt.stop_action)
         et->new_action->vt.stop_action();
       /* And execute the new trigger with data from the event provider */
-      if (et->new_action->vt.trigger_action)
+      if (et->new_action->vt.trigger_action) {
+        A_(printf (__FILE__ " Executing action trigger function.\n");)
         et->new_action->vt.trigger_action((void*)et->triggered_rule->action_data);
+      }
     } else {
       A_(printf(__FILE__ " Warning: No action mapped to event %d\n", et->current_event);)
     }

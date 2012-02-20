@@ -460,8 +460,8 @@ static unsigned short generate_event_map(void *arg) __reentrant
               "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td>", s->i);
   i += sprintf((char *)uip_appdata+i,
               "<td>%s</td>", (r->status == RULE_STATUS_ENABLED) ? "Yes" : "No");
-  i += sprintf((char *)uip_appdata+i, "<td>%s</td>", ep->base.name);
-  i += sprintf((char *)uip_appdata+i, "<td>%s</td>", am->base.name);
+  i += sprintf((char *)uip_appdata+i, "<td>(%s) %s</td>", ep->base.name, ep->event_name);
+  i += sprintf((char *)uip_appdata+i, "<td>%s</td>", am->action_name);
   i += sprintf((char *)uip_appdata+i, "<td>None</td>");
   i += sprintf((char *)uip_appdata+i, "</td></tr>");
 
@@ -505,20 +505,22 @@ static unsigned short generate_event_functions(void *arg) __reentrant
     case 1:
       num |= (int)ep;
       num |= (unsigned long)(((event_prv_t*)ep)->type) << 16;
+      sprintf((char *)uip_appdata,
+              "<option value=\"%ld\">(%s) %s</option>", num,
+              GET_EVENT_BASE(ep).name, GET_EVENT(ep)->event_name);
       break;
     case 2:
       num |= (int)ep;
       num |= (unsigned long)(((action_mgr_t*)ep)->type) << 16;
+      sprintf((char *)uip_appdata,
+              "<option value=\"%ld\">%s</option>", num,
+              GET_ACTION(ep)->action_name);
       break;
     default:
       /* TODO: Implement getting rule from number, if necessery */
       A_(printf (__FILE__ " You need to implement new features dude !\n");)
       break;
   }
-
-  sprintf((char *)uip_appdata,
-              "<option value=\"%ld\">%s</option>", num, GET_EVENT_BASE(ep).name);
-
   return strlen(uip_appdata);
 }
 

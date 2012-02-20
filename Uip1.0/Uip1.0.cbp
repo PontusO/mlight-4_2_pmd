@@ -95,7 +95,6 @@
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\start_ramp.cgi" />
 		<Unit filename="..\apps\webserver\httpd-fs\cgi\stop_ramp.cgi" />
 		<Unit filename="..\apps\webserver\httpd-fs\cmap.shtml" />
-		<Unit filename="..\apps\webserver\httpd-fs\events.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\footer.html" />
 		<Unit filename="..\apps\webserver\httpd-fs\header.html" />
 		<Unit filename="..\apps\webserver\httpd-fs\index.shtml" />
