@@ -1,11 +1,11 @@
 %!: /header.html
 <h1>New Time Event</h1><hr color="#258D92" size="2" width="90%">
 <form action="tevents.shtml"><center><table width="90%" class="mytab">
-<input type="hidden" name="tsx" value="%! get-tsx
+<input type="hidden" name="tsx" value="%! get-int 3
 ">
 <tr><td>Event Name</td><td colspan="8"><input type="text" name="tsname" size="16" maxlength="8" value="%! get-tsname
 "></td></tr>
-<tr><td>Enabled</td><td colspan="8"><input type="checkbox" name="tsena" %! get-tschecked
+<tr><td>Enabled</td><td colspan="8"><input type="checkbox" name="tsena"%! get-check 0
 ></td></tr>
 <tr><td>Enter Time (ex. 21:50)</td><td colspan="8"><input type="text" name="tstim" size="6" maxlength="5" value="%! get-tstime
 "></td></tr>

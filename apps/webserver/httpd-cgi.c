@@ -84,10 +84,8 @@ HTTPD_CGI_CALL(f_get_int, "get-int", get_int);
 
 HTTPD_CGI_CALL(f_get_time_events, "te-get-time-events", get_time_events);
 HTTPD_CGI_CALL(f_get_tsname, "get-tsname", get_tsname);
-HTTPD_CGI_CALL(f_get_tschecked, "get-tschecked", get_tschecked);
 HTTPD_CGI_CALL(f_get_tstime, "get-tstime", get_tstime);
 HTTPD_CGI_CALL(f_get_tsday, "get-tsday", get_tsday);
-HTTPD_CGI_CALL(f_get_tsx, "get-tsx", get_tsx);
 
 HTTPD_CGI_CALL(f_map_get_events, "map-get-events", map_get_events);
 
@@ -114,10 +112,8 @@ static const struct httpd_cgi_call *calls[] = {
   &L_set_param,
   &f_get_time_events,
   &f_get_tsname,
-  &f_get_tschecked,
   &f_get_tstime,
   &f_get_tsday,
-  &f_get_tsx,
   &f_map_get_events,
   &f_set_level,
   &f_get_level,
@@ -371,24 +367,9 @@ PT_THREAD(get_tsname(struct httpd_state *s, char *ptr) __reentrant)
   IDENTIFIER_NOT_USED (ptr);
 
   PSOCK_BEGIN(&s->sout);
-  if (s->parms.ts && s->parms.tsmodify) {
+  if (s->parms.ts && s->parms.modify) {
     sprintf ((char*)uip_appdata, "%s", s->parms.ts->name);
     PSOCK_SEND_STR(&s->sout, uip_appdata);
-  }
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_tschecked(struct httpd_state *s, char *ptr) __reentrant)
-{
-  IDENTIFIER_NOT_USED (ptr);
-  PSOCK_BEGIN(&s->sout);
-  if (s->parms.ts && s->parms.tsmodify) {
-    if (s->parms.ts->status & TIME_EVENT_ENABLED) {
-      sprintf ((char*)uip_appdata, "checked");
-      PSOCK_SEND_STR(&s->sout, uip_appdata);
-    }
   }
   PSOCK_END(&s->sout);
 }
@@ -399,7 +380,7 @@ PT_THREAD(get_tstime(struct httpd_state *s, char *ptr) __reentrant)
 {
   IDENTIFIER_NOT_USED (ptr);
   PSOCK_BEGIN(&s->sout);
-  if (s->parms.ts && s->parms.tsmodify) {
+  if (s->parms.ts && s->parms.modify) {
     sprintf ((char*)uip_appdata, "%02d:%02d",
              s->parms.ts->hrs, s->parms.ts->min);
     PSOCK_SEND_STR(&s->sout, uip_appdata);
@@ -421,27 +402,12 @@ PT_THREAD(get_tsday(struct httpd_state *s, char *ptr) __reentrant)
   check_box = atoi(ptr)-1;
   day = 1 << check_box;
 
-  if (s->parms.ts && s->parms.tsmodify) {
+  if (s->parms.ts && s->parms.modify) {
     if (day & s->parms.ts->weekday) {
       sprintf ((char*)uip_appdata, "checked");
       PSOCK_SEND_STR(&s->sout, uip_appdata);
     }
   }
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_tsx(struct httpd_state *s, char *ptr) __reentrant)
-{
-  IDENTIFIER_NOT_USED (ptr);
-  PSOCK_BEGIN(&s->sout);
-
-  if (s->parms.ts && s->parms.tsmodify) {
-    sprintf ((char*)uip_appdata, "%d", (int)s->parms.ts);
-    PSOCK_SEND_STR(&s->sout, uip_appdata);
-  }
-
   PSOCK_END(&s->sout);
 }
 
@@ -783,34 +749,29 @@ PT_THREAD(get_check_box(struct httpd_state *s, char *ptr) __reentrant)
 
   switch(check_box)
   {
-#if 0
     case 0:
-      check_box = sys_cfg.authenabled;
+      if (s->parms.ts && s->parms.modify)
+        check_box = s->parms.ts->status & TIME_EVENT_ENABLED;
+      else
+        check_box = 0;
       break;
 
     case 1:
-      check_box = sys_cfg.enable_stop_larm;
+      if (s->parms.rp && s->parms.modify)
+        check_box = s->parms.rp->status & RULE_STATUS_ENABLED;
+      else
+        check_box = 0;
       break;
 
-    case 2:
-      check_box = sys_cfg.enable_fall_tube_alarm;
-      break;
-
-    case 3:
-      check_box = sys_cfg.enable_sonar_larm;
-      break;
-#endif
     default:
       check_box = 0;
       break;
   }
 
-#if 0
   if (check_box)
-    sprintf((char *)uip_appdata, "checked");
+    sprintf((char *)uip_appdata, " checked");
   else
     sprintf((char *)uip_appdata, " ");
-#endif
 
   PSOCK_SEND_STR(&s->sout, uip_appdata);
   PSOCK_END(&s->sout);
@@ -834,6 +795,22 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
     /* Update interval for the timeset web page */
     case 1:
       myint = (u16_t)sys_cfg.update_interval;
+      intno = 1;
+      break;
+
+    /* mapx value on the cmap.html page */
+    case 2:
+      if (s->parms.rp && s->parms.modify) {
+        myint = (int)s->parms.rp;
+        intno = (char)myint;
+      }
+      break;
+
+    case 3:
+      if (s->parms.ts && s->parms.modify) {
+        myint = (int)s->parms.ts;
+        intno = (char)myint;
+      }
       break;
 
     case 10:
@@ -841,12 +818,16 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
     case 12:
     case 13:
       myint = (u16_t)ledlib_get_light_percentage(intno - 10);
+      intno = 1;
       break;
   }
 
-  sprintf((char *)uip_appdata, "%d", myint);
+  /* intno is used to supress output */
+  if (intno) {
+    sprintf((char *)uip_appdata, "%d", myint);
+    PSOCK_SEND_STR(&s->sout, uip_appdata);
+  }
 
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
   PSOCK_END(&s->sout);
 }
 /*---------------------------------------------------------------------------*/

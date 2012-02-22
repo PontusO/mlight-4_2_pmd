@@ -28,7 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-#define PRINT_AB
+//#define PRINT_AB
 
 #include "system.h"
 #include "pt.h"

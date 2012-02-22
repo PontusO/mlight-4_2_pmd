@@ -88,6 +88,7 @@ void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked
     A_(printf (__FILE__ " Could not register ramp manager !\n");)
     return;
   }
+  first = 0;
 }
 
 /* No thread (yet) to interupt so we don't do anything here */

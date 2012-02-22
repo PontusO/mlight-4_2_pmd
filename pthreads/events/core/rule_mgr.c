@@ -28,7 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-#define PRINT_A
+//#define PRINT_A
 
 #include <string.h>
 
@@ -90,7 +90,7 @@ union rule_action_data *rule_get_action_dptr (event_prv_t *ep) __reentrant
   char i;
 
   if ((i = rule_lookup_event(ep)) != -1) {
-    if (sys_cfg.rules[i].status == RULE_STATUS_ENABLED)
+    if (sys_cfg.rules[i].status != RULE_STATUS_FREE)
       return (union rule_action_data *)sys_cfg.rules[i].action_data;
   }
   return NULL;
@@ -165,7 +165,6 @@ char rule_iter_create (evnt_iter_t *iter) __reentrant __banked
 
 /*
  * Get the first entry from the specified table.
- * The result must be cast to the proper type by the caller.
  * It will return a NULL result if something went wrong or
  * if there is no first entry = empty.
  */

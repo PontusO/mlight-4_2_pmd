@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#pragma codeseg   UIP_BANK
+#pragma codeseg   APP_BANK
 
 #include <stdio.h>
 #include <string.h>
@@ -41,6 +41,17 @@
 static char i;
 static char tstr[32];
 
+/*---------------------------------------------------------------------------*/
+static char *skip_to_char(char *buf, char chr) __reentrant
+{
+  while (*buf != chr)
+    buf++;
+  buf++;
+
+  return buf;
+}
+
+/*---------------------------------------------------------------------------*/
 PT_THREAD(get_tz_options_util(struct httpd_state *s) __reentrant __banked)
 {
   PSOCK_BEGIN(&s->sout);
@@ -66,6 +77,104 @@ PT_THREAD(get_tz_options_util(struct httpd_state *s) __reentrant __banked)
   }
 
   PSOCK_END(&s->sout);
+}
+
+/* Parameter functions */
+/*---------------------------------------------------------------------------*/
+void x_set_mapcmd(struct httpd_state *s, char *buffer) __reentrant __banked
+{
+  u32_t lst=1;
+  u8_t i;
+  rule_t *rp = &sys_cfg.rules[0];
+
+  buffer = skip_to_char(buffer, '=');
+
+  if (strncmp("delete", buffer, 6) == 0) {
+    /* Go through all time events */
+    for (i=0; i<MAX_NR_RULES; i++) {
+      /* Check only entries in the marklist */
+      if (rp->status != RULE_STATUS_FREE) {
+        if ( s->parms.marklist & lst) {
+          memset (rp, 0, sizeof *rp);
+          rp->status = RULE_STATUS_FREE;
+        }
+        /* Move to next entry in the marklist */
+        lst <<= 1;
+      }
+      /* Move to next entry in the list of rules */
+      rp++;
+    }
+    /* Write new configuration to flash */
+    write_config_to_flash();
+  } else if (strncmp("modify", buffer, 6) == 0) {
+    printf ("Setting modify in mapcmd\n");
+    s->parms.modify = TRUE;
+    /* Look for the entry to modify */
+    for (i=0; i<MAX_NR_RULES; i++) {
+      /* Check only used entries */
+      if (rp->status != RULE_STATUS_FREE) {
+        /* Check if this entry is in the marklist */
+        if (s->parms.marklist & lst) {
+          /* Set the ts entry to modify */
+          s->parms.rp = rp;
+          /* We use the first entry we find, so break here */
+          break;
+        }
+        /* Move to next entry */
+        lst <<= 1;
+      }
+      /* Move to next active entry in the list */
+      rp++;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+void x_set_tscmd(struct httpd_state *s, char *buffer) __reentrant __banked
+{
+  u16_t lst=1;
+  u8_t i;
+  time_spec_t *ts = &sys_cfg.time_events[0];
+
+  buffer = skip_to_char(buffer, '=');
+
+  if (strncmp("delete", buffer, 6) == 0) {
+    /* Go through all time events */
+    for (i=0; i<NMBR_TIME_EVENTS; i++) {
+      /* Check only used entries */
+      if (ts->status & TIME_EVENT_ENTRY_USED) {
+        /* Check if this entry is on the delete list */
+        if (s->parms.marklist & lst)
+          ts->status &= ~TIME_EVENT_ENTRY_USED;
+        /* Move to next entry */
+        lst <<= 1;
+      }
+      /* Move to next active entry in the list */
+      ts++;
+    }
+    /* Write new configuration to flash */
+    write_config_to_flash();
+  } else if (strncmp("modify", buffer, 6) == 0) {
+    printf ("Setting modify in tscmd\n");
+    s->parms.modify = TRUE;
+    /* Look for the entry to modify */
+    for (i=0; i<NMBR_TIME_EVENTS; i++) {
+      /* Check only used entries */
+      if (ts->status & TIME_EVENT_ENTRY_USED) {
+        /* Check if this entry is in the marklist */
+        if (s->parms.marklist & lst) {
+          /* Set the ts entry to modify */
+          s->parms.ts = ts;
+          /* We only use the first entry so break here */
+          break;
+        }
+        /* Move to next entry */
+        lst <<= 1;
+      }
+      /* Move to next active entry in the list */
+      ts++;
+    }
+  }
 }
 
 /* EOF */

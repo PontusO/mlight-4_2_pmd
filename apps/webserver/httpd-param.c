@@ -43,9 +43,12 @@
 #include "rtc.h"
 #include "iet_debug.h"
 #include "uiplib.h"
+#include "cgi_utils.h"
 
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
+
 #define PARAM_FUNC(x) \
         static void x(struct httpd_state *s, char *buffer) __reentrant
 #define PARAM_ENTRY(x,y) \
@@ -151,49 +154,7 @@ static char *skip_to_char(char *buf, char chr) __reentrant
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_mapcmd)
 {
-  u16_t lst=1;
-  u8_t i;
-  rule_t *rp = &sys_cfg.rules[0];
-
-  buffer = skip_to_char(buffer, '=');
-
-  if (strncmp("delete", buffer, 6) == 0) {
-    /* Go through all time events */
-    for (i=0; i<MAX_NR_RULES; i++) {
-      /* Check only used entries */
-      if (rp->status != RULE_STATUS_FREE) {
-        /* Check if this entry is on the delete list */
-        if (s->parms.tslist & lst)
-          rp->status = RULE_STATUS_FREE;
-      }
-      /* Move to next entry */
-      lst <<= 1;
-      /* Move to next active entry in the list */
-      rp++;
-    }
-    /* Write new configuration to flash */
-    write_config_to_flash();
-  } else {
-    A_(printf (__FILE__ " Setting the modify property");)
-    s->parms.tsmodify = TRUE;
-    /* Look for the entry to modify */
-    for (i=0; i<MAX_NR_RULES; i++) {
-      /* Check only used entries */
-      if (rp->status != RULE_STATUS_FREE) {
-        /* Check if this entry is in the tslist */
-        if (s->parms.tslist & lst) {
-          /* Set the ts entry to modify */
-          s->parms.rp = rp;
-          /* We only use the first entry so break here */
-          break;
-        }
-      }
-      /* Move to next entry */
-      lst <<= 1;
-      /* Move to next active entry in the list */
-      rp++;
-    }
-  }
+  x_set_mapcmd (s, buffer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -245,8 +206,9 @@ PARAM_FUNC (set_wcmd)
         u8_t evt = s->parms.evt >> 16 & 0xff;
         s->parms.rp->event = (event_prv_t __xdata *)(s->parms.evt & 0xffff);
         s->parms.rp->action = (action_mgr_t __xdata *)(s->parms.act & 0xffff);
-        s->parms.rp->status = RULE_STATUS_ENABLED;
         s->parms.rp->scenario = (unsigned int)evt << 8 | act;
+        if (s->parms.rp->status != RULE_STATUS_ENABLED)
+          s->parms.rp->status = RULE_STATUS_DISABLED;
         switch (act)
         {
           /* Add new case statement for every new action manager */
@@ -282,9 +244,15 @@ PARAM_FUNC (set_tslist)
   u8_t tsentry;
 
   buffer = skip_to_char(buffer, '=');
+  /* Skip back to the first character before the = sign */
   buffer -= 2;
-  tsentry = atoi(buffer);
-  s->parms.tslist |= (1 << tsentry);
+  /* Loop back to first non numeric character */
+  while (isdigit(*buffer))
+    buffer--;
+  /* Go back to the first numeric character in this parameter */
+  buffer++;
+  tsentry = (u8_t)atoi(buffer);
+  s->parms.marklist |= (1 << tsentry);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -386,49 +354,7 @@ PARAM_FUNC (set_tsday)
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_tscmd)
 {
-  u16_t lst=1;
-  u8_t i;
-  time_spec_t *ts = &sys_cfg.time_events[0];
-
-  buffer = skip_to_char(buffer, '=');
-
-  if (strncmp("delete", buffer, 6) == 0) {
-    /* Go through all time events */
-    for (i=0; i<NMBR_TIME_EVENTS; i++) {
-      /* Check only used entries */
-      if (ts->status & TIME_EVENT_ENTRY_USED) {
-        /* Check if this entry is on the delete list */
-        if (s->parms.tslist & lst)
-          ts->status &= ~TIME_EVENT_ENTRY_USED;
-      }
-      /* Move to next entry */
-      lst <<= 1;
-      /* Move to next active entry in the list */
-      ts++;
-    }
-    /* Write new configuration to flash */
-    write_config_to_flash();
-  } else {
-    A_(printf (__FILE__ " Setting the modify property");)
-    s->parms.tsmodify = TRUE;
-    /* Look for the entry to modify */
-    for (i=0; i<NMBR_TIME_EVENTS; i++) {
-      /* Check only used entries */
-      if (ts->status & TIME_EVENT_ENTRY_USED) {
-        /* Check if this entry is in the tslist */
-        if (s->parms.tslist & lst) {
-          /* Set the ts entry to modify */
-          s->parms.ts = ts;
-          /* We only use the first entry so break here */
-          break;
-        }
-      }
-      /* Move to next entry */
-      lst <<= 1;
-      /* Move to next active entry in the list */
-      ts++;
-    }
-  }
+  x_set_tscmd(s, buffer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -762,6 +688,7 @@ void parse_input(struct httpd_state *s, char *buf) __banked
     memset (s->parms.rp, 0, sizeof *(s->parms.rp));
     rp_update = FALSE;
   }
+  s->parms.modify = FALSE;
 
   while (*buf != ISO_space)
   {

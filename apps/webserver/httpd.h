@@ -56,11 +56,11 @@ struct cgi_parameters {
   u8_t step;
   u8_t step_updated;
   u8_t num_parms;
-  time_spec_t *ts;
-  rule_t *rp;
-  u16_t tslist;
-  u8_t tsmodify;
-  evnt_iter_t iter;
+  time_spec_t *ts;        /* Pointer to a time spec structure */
+  rule_t *rp;             /* Pointer to a rule */
+  unsigned long marklist; /* List of Mark check boxes (up to 16) */
+  u8_t modify;            /* Modify flag, indicated the user pressed a modify button */
+  evnt_iter_t iter;       /* Iterator instance */
   unsigned long evt;
   unsigned long act;
   u8_t aochan;

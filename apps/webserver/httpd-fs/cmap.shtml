@@ -64,10 +64,12 @@ function setData (frm)
 
 <h1>New Event Route</h1><hr color="#258D92" size="2" width="90%">
 <form action="map.shtml">
-
+<input type="hidden" name="mapx" value="%! get-int 2
+">
 <center>
 <div><table width="90%" class="mytab"><col style="width:40%" />
-<tr><td>Enabled</td><td><input type="checkbox" name="mapenabled"></td></tr>
+<tr><td>Enabled</td><td><input type="checkbox" name="mapenabled"%! get-check 1
+></td></tr>
 <tr><td>Select Event provider</td><td>
 <select name="evt" onchange="setData(this.form);">
 <option value="-1">(Select an event provider)</option>%! get-evntfuncs 0

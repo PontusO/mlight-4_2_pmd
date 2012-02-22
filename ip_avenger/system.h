@@ -42,10 +42,15 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
-// #include "bank.h"
 #include "uipopt.h"
 #include "uip_arp.h"
 #include "uip-split.h"
+
+/*
+ * Additional datatypes
+ */
+typedef unsigned long u32_t;
+typedef long s32_t;
 
 /*
  * Some os-light signal macros
