@@ -54,8 +54,13 @@ struct sys_config
   char time_zone;                 /* The offset from GMT for our system time */
   char username[9];               /* Authentication user name */
   char password[9];               /* Authentication password */
+  /* PIR Sensor */
+  u8_t pir_enabled;               /* Indicates if the PIR sensor is enabled */
+  u8_t pir_sensitivity;           /* Indicates the sensitivty of the PIR sensor */
+  /* Time Events */
   u8_t nmbr_time_events;          /* The number of time events in the table */
   time_spec_t time_events[16];    /* Array of time events */
+  /* Event switch */
   u8_t nmbr_of_rules;             /* Hold the number of registered rules */
   rule_t rules[MAX_NR_RULES];     /* Array of rules */
 };

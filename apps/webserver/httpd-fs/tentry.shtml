@@ -3,7 +3,7 @@
 <form action="tevents.shtml"><center><table width="90%" class="mytab">
 <input type="hidden" name="tsx" value="%! get-int 3
 ">
-<tr><td>Event Name</td><td colspan="8"><input type="text" name="tsname" size="16" maxlength="8" value="%! get-tsname
+<tr><td>Event Name</td><td colspan="8"><input type="text" name="tsname" size="16" maxlength="8" value="%! get-string 2
 "></td></tr>
 <tr><td>Enabled</td><td colspan="8"><input type="checkbox" name="tsena"%! get-check 0
 ></td></tr>

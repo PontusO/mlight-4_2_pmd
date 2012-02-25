@@ -96,6 +96,22 @@ static const struct parameter_table parmtab[] = {
   PARAM_ENTRY("cb13", set_tslist),
   PARAM_ENTRY("cb14", set_tslist),
   PARAM_ENTRY("cb15", set_tslist),
+  PARAM_ENTRY("cb16", set_tslist),
+  PARAM_ENTRY("cb17", set_tslist),
+  PARAM_ENTRY("cb18", set_tslist),
+  PARAM_ENTRY("cb19", set_tslist),
+  PARAM_ENTRY("cb20", set_tslist),
+  PARAM_ENTRY("cb21", set_tslist),
+  PARAM_ENTRY("cb22", set_tslist),
+  PARAM_ENTRY("cb23", set_tslist),
+  PARAM_ENTRY("cb24", set_tslist),
+  PARAM_ENTRY("cb25", set_tslist),
+  PARAM_ENTRY("cb26", set_tslist),
+  PARAM_ENTRY("cb27", set_tslist),
+  PARAM_ENTRY("cb28", set_tslist),
+  PARAM_ENTRY("cb29", set_tslist),
+  PARAM_ENTRY("cb30", set_tslist),
+  PARAM_ENTRY("cb31", set_tslist),
   PARAM_ENTRY("tscmd", set_tscmd),
   /* Create time event parameters */
   PARAM_ENTRY("tsx", set_tsx),
@@ -116,6 +132,10 @@ static const struct parameter_table parmtab[] = {
   PARAM_ENTRY("evt", set_evt),
   PARAM_ENTRY("act", set_act),
   PARAM_ENTRY("wcmd", set_wcmd),  /* Write command */
+  /* PIR parameters */
+  PARAM_ENTRY("pirclr", set_pirclr),
+  PARAM_ENTRY("pirena", set_pirena),
+  PARAM_ENTRY("pirlevel", set_pirlevel),
 	/* Parameters used in xcgi commands */
   PARAM_ENTRY("channel", cgi_set_channel),
   PARAM_ENTRY("achannel", cgi_set_achannel),
@@ -152,9 +172,43 @@ static char *skip_to_char(char *buf, char chr) __reentrant
 }
 
 /*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_pirclr)
+{
+  IDENTIFIER_NOT_USED(s);
+  IDENTIFIER_NOT_USED(buffer);
+
+  /* Simply prepare this flag in case it was not set to true (Stupid html) */
+  sys_cfg.pir_enabled = FALSE;
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_pirlevel)
+{
+  IDENTIFIER_NOT_USED(s);
+
+  buffer = skip_to_char(buffer, '=');
+  if (NEOP(*buffer)) {
+    sys_cfg.pir_sensitivity = atoi(buffer);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_pirena)
+{
+  IDENTIFIER_NOT_USED(s);
+
+  buffer = skip_to_char(buffer, '=');
+  if (strncmp(buffer, "on", 2) == 0) {
+    sys_cfg.pir_enabled = TRUE;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_mapcmd)
 {
-  x_set_mapcmd (s, buffer);
+  util_param_t param = {s, buffer};
+
+  x_set_mapcmd (&param);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -354,7 +408,10 @@ PARAM_FUNC (set_tsday)
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_tscmd)
 {
-  x_set_tscmd(s, buffer);
+  util_param_t param = {s, buffer};
+
+  printf ("Running tscmd !\n");
+  x_set_tscmd(&param);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -66,9 +66,6 @@
 #include <stdlib.h>
 
 /* Time CGI's */
-HTTPD_CGI_CALL(L_get_time_ena, "get-time-ena", get_time_ena);
-HTTPD_CGI_CALL(L_get_time_ip, "get-time-ip", get_time_ip);
-HTTPD_CGI_CALL(L_get_timeport, "get-tim-port", get_timeport);
 HTTPD_CGI_CALL(L_get_current_time, "get-cur-tim", get_current_time);
 HTTPD_CGI_CALL(L_get_current_date, "get-cur-date", get_current_date);
 HTTPD_CGI_CALL(L_get_tz_options, "get-tz-opt", get_tz_options);
@@ -83,7 +80,6 @@ HTTPD_CGI_CALL(f_get_string, "get-string", get_string);
 HTTPD_CGI_CALL(f_get_int, "get-int", get_int);
 
 HTTPD_CGI_CALL(f_get_time_events, "te-get-time-events", get_time_events);
-HTTPD_CGI_CALL(f_get_tsname, "get-tsname", get_tsname);
 HTTPD_CGI_CALL(f_get_tstime, "get-tstime", get_tstime);
 HTTPD_CGI_CALL(f_get_tsday, "get-tsday", get_tsday);
 
@@ -101,9 +97,6 @@ static const struct httpd_cgi_call *calls[] = {
   &f_get_check_box,
   &f_get_string,
   &f_get_int,
-  &L_get_time_ena,
-  &L_get_time_ip,
-  &L_get_timeport,
   &L_get_current_time,
   &L_get_current_date,
   &L_get_tz_options,
@@ -111,7 +104,6 @@ static const struct httpd_cgi_call *calls[] = {
   &L_get_rtc,
   &L_set_param,
   &f_get_time_events,
-  &f_get_tsname,
   &f_get_tstime,
   &f_get_tsday,
   &f_map_get_events,
@@ -362,20 +354,6 @@ PT_THREAD(get_time_events(struct httpd_state *s, char *ptr) __reentrant)
 
 /*---------------------------------------------------------------------------*/
 static
-PT_THREAD(get_tsname(struct httpd_state *s, char *ptr) __reentrant)
-{
-  IDENTIFIER_NOT_USED (ptr);
-
-  PSOCK_BEGIN(&s->sout);
-  if (s->parms.ts && s->parms.modify) {
-    sprintf ((char*)uip_appdata, "%s", s->parms.ts->name);
-    PSOCK_SEND_STR(&s->sout, uip_appdata);
-  }
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
 PT_THREAD(get_tstime(struct httpd_state *s, char *ptr) __reentrant)
 {
   IDENTIFIER_NOT_USED (ptr);
@@ -396,18 +374,19 @@ PT_THREAD(get_tsday(struct httpd_state *s, char *ptr) __reentrant)
 
   PSOCK_BEGIN(&s->sout);
 
-  while (*ptr != ' ')
-    ptr++;
-  ptr++;
-  check_box = atoi(ptr)-1;
-  day = 1 << check_box;
-
   if (s->parms.ts && s->parms.modify) {
+    while (*ptr != ' ')
+      ptr++;
+    ptr++;
+    check_box = atoi(ptr)-1;
+    day = 1 << check_box;
+
     if (day & s->parms.ts->weekday) {
       sprintf ((char*)uip_appdata, "checked");
       PSOCK_SEND_STR(&s->sout, uip_appdata);
     }
   }
+
   PSOCK_END(&s->sout);
 }
 
@@ -543,14 +522,41 @@ PT_THREAD(get_current_date(struct httpd_state *s, char *ptr) __reentrant)
 }
 
 /*---------------------------------------------------------------------------*/
+#pragma save
+#pragma nogcse
 static
 PT_THREAD(get_tz_options(struct httpd_state *s, char *ptr) __reentrant)
 {
-  PT_BEGIN(&s->utilpt);
   IDENTIFIER_NOT_USED(ptr);
-  PT_WAIT_THREAD(&s->utilpt, get_tz_options_util(s));
-  PT_END(&s->utilpt);
+  PSOCK_BEGIN(&s->sout);
+
+  for (s->i = -11 ; s->i<12 ; s->i++) {
+    char *ptr;
+
+    ptr = uip_appdata;
+    ptr += sprintf(ptr, "<option value='%d'", s->i);
+
+    /* Mark the selected option */
+    if (s->i == sys_cfg.time_zone) {
+      ptr += sprintf(ptr, " selected>GMT");
+    } else {
+      ptr += sprintf(ptr, ">GMT");
+    }
+
+    /* GMT has no values */
+    if (s->i == 0)
+      sprintf(ptr, "</option>");
+    else if (s->i < 0)
+      sprintf(ptr, " %d hrs</option>", s->i);
+    else
+      sprintf(ptr, " +%d hrs</option>", s->i);
+
+    PSOCK_SEND_STR(&s->sout, uip_appdata);
+  }
+
+  PSOCK_END(&s->sout);
 }
+#pragma restore
 
 /*---------------------------------------------------------------------------*/
 static
@@ -560,66 +566,6 @@ PT_THREAD(get_rtc(struct httpd_state *s, char *ptr) __reentrant)
   IDENTIFIER_NOT_USED(ptr);
 
   print_datetime_formated(uip_appdata);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_time_ena(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  if (sys_cfg.enable_time) {
-    sprintf((char *)uip_appdata, "checked");
-    PSOCK_SEND_STR(&s->sout, uip_appdata);
-  }
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_time_ena_cgi(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  if (sys_cfg.enable_time)
-    sprintf((char *)uip_appdata, "on");
-  else
-    sprintf((char *)uip_appdata, "off");
-
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_time_ip(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf((char *)uip_appdata, ip_format,
-          sys_cfg.time_server[0], sys_cfg.time_server[1],
-          sys_cfg.time_server[2], sys_cfg.time_server[3]);
-
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_timeport(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf((char *)uip_appdata, "%u", (u16_t)sys_cfg.time_port);
-
   PSOCK_SEND_STR(&s->sout, uip_appdata);
 
   PSOCK_END(&s->sout);
@@ -720,9 +666,21 @@ PT_THREAD(get_ip_num(struct httpd_state *s, char *ptr) __reentrant)
         sys_cfg.gw_addr[2], sys_cfg.gw_addr[3]);
       break;
 
+    case 4:
+      /* Time server */
+      sprintf((char *)uip_appdata, ip_format,
+        sys_cfg.time_server[0], sys_cfg.time_server[1],
+        sys_cfg.time_server[2], sys_cfg.time_server[3]);
+      break;
+
     case 5:
       /* HTTP Port */
-      sprintf((char *)uip_appdata, "%u", sys_cfg.http_port);
+      sprintf((char *)uip_appdata, "%u", (u16_t)sys_cfg.http_port);
+      break;
+
+    case 6:
+      /* Time server Port */
+      sprintf((char *)uip_appdata, "%u", (u16_t)sys_cfg.time_port);
       break;
 
     default:
@@ -738,7 +696,7 @@ PT_THREAD(get_ip_num(struct httpd_state *s, char *ptr) __reentrant)
 static
 PT_THREAD(get_check_box(struct httpd_state *s, char *ptr) __reentrant)
 {
-  char check_box;
+  char check_box, state = FALSE;
 
   PSOCK_BEGIN(&s->sout);
 
@@ -751,24 +709,30 @@ PT_THREAD(get_check_box(struct httpd_state *s, char *ptr) __reentrant)
   {
     case 0:
       if (s->parms.ts && s->parms.modify)
-        check_box = s->parms.ts->status & TIME_EVENT_ENABLED;
-      else
-        check_box = 0;
+        state = s->parms.ts->status & TIME_EVENT_ENABLED;
       break;
 
     case 1:
       if (s->parms.rp && s->parms.modify)
-        check_box = s->parms.rp->status & RULE_STATUS_ENABLED;
-      else
-        check_box = 0;
+        state = s->parms.rp->status & RULE_STATUS_ENABLED;
+      break;
+
+    case 2:
+      if (sys_cfg.enable_time)
+        state = TRUE;
+      break;
+
+    case 3:
+      if (sys_cfg.pir_enabled)
+        state = TRUE;
       break;
 
     default:
-      check_box = 0;
+      state = 0;
       break;
   }
 
-  if (check_box)
+  if (state)
     sprintf((char *)uip_appdata, " checked");
   else
     sprintf((char *)uip_appdata, " ");
@@ -806,11 +770,18 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
       }
       break;
 
+    /* tsx value on tentry.shtml page */
     case 3:
       if (s->parms.ts && s->parms.modify) {
         myint = (int)s->parms.ts;
         intno = (char)myint;
       }
+      break;
+
+    /* Sensitivity value for the PIR sensor */
+    case 4:
+      myint = sys_cfg.pir_sensitivity;
+      intno = 1;
       break;
 
     case 10:
@@ -850,6 +821,13 @@ PT_THREAD(get_string(struct httpd_state *s, char *ptr) __reentrant)
     case 1:
       string = sys_cfg.device_id;
       break;
+
+    case 2:
+      if (s->parms.ts && s->parms.modify) {
+        string = s->parms.ts->name;
+      }
+      break;
+
 
     case 10:
     case 11:

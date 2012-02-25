@@ -2,11 +2,11 @@
 <h1>Time Settings</h1><hr color="#258D92" size="2" width="90%"><form><input type="hidden" name="resettime">
 <center><table width="90%" class="mytab"><tr><td>Current Date: </td><td>%! get-rtc
 </td></tr>
-<tr><td>Enable Automatic Time Updates</td><td><input type="checkbox" name="entim" %! get-time-ena
+<tr><td>Enable Automatic Time Updates</td><td><input type="checkbox" name="entim" %! get-check 2
 ></td></tr>
-<tr><td>Time Server</td><td><input type="text" name="timip" size="15" maxlength="20" value="%! get-time-ip
+<tr><td>Time Server</td><td><input type="text" name="timip" size="15" maxlength="20" value="%! get-ip-num 4
 "></td></tr>
-<tr><td>Time Server port</td><td><input type="text" name="timprt" size="6" maxlength="10" align="right" value="%! get-tim-port
+<tr><td>Time Server port</td><td><input type="text" name="timprt" size="6" maxlength="10" align="right" value="%! get-ip-num 6
 "></td></tr>
 <tr><td>Update Interval (hrs)</td><td><input type="text" name="intrvl" size="6" maxlength="3" align="right" value="%! get-int 1
 "></td></tr>
