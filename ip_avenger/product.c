@@ -42,6 +42,7 @@
 #include "i2c.h"
 #include "rtc.h"
 #include "pca.h"
+#include "comparator.h"
 #include "httpd-cgi.h"
 #include "product.h"
 #include "but_mon.h"
@@ -105,6 +106,9 @@ void pmd(void) __banked
 
   /* Initialize the ADC and ADC ISR */
   adc_init();
+
+  /* Initialize the comparator driver */
+  init_comparators();
 
   /* ****************** Initialize libraries *******************/
   /* Initialise the uIP TCP/IP stack. */

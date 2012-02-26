@@ -100,7 +100,7 @@
 		<Unit filename="..\apps\webserver\httpd-fs\index.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\map.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\netset.shtml" />
-		<Unit filename="..\apps\webserver\httpd-fs\settings.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\pirset.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\style.css" />
 		<Unit filename="..\apps\webserver\httpd-fs\tentry.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\tevents.shtml" />
@@ -132,6 +132,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\driver\adc.h" />
+		<Unit filename="..\driver\comparator.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\comparator.h" />
+		<Unit filename="..\driver\dac.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\driver\dac.h" />
 		<Unit filename="..\driver\dm9000.c">
 			<Option compilerVar="CC" />
 		</Unit>

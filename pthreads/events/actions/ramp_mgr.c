@@ -92,14 +92,14 @@ void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked
 }
 
 /* No thread (yet) to interupt so we don't do anything here */
-void ramp_stop (void)
+void ramp_stop (void) __reentrant
 {
 }
 
 /*
  * This is the trigger function that is called from the event switch.
  */
-void ramp_trigger (void *input)
+void ramp_trigger (void *input) __reentrant
 {
   char rmgr;
   act_ramp_data_t *rampdata = (act_ramp_data_t *)input;
@@ -114,6 +114,11 @@ void ramp_trigger (void *input)
     ramp_mgr_tab[rmgr]->rate = rampdata->rate;
     ramp_mgr_tab[rmgr]->step = rampdata->step;
     ramp_mgr_tab[rmgr]->signal = 1;
+
+    B_(printf (__FILE__ " Ramp Data:\n");)
+    B_(printf (__FILE__ "  Ramp to   : %d\n", rampdata->rampto);)
+    B_(printf (__FILE__ "  Ramp rate : %d\n", rampdata->rate);)
+    B_(printf (__FILE__ "  Ramp step : %d\n", rampdata->step);)
   }
 }
 

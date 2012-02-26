@@ -117,6 +117,7 @@ static const struct httpd_cgi_call *calls[] = {
 
 static char *ip_format = "%d.%d.%d.%d";
 static char *error_string = "<ERROR ";
+static char *str_selected = "selected";
 
 static
 PT_THREAD(set_level(struct httpd_state *s, char *ptr) __reentrant)
@@ -451,14 +452,16 @@ static unsigned short generate_event_functions(void *arg) __reentrant
       num |= (int)ep;
       num |= (unsigned long)(((event_prv_t*)ep)->type) << 16;
       sprintf((char *)uip_appdata,
-              "<option value=\"%ld\">(%s) %s</option>", num,
+              "<option value=\"%ld\" %s>(%s) %s</option>", num,
+              s->parms.modify && s->parms.rp->event == ep ? str_selected : "",
               GET_EVENT_BASE(ep).name, GET_EVENT(ep)->event_name);
       break;
     case 2:
       num |= (int)ep;
       num |= (unsigned long)(((action_mgr_t*)ep)->type) << 16;
       sprintf((char *)uip_appdata,
-              "<option value=\"%ld\">%s</option>", num,
+              "<option value=\"%ld\" %s>%s</option>", num,
+              s->parms.modify && s->parms.rp->action == ep ? str_selected : "",
               GET_ACTION(ep)->action_name);
       break;
     default:

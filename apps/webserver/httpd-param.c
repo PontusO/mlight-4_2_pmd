@@ -128,6 +128,7 @@ static const struct parameter_table parmtab[] = {
   /* map.shtml */
   PARAM_ENTRY("mapcmd", set_mapcmd),
   /* Create route parameters */
+  PARAM_ENTRY("mapx", set_mapx),
   PARAM_ENTRY("mapenabled", set_mapenabled),
   PARAM_ENTRY("evt", set_evt),
   PARAM_ENTRY("act", set_act),
@@ -201,6 +202,31 @@ PARAM_FUNC (set_pirena)
   if (strncmp(buffer, "on", 2) == 0) {
     sys_cfg.pir_enabled = TRUE;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*
+ * See the tsx parameter for more detailed information */
+PARAM_FUNC (set_mapx)
+{
+  rule_t *rp;
+
+  buffer = skip_to_char(buffer, '=');
+  if (*buffer == ISO_and)
+    return;
+  rp = (rule_t __xdata *)atoi(buffer);
+
+  /* We'we got to be careful that the read value is appropriate, so check
+   * that it falls within the array of rules */
+  if (rp == NULL ||
+      rp < &sys_cfg.rules[0] ||
+      rp > &sys_cfg.rules[0] + sizeof sys_cfg.rules) {
+    /* Something's wrong, reset the modify flag */
+    s->parms.modify = 0;
+    A_(printf (__FILE__ " Error, invalid rp value !\n");)
+    return;
+  }
+  s->parms.rp = rp;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -327,6 +353,7 @@ PARAM_FUNC (set_tsx)
    * that it falls within the array of time_spec_t's */
   if (ts < &sys_cfg.time_events[0] ||
       ts > &sys_cfg.time_events[0] + sizeof sys_cfg.time_events) {
+    s->parms.modify = FALSE;
     A_(printf (__FILE__ " Error, invalid ts value !\n");)
     return;
   }

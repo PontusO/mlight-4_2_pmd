@@ -59,12 +59,12 @@ void init_absval_mgr(absval_mgr_t *absval_mgr) __reentrant __banked
 }
 
 /* No thread (yet) to interrupt so we don't do anything here */
-void absval_stop (void)
+void absval_stop (void) __reentrant
 {
 }
 
 /* Set new data */
-void absval_trigger (void *input)
+void absval_trigger (void *input) __reentrant
 {
   ld_param_t led_params;
   act_absolute_data_t *absdata = (act_absolute_data_t *)input;
