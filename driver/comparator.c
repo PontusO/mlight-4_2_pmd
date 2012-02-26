@@ -127,11 +127,11 @@ char get_comparator_state (u8_t comp)
   {
     case 0:
       SFRPAGE = CPT0_PAGE;
-      return CPT0CN & ~COMP_OUT ? 1 : 0;
+      return CPT0CN & COMP_OUT ? 1 : 0;
 
     case 1:
       SFRPAGE = CPT1_PAGE;
-      return CPT1CN & ~COMP_OUT ? 1 : 0;
+      return CPT1CN & COMP_OUT ? 1 : 0;
 
     default:
       return -1;

@@ -43,6 +43,7 @@
 #include "rtc.h"
 #include "pca.h"
 #include "comparator.h"
+#include "dac.h"
 #include "httpd-cgi.h"
 #include "product.h"
 #include "but_mon.h"
@@ -51,6 +52,7 @@
 #include "event_switch.h"
 #include "adc_event.h"
 #include "time_event.h"
+#include "pir_event.h"
 #include "lightlib.h"
 
 extern static u16_t half_Sec;
@@ -77,6 +79,7 @@ event_thread_t  event_thread;
 absval_mgr_t    absval_mgr;
 adc_event_t     adc_event;
 time_event_t    time_event;
+pir_event_t     pir_event;
 
 // ---------------------------------------------------------------------------
 //	pmd()
@@ -109,6 +112,9 @@ void pmd(void) __banked
 
   /* Initialize the comparator driver */
   init_comparators();
+
+  /* Initialize the dac driver */
+  init_dacs();
 
   /* ****************** Initialize libraries *******************/
   /* Initialise the uIP TCP/IP stack. */
@@ -172,6 +178,8 @@ void pmd(void) __banked
   init_adc_event(&adc_event);
   /* Time events */
   init_time_event (&time_event);
+  /* PIR events */
+  init_pir_event (&pir_event);
 
   while(1)
   {
@@ -292,6 +300,7 @@ void pmd(void) __banked
     PT_SCHEDULE(handle_adc_event(&adc_event));
     PT_SCHEDULE(handle_event_switch(&event_thread));
     PT_SCHEDULE(handle_time_event(&time_event));
+    PT_SCHEDULE(handle_pir_event(&pir_event));
   }	// end of 'while (1)'
 }
 

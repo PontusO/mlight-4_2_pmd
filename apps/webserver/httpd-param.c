@@ -137,6 +137,7 @@ static const struct parameter_table parmtab[] = {
   PARAM_ENTRY("pirclr", set_pirclr),
   PARAM_ENTRY("pirena", set_pirena),
   PARAM_ENTRY("pirlevel", set_pirlevel),
+  PARAM_ENTRY("pirlock", set_pirlock),
 	/* Parameters used in xcgi commands */
   PARAM_ENTRY("channel", cgi_set_channel),
   PARAM_ENTRY("achannel", cgi_set_achannel),
@@ -190,6 +191,17 @@ PARAM_FUNC (set_pirlevel)
   buffer = skip_to_char(buffer, '=');
   if (NEOP(*buffer)) {
     sys_cfg.pir_sensitivity = atoi(buffer);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_pirlock)
+{
+  IDENTIFIER_NOT_USED(s);
+
+  buffer = skip_to_char(buffer, '=');
+  if (NEOP(*buffer)) {
+    sys_cfg.pir_lockout = atoi(buffer);
   }
 }
 

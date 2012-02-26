@@ -111,7 +111,9 @@ typedef enum {
  */
 typedef enum {
   ETYPE_POTENTIOMETER_EVENT = 0x01,
-  ETYPE_TIME_EVENT = 0x02,
+  ETYPE_TIME_EVENT,
+  ETYPE_PIR_SENSOR_INPUT_EVENT,
+  ETYPE_TABLE_END_MARKER_EVENT,
 } event_event_t;
 
 /** Event base data structure

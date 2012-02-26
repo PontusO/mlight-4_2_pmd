@@ -52,6 +52,10 @@ function setData (frm)
       enLayer ('abs');
     } else if (etype == 2 && atype == 2) {
       enLayer ('ramp');
+    } else if (etype == 3 && atype == 1) {
+      enLayer ('abs');
+    } else if (etype == 3 && atype == 2) {
+      enLayer ('ramp');
     }
     frm.submit.disabled=false;
   } else {

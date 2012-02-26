@@ -28,7 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-//#define PRINT_AB
+#define PRINT_A
 
 #include "system.h"
 #include "pt.h"
@@ -136,7 +136,7 @@ static char find_first_free_entry(void **table, char max)
 char evnt_register_handle(void *handle) __reentrant
 {
   char tmp;
-  event_base_t *peb = (event_base_t*)handle;
+  event_base_t *peb = (event_base_t *)GET_EVENT_BASE(handle);
 
   A_(printf (__FILE__ " Registering %s\n", peb->name);)
   switch (peb->type) {

@@ -787,6 +787,12 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
       intno = 1;
       break;
 
+    /* Trigger lockout time */
+    case 5:
+      myint = sys_cfg.pir_lockout;
+      intno = 1;
+      break;
+
     case 10:
     case 11:
     case 12:

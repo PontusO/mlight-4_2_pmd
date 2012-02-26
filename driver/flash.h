@@ -57,6 +57,7 @@ struct sys_config
   /* PIR Sensor */
   u8_t pir_enabled;               /* Indicates if the PIR sensor is enabled */
   u8_t pir_sensitivity;           /* Indicates the sensitivty of the PIR sensor */
+  u8_t pir_lockout;               /* Minimum time between triggered events */
   /* Time Events */
   u8_t nmbr_time_events;          /* The number of time events in the table */
   time_spec_t time_events[16];    /* Array of time events */

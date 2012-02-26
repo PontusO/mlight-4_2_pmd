@@ -45,9 +45,6 @@
 #define ADC_RESOLUTION    10
 #define VALUE_SHIFT       (16 - ADC_RESOLUTION)
 
-/* Local prototypes */
-void *adc_event_get_dptr(void);
-
 /* Event handle */
 static event_prv_t adcevents[4];
 static const char *base_name = "A/D Input";
@@ -121,7 +118,7 @@ PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
 
       /* Only do data transfers when there is an existing rule available */
       if (adc_event->adptr) {
-        /* There is no need to different between different action managers here
+        /* There is no need to differentiate between different action managers here
          * since adc events are only compatible with the absolute data manager */
         adc_event->adptr->abs_data.value = adc_event->pot_val;
 

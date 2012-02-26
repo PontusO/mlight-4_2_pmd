@@ -141,55 +141,39 @@ char *get_ramp_state (ramp_mgr_t *rmgr) __reentrant __banked
   return ramp_states_str[rmgr->state];
 }
 
-/* Debug lines for catching compiler generated failures.
- * If you think that values are being trashed in this function
- * during runtime, this macro can be enabled and trace the required
- * variable.
+/*
+ * This thread performs the actual ramping of the light value
  */
-/* IMPORTANT !! At the moment this does not work so don't use it */
-//#define TMR_GUARD if (ramp->timer != tmptim) { A_(printf (__FILE__ " Timer Error line %d: expected %d found %d, %p\n", __LINE__, (int)tmptim, (int)ramp->timer, ramp);) ; goto exit; }
-#define TMR_GUARD
-//static u8_t tmptim;
-
+#pragma save
+#pragma nogcse
 PT_THREAD(do_ramp(ramp_t *ramp) __reentrant)
 {
   PT_BEGIN (&ramp->pt);
   {
     ramp->timer = alloc_timer();
-//    tmptim = ramp->timer;
     ramp->signal = RAMP_CMD_RESET;
 
     A_(printf (__FILE__ " allocated timer %d for ramp manager %p\n", ramp->timer, ramp);)
 
     do {
-      TMR_GUARD
       set_timer (ramp->timer, ramp->rate, NULL);
 
-      TMR_GUARD
       if (ramp->step >= 0) {
-        TMR_GUARD
         if (ramp->intensity > ramp->rampto) {
-          TMR_GUARD
           ramp->intensity = ramp->rampto;
         }
       } else {
-        TMR_GUARD
         if (ramp->intensity < ramp->rampto) {
-          TMR_GUARD
           ramp->intensity = ramp->rampto;
         }
       }
 
-      TMR_GUARD
       ramp->lp.channel = ramp->channel;
       ramp->lp.level_percent = ramp->intensity;
       ledlib_set_light_percentage_log (&ramp->lp);
-      TMR_GUARD
       PT_WAIT_UNTIL (&ramp->pt, (get_timer(ramp->timer) == 0) ||
                                  ramp->signal == RAMP_CMD_STOP);
-      TMR_GUARD
       ramp->intensity += ramp->step;
-      TMR_GUARD
     } while ((ramp->intensity != ramp->rampto) &&
              (ramp->signal == RAMP_CMD_RESET));
 
@@ -258,15 +242,6 @@ PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked)
 
   PT_END(&rmgr->pt);
 }
+#pragma restore
 
-#if 0
-/*
- * The timer 2 __interrupt routine
- */
-void TIMER2_ISR (void) __interrupt TF2_VECTOR __using 2
-{
-  TF2 = 0;
-  putchar ('.');
-}
-#endif
 /* EOF */
