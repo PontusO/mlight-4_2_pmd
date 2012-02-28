@@ -67,7 +67,6 @@ void init_adc_event(adc_event_t *adc_event) __reentrant __banked
     adcevents[i].type = ETYPE_POTENTIOMETER_EVENT;
     adcevents[i].base.name = base_name;
     adcevents[i].event_name = (char*)adc_names[i];
-    adcevents[i].signal = 0;
     /* This will ensure that the light settings will update on start */
     adc_event->prev_pot_val[i] = 100;
   }
@@ -123,9 +122,7 @@ PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
         adc_event->adptr->abs_data.value = adc_event->pot_val;
 
         /* Send the signal */
-        if (event_send_signal (&adcevents[adc_event->channel]) == -1) {
-          A_(printf (__FILE__ " Warning: Failed to send signal !\n");)
-        }
+        rule_send_event_signal (&adcevents[adc_event->channel]);
       }
     }
   }

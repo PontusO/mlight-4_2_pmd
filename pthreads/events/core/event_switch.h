@@ -95,6 +95,13 @@
 #define MAX_NR_RULES            20
 #define RULE_NAME_LENGTH        8
 
+/**
+ * Usefull macros for accessing the event system data structures
+ */
+#define GET_EVENT_BASE(x) ((event_virtual_t *)x)->base
+#define GET_ACTION(x) ((action_mgr_t *)x)
+#define GET_EVENT(x) ((event_prv_t *)x)
+
 /* Structure prototypes */
 struct rule;
 
@@ -135,10 +142,6 @@ typedef struct {
 } event_virtual_t;
 
 /**
- * Macro for accessing the base structure of any event type
- */
-#define GET_EVENT_BASE(x) ((event_virtual_t *)x)->base
-/**
  * This enum represents all available action types in the system.
  * When a new action is introduced this enum need to be updated
  */
@@ -166,14 +169,8 @@ typedef struct {
   event_base_t base;
   char *action_name;
   event_action_t type;
-  struct rule *rule;
   action_vt_t vt;
 } action_mgr_t;
-
-/**
- * Macro for accessing the action structure
- */
-#define GET_ACTION(x) ((action_mgr_t *)x)
 
 /**
  * The event provider handle.
@@ -185,14 +182,7 @@ typedef struct {
   event_base_t base;  /** Base structure */
   char *event_name;   /** The name of the particular event */
   event_event_t type; /** The particular event trype */
-  struct rule *rule;  /** Parent rule */
-  char signal;
 } event_prv_t;
-
-/**
- * Macro for accessing the event structure
- */
-#define GET_EVENT(x) ((event_prv_t *)x)
 
 typedef enum {
   RULE_STATUS_FREE = 0x00,
@@ -218,13 +208,23 @@ union rule_action_data {
 };
 
 /**
+ * The rule structure table is stored in flash so the rule struct
+ * must not have any volatile data in it. This data is instead stored
+ * in this special data structure.
+ */
+typedef struct {
+  char event_signal;
+} rule_data_t;
+
+/**
  * The rule handle.
  */
 struct rule {
   rule_status_t status;
-  event_prv_t *event;             /** Pointer to connected event */
-  action_mgr_t *action;           /** Pointer to action manager */
-  unsigned int scenario;          /** Even/Action combination */
+  event_prv_t *event;                 /** Pointer to connected event */
+  action_mgr_t *action;               /** Pointer to action manager */
+  rule_data_t *r_data;                /** Pointer to the volatile data struct */
+  unsigned int scenario;              /** Even/Action combination */
   union rule_event_data event_data;   /** Data instance for event providers*/
   union rule_action_data action_data; /** Data instance for action managers*/
 };
@@ -243,7 +243,7 @@ typedef struct {
 /* Protothread structure */
 typedef struct {
   struct pt pt;
-  rule_t *triggered_rule;
+  u8_t i;
   event_prv_t *current_event;
   action_mgr_t *new_action;
 } event_thread_t;
@@ -258,10 +258,11 @@ void *evnt_iter_get_next_entry(evnt_iter_t *iter) __reentrant __banked;
 char get_num_from_event (event_prv_t *ptr) __reentrant __banked;
 char get_num_from_action (action_mgr_t *ptr) __reentrant __banked;
 action_mgr_t *rule_get_action_from_event (event_prv_t *ep);
-char event_send_signal (event_prv_t *ep);
 rule_t *query_events(void);
 PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant);
 
+void rule_setup_v_data_pointers (void);
+void rule_send_event_signal (event_prv_t *ep);
 union rule_action_data *rule_get_action_dptr (event_prv_t *ep) __reentrant;
 rule_t *rule_find_free_entry(void) __reentrant __banked;
 char rule_iter_create (evnt_iter_t *iter) __reentrant __banked;

@@ -780,10 +780,6 @@ void parse_input(struct httpd_state *s, char *buf) __banked
   }
 
   s->parms.rp = rule_find_free_entry();
-  if (s->parms.rp) {
-    memset (s->parms.rp, 0, sizeof *(s->parms.rp));
-    rp_update = FALSE;
-  }
   s->parms.modify = FALSE;
 
   while (*buf != ISO_space)

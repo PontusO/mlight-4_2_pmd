@@ -113,7 +113,6 @@ char add_time_event (time_spec_t *ts)
   time_events[index].base.type = EVENT_EVENT_PROVIDER;
   time_events[index].type = ETYPE_TIME_EVENT;
   time_events[index].base.name = ts->name;
-  time_events[index].signal = 0;
 
   return 0;
 }
@@ -132,7 +131,6 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
       time_events[i].type = ETYPE_TIME_EVENT;
       time_events[i].base.name = time_event_name;
       time_events[i].event_name = sys_cfg.time_events[i].name;
-      time_events[i].signal = 0;
       evnt_register_handle(&time_events[i]);
     }
   }
@@ -156,7 +154,7 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
             time_event->time_spec->min == tp.time.min &&
             tp.time.sec == 0) {
           A_(printf (__FILE__ " Handling a time event !\n");)
-          event_send_signal (&time_events[i]);
+          rule_send_event_signal (&time_events[i]);
         }
         time_event->time_spec++;
       }

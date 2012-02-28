@@ -45,6 +45,10 @@ void init_event_switch(event_thread_t *et)
 {
   PT_INIT (&et->pt);
 
+  /* These pointers are most likely already in the table, but in case
+   * they are not (First startup, Factory default) we always do this */
+  rule_setup_v_data_pointers ();
+
   nr_registered_actions = 0;
   nr_registered_events = 0;
   memset (action_table, 0, sizeof *action_table);
@@ -179,25 +183,6 @@ char unregister_event_pvdr(char entry) __reentrant
   nr_registered_events--;
 
   return 0;
-}
-
-/*
- * Set the signal for the supplied event provider instance.
- * If the provider is not found, return -1 as an error.
- */
-char event_send_signal (event_prv_t *ep)
-{
-  u8_t i;
-
-  /* Do a look up of the event provide */
-  for (i=0; i<MAX_NR_EVENT_PROVIDERS; i++) {
-    if (event_table[i] == ep) {
-      /* ep is a valid event provider pointer, so send the signal */
-      ep->signal = 1;
-      return i;
-    }
-  }
-  return -1;
 }
 
 /*

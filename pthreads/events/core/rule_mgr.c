@@ -28,7 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-//#define PRINT_A
+#define PRINT_A
 
 #include <string.h>
 
@@ -36,6 +36,9 @@
 #include "flash.h"
 #include "iet_debug.h"
 #include "event_switch.h"
+
+/* The volatile data table for the rule entries */
+rule_data_t rule_data[MAX_NR_RULES];
 
 /* ***************************** Event machine ****************************/
 /*
@@ -48,6 +51,19 @@
  * possibly be a problem in a system with very high loads on certain
  * event providers. Some kind of round robin should be considered.
  */
+
+/*
+ * Setup the volatile rule data table pointers in the rule table.
+ */
+void rule_setup_v_data_pointers (void)
+{
+  u8_t i;
+
+  for (i=0; i<MAX_NR_RULES; i++) {
+    sys_cfg.rules[i].r_data = &rule_data[i];
+    memset (&rule_data[i], 0, sizeof rule_data[i]);
+  }
+}
 
 /*
  * Look for the first free rule entry in the table and return a pointer
@@ -96,6 +112,26 @@ union rule_action_data *rule_get_action_dptr (event_prv_t *ep) __reentrant
   return NULL;
 }
 
+/*
+ * Set the trigger signal in all rules that have the specified event.
+ */
+void rule_send_event_signal (event_prv_t *ep)
+{
+  u8_t i;
+
+  /* Go through the entire rule table, looking for the event */
+  for (i=0; i<MAX_NR_RULES; i++) {
+    /* Make sure the event is enabled and the the event pointer matches
+     * the argument */
+    if (sys_cfg.rules[i].status == RULE_STATUS_ENABLED &&
+        sys_cfg.rules[i].event == ep) {
+      /* Trigger the event */
+      sys_cfg.rules[i].r_data->event_signal = 1;
+    }
+  }
+}
+
+
 /* This function will walk through all registered rules searching for an
  * event provider which has been triggered. If found it will return the
  * associated rule.
@@ -106,11 +142,9 @@ static rule_t *query_events(void)
 
   for (i=0; i<MAX_NR_RULES; i++) {
     if ((sys_cfg.rules[i].status == RULE_STATUS_ENABLED) &&
-        (sys_cfg.rules[i].event->signal)) {        // Check if signal has been triggered
+        (sys_cfg.rules[i].r_data->event_signal)) {        // Check if signal has been triggered
       A_(printf (__FILE__ " Event Provider %d, Signal Content %d\n",
-              i, sys_cfg.rules[i].event->signal);)
-      /* Reset signal */
-      sys_cfg.rules[i].event->signal = 0;
+              i, sys_cfg.rules[i].r_data->event_signal);)
       return (rule_t *)&sys_cfg.rules[i];
     }
   }
@@ -125,6 +159,8 @@ static rule_t *query_events(void)
  * incoming event has an action manager connected to it and if so signal
  * the action manager that an event has occured.
  */
+#pragma save
+#pragma nogcse
 PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant)
 {
   PT_BEGIN(&et->pt);
@@ -132,24 +168,35 @@ PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant)
   A_(printf(__FILE__ " Started the event switch !\n");)
 
   while (1) {
-    PT_WAIT_UNTIL(&et->pt, (et->triggered_rule = query_events()) != NULL);
+    PT_WAIT_UNTIL(&et->pt, query_events() != NULL);
     A_(printf(__FILE__ " Received an event !\n");)
-    et->new_action = et->triggered_rule->action;
-    if (et->new_action != NULL) {
-      /* Stop any ongoing action in the action manager */
-      if (et->new_action->vt.stop_action)
-        et->new_action->vt.stop_action();
-      /* And execute the new trigger with data from the event provider */
-      if (et->new_action->vt.trigger_action) {
-        A_(printf (__FILE__ " Executing action trigger function.\n");)
-        et->new_action->vt.trigger_action((void*)et->triggered_rule->action_data);
+    /* Walk through the rule table and execute all triggered action managers */
+    for (et->i=0; et->i<MAX_NR_RULES; et->i++) {
+      if ((sys_cfg.rules[et->i].status == RULE_STATUS_ENABLED) &&
+          (sys_cfg.rules[et->i].r_data->event_signal)) {        // Check if signal has been triggered
+        /* Found an active, triggered rule so first clear the signal again. */
+        sys_cfg.rules[et->i].r_data->event_signal = 0;
+        et->new_action = sys_cfg.rules[et->i].action;
+        if (et->new_action != NULL) {
+          /* Stop any ongoing action in the action manager */
+          if (et->new_action->vt.stop_action)
+            et->new_action->vt.stop_action();
+          /* And execute the new trigger with data from the rule action data */
+          if (et->new_action->vt.trigger_action) {
+            A_(printf (__FILE__ " Executing action trigger function.\n");)
+            et->new_action->vt.trigger_action((void*)sys_cfg.rules[et->i].action_data);
+          } else {
+            A_(printf(__FILE__ " Error: No action trigger defined !\n");)
+          }
+        } else {
+          A_(printf(__FILE__ " Error: No action mapped to event %d\n", et->current_event);)
+        }
       }
-    } else {
-      A_(printf(__FILE__ " Warning: No action mapped to event %d\n", et->current_event);)
     }
   }
   PT_END(&et->pt);
 }
+#pragma restore
 
 /*
  * Configure an iterator for iterating through the rule table.

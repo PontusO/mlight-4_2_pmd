@@ -59,7 +59,6 @@ void init_pir_event(pir_event_t *pir_event) __reentrant __banked
   pirevent.base.name = base_name;
   pirevent.type = ETYPE_PIR_SENSOR_INPUT_EVENT;
   pirevent.event_name = (char*)pir_name;
-  pirevent.signal = 0;
 }
 
 /*
@@ -143,9 +142,7 @@ again:
     set_timer (pir_event->ltmr, sys_cfg.pir_lockout * 100, NULL);
 
     /* Send the signal */
-    if (event_send_signal (&pirevent) == -1) {
-      A_(printf (__FILE__ " Warning: Failed to send signal !\n");)
-    }
+    rule_send_event_signal (&pirevent);
 
     /* And wait for it to go high again */
     PT_WAIT_UNTIL (&pir_event->pt, get_comparator_state(0) || !sys_cfg.pir_enabled);
