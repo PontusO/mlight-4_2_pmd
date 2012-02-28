@@ -90,9 +90,9 @@
 
 #include <adc_event.h>
 
-#define MAX_NR_ACTION_MGRS      5
+#define MAX_NR_ACTION_MGRS      3
 #define MAX_NR_EVENT_PROVIDERS  20
-#define MAX_NR_RULES            20
+#define MAX_NR_RULES            32
 #define RULE_NAME_LENGTH        8
 
 /**
