@@ -78,6 +78,7 @@ HTTPD_CGI_CALL(f_get_ip_num, "get-ip-num", get_ip_num);
 HTTPD_CGI_CALL(f_get_check_box, "get-check", get_check_box);
 HTTPD_CGI_CALL(f_get_string, "get-string", get_string);
 HTTPD_CGI_CALL(f_get_int, "get-int", get_int);
+HTTPD_CGI_CALL(f_get_option, "get-option", get_option);
 
 HTTPD_CGI_CALL(f_get_time_events, "te-get-time-events", get_time_events);
 HTTPD_CGI_CALL(f_get_tstime, "get-tstime", get_tstime);
@@ -97,6 +98,7 @@ static const struct httpd_cgi_call *calls[] = {
   &f_get_check_box,
   &f_get_string,
   &f_get_int,
+  &f_get_option,
   &L_get_current_time,
   &L_get_current_date,
   &L_get_tz_options,
@@ -767,6 +769,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
 
     /* mapx value on the cmap.html page */
     case 2:
+      intno = 0;
       if (s->parms.rp && s->parms.modify) {
         myint = (int)s->parms.rp;
         intno = (char)myint;
@@ -775,6 +778,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
 
     /* tsx value on tentry.shtml page */
     case 3:
+      intno = 0;
       if (s->parms.ts && s->parms.modify) {
         myint = (int)s->parms.ts;
         intno = (char)myint;
@@ -791,6 +795,39 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
     case 5:
       myint = sys_cfg.pir_lockout;
       intno = 1;
+      break;
+
+    /* Retrieve the alevel value in cmap.shtml */
+    case 6:
+      intno = 0;
+      if (s->parms.modify) {
+        myint = s->parms.rp->action_data.abs_data.value;
+        intno = 1;
+      }
+      break;
+
+    case 7:
+      intno = 0;
+      if (s->parms.modify) {
+        myint = s->parms.rp->action_data.ramp_data.rampto;
+        intno = 1;
+      }
+      break;
+
+    case 8:
+      intno = 0;
+      if (s->parms.modify) {
+        myint = s->parms.rp->action_data.ramp_data.rate;
+        intno = 1;
+      }
+      break;
+
+    case 9:
+      intno = 0;
+      if (s->parms.modify) {
+        myint = s->parms.rp->action_data.ramp_data.step;
+        intno = 1;
+      }
       break;
 
     case 10:
@@ -810,6 +847,62 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
 
   PSOCK_END(&s->sout);
 }
+
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
+{
+  char optno;
+
+  PSOCK_BEGIN(&s->sout);
+
+  while (*ptr != ' ')
+    ptr++;
+  ptr++;
+  optno = atoi(ptr);
+
+  switch(optno)
+  {
+    /* Generate options for achannel on cmap.shtml */
+    case 1:
+    {
+      char i;
+      char *ptr = uip_appdata;
+
+      for (i=1; i<5; i++) {
+        ptr += sprintf(ptr, "<option value=\"%d\"%s>%d", i,
+            (s->parms.modify &&
+             s->parms.rp->action_data.abs_data.channel == i) ?
+             " selected" : "", i);
+      }
+      break;
+    }
+
+    /* Generate options for channel on cmap.shtml */
+    case 2:
+    {
+      char i;
+      char *ptr = uip_appdata;
+
+      for (i=1; i<5; i++) {
+        ptr += sprintf(ptr, "<option value=\"%d\"%s>%d", i,
+            (s->parms.modify &&
+             s->parms.rp->action_data.ramp_data.channel == i) ?
+             " selected" : "", i);
+      }
+      break;
+    }
+
+    default:
+      A_(printf (__FILE__ " Unknown option parameter !\n");)
+      break;
+  }
+
+  PSOCK_SEND_STR(&s->sout, uip_appdata);
+
+  PSOCK_END(&s->sout);
+}
+
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(get_string(struct httpd_state *s, char *ptr) __reentrant)
