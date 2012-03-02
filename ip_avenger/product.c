@@ -49,6 +49,7 @@
 #include "but_mon.h"
 #include "ramp_mgr.h"
 #include "absval_mgr.h"
+#include "cycle_mgr.h"
 #include "event_switch.h"
 #include "adc_event.h"
 #include "time_event.h"
@@ -80,6 +81,7 @@ absval_mgr_t    absval_mgr;
 adc_event_t     adc_event;
 time_event_t    time_event;
 pir_event_t     pir_event;
+cycle_mgr_t     cycle_mgr;
 
 // ---------------------------------------------------------------------------
 //	pmd()
@@ -175,6 +177,9 @@ void pmd(void) __banked
   }
   /* Event action managers */
   init_absval_mgr(&absval_mgr);
+  /* The on off cycle manager */
+  init_cycle_mgr (&cycle_mgr);
+
   /* Event providers */
   init_adc_event(&adc_event);
   /* Time events */
@@ -292,11 +297,12 @@ void pmd(void) __banked
     PT_SCHEDULE(handle_kicker(&kicker));
     PT_SCHEDULE(handle_time_client(&tc));
     PT_SCHEDULE(handle_but_mon(&but_mon));
+    /* Event action managers */
     for (i=0; i<CFG_NUM_PWM_DRIVERS; i++) {
       PT_SCHEDULE(handle_ramp_mgr(&ramp_mgr[i]));
     }
-    /* Event action managers */
     PT_SCHEDULE(handle_absval_mgr(&absval_mgr));
+    PT_SCHEDULE(handle_cycle_mgr(&cycle_mgr));
     /* Event providers */
     PT_SCHEDULE(handle_adc_event(&adc_event));
     PT_SCHEDULE(handle_event_switch(&event_thread));
@@ -330,4 +336,12 @@ void Timer0_Init (void)
 #endif
 }
 
+int global_error;
+/**
+ * Global error handler
+ * Extremly simple for now, simply store the error in a variable.
+ */
+void add_error_to_log (int error) __reentrant {
+  global_error = error;
+}
 /* End of file */

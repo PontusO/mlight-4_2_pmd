@@ -117,6 +117,9 @@ typedef long s32_t;
 #undef CONFIG_ENABLE_UART_0
 void putchar(char n);
 
+/* Global system error function */
+void add_error_to_log (int error) __reentrant;
+int *get_error_log (void) __reentrant;
 /*
  * Enable this flag if the system needs I2C functionality without
  * pthread support.

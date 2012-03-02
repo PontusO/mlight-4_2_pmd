@@ -217,6 +217,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pthreads\events\actions\absval_mgr.h" />
+		<Unit filename="..\pthreads\events\actions\cycle_mgr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\events\actions\cycle_mgr.h" />
 		<Unit filename="..\pthreads\events\actions\ramp_mgr.c">
 			<Option compilerVar="CC" />
 		</Unit>
