@@ -193,8 +193,8 @@ PT_THREAD(handle_cycle_mgr(cycle_mgr_t *cycle_mgr) __reentrant __banked)
       /* Doing the wait, set the state to reflect that */
       cycle_mgr->state = CYCLE_STATE_WAITING;
 again:
-      /* Set the waiting time to the requested timeout in seconds */
-      set_timer (cycle_mgr->tmr, cycle_mgr->cdata.time * 100, NULL);
+      /* Set the waiting time to the requested timeout in minutes */
+      set_timer (cycle_mgr->tmr, cycle_mgr->cdata.time * 100 * 60, NULL);
       /* Wait for the timer to reach 0 */
       A_(printf (__FILE__ " Starting Timer !\n");)
       PT_WAIT_UNTIL (&cycle_mgr->pt, !get_timer (cycle_mgr->tmr) ||
