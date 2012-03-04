@@ -88,9 +88,12 @@
 #ifndef EVENT_SWITCH_H_INCLUDED
 #define EVENT_SWITCH_H_INCLUDED
 
-#include <adc_event.h>
+#include "adc_event.h"
+#include "absval_mgr.h"
+#include "ramp_mgr.h"
+#include "cycle_mgr.h"
 
-#define MAX_NR_ACTION_MGRS      3
+#define MAX_NR_ACTION_MGRS      5
 #define MAX_NR_EVENT_PROVIDERS  20
 #define MAX_NR_RULES            32
 #define RULE_NAME_LENGTH        8
@@ -148,6 +151,7 @@ typedef struct {
 typedef enum {
   ATYPE_ABSOLUTE_ACTION = 0x01,
   ATYPE_RAMP_ACTION = 0x02,
+  ATYPE_CYCLE_ACTION = 0x03,
 } event_action_t;
 
 /**
@@ -205,6 +209,7 @@ union rule_event_data {
 union rule_action_data {
   act_absolute_data_t abs_data;
   act_ramp_data_t ramp_data;
+  act_cycle_data_t cycle_data;
 };
 
 /**
@@ -247,6 +252,11 @@ typedef struct {
   event_prv_t *current_event;
   action_mgr_t *new_action;
 } event_thread_t;
+
+enum error_codes_t {
+  EVENT_ERR_OK = 0x00,
+  EVENT_ERR_COULD_NOT_REGISTER_HANDLE,
+};
 
 char evnt_register_handle(void *handler) __reentrant;
 void init_event_switch(event_thread_t *et);

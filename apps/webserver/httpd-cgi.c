@@ -196,21 +196,26 @@ PT_THREAD(start_ramp(struct httpd_state *s, char *ptr) __reentrant)
         s->parms.rate_updated &&
         s->parms.rampto_updated)
     {
-      ramp_mgr_t *rmptr = get_ramp_mgr (s->parms.channel);
-      if (!rmptr) {
+      /* Get the ramp controller associated with our channel */
+      ramp_ctrl_t *rcptr = ramp_ctrl_get_ramp_ctrl (s->parms.channel);
+      if (!rcptr) {
         A_(printf (__FILE__ " %p is not a valid ramp manager !\n", rmptr);)
         sprintf((char *)uip_appdata, "%s04>", error_string);
       } else {
         /* Assert a signal to the ramp manager to start a ramp */
         A_(printf (__FILE__ " Starting ramp (%p) on channel %d\n",
-                   rmptr, (int)s->parms.channel);)
-        rmptr->rate = s->parms.rate;
+                   rcptr, (int)s->parms.channel);)
+        rcptr->rate = s->parms.rate;
         if (!s->parms.step_updated)
-          rmptr->step = 1;
+          rcptr->step = 1;
         else
-          rmptr->step = s->parms.step;
-        rmptr->rampto = s->parms.rampto;
-        rmptr->signal = RAMP_CMD_START;
+          rcptr->step = s->parms.step;
+        rcptr->rampto = s->parms.rampto;
+        if (ramp_ctrl_get_state (rcptr) == RAMP_STATE_DORMANT) {
+          ramp_ctrl_send_start (rcptr);
+        } else {
+          printf ("CGI report, ramp control %d busy !\n", s->parms.channel);
+        }
         /* Return Ok status to the web client */
         sprintf((char *)uip_appdata, "<OK>");
       }
@@ -231,11 +236,11 @@ PT_THREAD(stop_ramp(struct httpd_state *s, char *ptr) __reentrant)
   {
     if (s->parms.num_parms == 1 &&
         s->parms.channel_updated) {
-      ramp_mgr_t *rmptr = get_ramp_mgr (s->parms.channel);
+      ramp_ctrl_t *rcptr = ramp_ctrl_get_ramp_ctrl (s->parms.channel);
       /* Assert a signal to the ramp manager to start a ramp */
       A_(printf (__FILE__ " Stopping ramp (%p) on channel %d\n",
-                rmptr, (int)s->parms.channel);)
-      rmptr->ramp.signal = RAMP_CMD_STOP;
+                rcptr, (int)s->parms.channel);)
+      ramp_ctrl_send_stop (rcptr);
       /* For now, this will always return OK status */
       sprintf((char *)uip_appdata, "<OK>");
     } else {
@@ -837,6 +842,15 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
       myint = (u16_t)ledlib_get_light_percentage(intno - 10);
       intno = 1;
       break;
+
+    case 14:
+      intno = 0;
+      if (s->parms.modify) {
+        myint = s->parms.rp->action_data.cycle_data.time;
+        intno = 1;
+      }
+      break;
+
   }
 
   /* intno is used to supress output */

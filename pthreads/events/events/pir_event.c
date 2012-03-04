@@ -28,7 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-//#define PRINT_A     // Enable A prints
+#define PRINT_A     // Enable A prints
 
 #include <stdlib.h>
 
@@ -83,7 +83,7 @@ static void allocate_hw (pir_event_t *pir_event)
     A_(printf(__FILE__ " Could not allocate dac !\n");)
   }
   tmp = DAC_MAX_SCALE * (long)sys_cfg.pir_sensitivity / 100;
-  write_dac (0, tmp);
+  write_dac (0, (u16_t)tmp);
   /* And set the comparator up */
   if (allocate_comparator(0) != COMP_ERR_OK) {
     add_error_to_log (1);
@@ -91,7 +91,7 @@ static void allocate_hw (pir_event_t *pir_event)
   }
   /* Set up a timer to wait for the dac and comparator to settle */
   pir_event->tmr = alloc_timer();
-  set_timer(pir_event->tmr, 2, NULL);
+  set_timer(pir_event->tmr, 200, NULL);
 }
 
 /*

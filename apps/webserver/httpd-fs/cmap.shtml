@@ -24,11 +24,21 @@ function hideLayers()
   setLayer ('abs', 'off');
   setLayer ('invalid', 'off');
   setLayer ('ramp', 'off');
+  setLayer ('cycle', 'off');
 }
 
 function enLayer(layer)
 {
   hideLayers();
+  if (layer == 'cycle') {
+    setLayer ('ramp', 'on');
+    setLayer ('cycle', 'on');
+    return;
+  } else if (layer == 'ramp') {
+    setLayer ('ramp', 'on');
+    setLayer ('cycle', 'off');
+    return;
+  }
   setLayer (layer, 'on');
 }
 
@@ -41,20 +51,30 @@ function setData (frm)
     var etype = evt >> 16;
     var atype = act >> 16;
     /* Rules */
-    if (etype == 1 && atype == 1) {
-      enLayer ('abs');
-    } else if (etype == 1 && atype == 2) {
-      enLayer ('invalid');
-      frm.submit.disabled=true;
-      return;
-    } else if (etype == 2 && atype == 1) {
-      enLayer ('abs');
-    } else if (etype == 2 && atype == 2) {
-      enLayer ('ramp');
-    } else if (etype == 3 && atype == 1) {
-      enLayer ('abs');
-    } else if (etype == 3 && atype == 2) {
-      enLayer ('ramp');
+    if (etype == 1) {
+      if (atype == 1) {
+        enLayer ('abs');
+      } else {
+        enLayer ('invalid');
+        frm.submit.disabled=true;
+        return;
+      }
+    } else if (etype == 2) {
+      if (atype == 1) {
+        enLayer ('abs');
+      } else if (atype == 2) {
+        enLayer ('ramp');
+      } else if (atype == 3) {
+        enLayer ('cycle');
+      }
+    } else if (etype == 3) {
+      if (atype == 1) {
+        enLayer ('abs');
+      } else if (atype == 2) {
+        enLayer ('ramp');
+      } else if (atype == 3) {
+        enLayer ('cycle');
+      }
     }
     frm.submit.disabled=false;
   } else {
@@ -109,8 +129,17 @@ window.onload = function() {
 </table>
 </div>
 
+<div id="cycle" style="display:none">
+<table width="90%" class="mytab">
+<col style="width:40%" /><tr><td>On Time (1-10 minutes)</td><td><input type="text" name="timeon" size="3" maxlength="2" value="%! get-int 14
+"></td></tr>
+</table>
+</div>
+
 <div id="invalid" style="display:none">
-<hr color="#258D92" size="2" width="90%">Invalid Combination of event provider and action manager
+<hr color="#258D92" size="2" width="90%"><table width="90%" class="mytab">
+<tr><td>Invalid Combination of event provider and action manager</td></tr>
+</table>
 </div>
 
 <hr color="#258D92" size="2" width="90%"><br>

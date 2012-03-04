@@ -208,6 +208,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\lib\packet_demux.h" />
+		<Unit filename="..\lib\ramp_ctrl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\lib\ramp_ctrl.h" />
 		<Unit filename="..\pmd\doc\Readme" />
 		<Unit filename="..\pthreads\but_mon.c">
 			<Option compilerVar="CC" />

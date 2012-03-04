@@ -31,7 +31,7 @@
 #define RAMP_MGR_H_INCLUDED
 
 #include "pt.h"
-#include "lightlib.h"
+#include "ramp_ctrl.h"
 
 #define RAMP_CMD_RESET  0x00
 #define RAMP_CMD_START  0x01
@@ -45,7 +45,6 @@ typedef struct {
   unsigned char rampto;
   unsigned char rate;
   unsigned char step;
-  int value;
 } act_ramp_data_t;
 
 enum ramp_state {
@@ -53,32 +52,16 @@ enum ramp_state {
   INCREASING,
   DECREASING
 };
-/*
- * Data types used by the ramp manager
- */
-typedef struct {
-  struct pt pt;
-  u8_t signal;
-  u8_t channel;
-  u16_t rate;
-  char rampto;
-  char intensity;
-  char step;
-  u8_t timer;
-  ld_param_t lp;
-} ramp_t;
 
 typedef struct {
   struct pt pt;
-  ramp_t ramp;
+  ramp_ctrl_t *rctrl;
   u8_t channel;
   u8_t signal;
-  u8_t sig;
-  u16_t rate;
-  char cnt;
   char intensity;
   char rampto;
   char step;
+  u8_t rate;
   char state;
 } ramp_mgr_t;
 

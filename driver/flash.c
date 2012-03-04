@@ -59,7 +59,7 @@ const struct sys_config default_cfg = {
   { "pass", 0, 0, 0, 0, 0 },
   (u8_t)0,                                /* PIR Sensor disabled per default */
   (u8_t)45,                               /* Default PIR Level is 45% */
-  (u8_t)10,                               /* Default minimum trigger timeout */
+  (u8_t)5,                                /* Default minimum trigger timeout */
   2,                                      /* The number of time events in the table */
   { { 3, { 'M', 'o', 'r', 'n', 'i', 'n', 'g', 0, 0 }, 6, 50, 0x7c }, /* Array of time events */
   { 2, { 'E', 'v', 'e', 'n', 'i', 'n', 'g', 0, 0 }, 20, 30, 3 },

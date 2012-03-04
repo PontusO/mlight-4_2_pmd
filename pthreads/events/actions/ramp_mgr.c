@@ -28,8 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-
-#define PRINT_A     // Enable A prints
+//#define PRINT_A     // Enable A prints
 
 #include "system.h"
 #include "iet_debug.h"
@@ -64,6 +63,7 @@ void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked
   u8_t channel = rmgr->channel;
 
   rampmgr.base.type = EVENT_ACTION_MANAGER;
+  rampmgr.base.name = ramp_name;
   rampmgr.type = ATYPE_RAMP_ACTION;
   rampmgr.action_name = ramp_name;
   rampmgr.vt.stop_action = ramp_stop;
@@ -146,55 +146,11 @@ char *get_ramp_state (ramp_mgr_t *rmgr) __reentrant __banked
  */
 #pragma save
 #pragma nogcse
-PT_THREAD(do_ramp(ramp_t *ramp) __reentrant)
-{
-  PT_BEGIN (&ramp->pt);
-  {
-    ramp->timer = alloc_timer();
-    ramp->signal = RAMP_CMD_RESET;
-
-    A_(printf (__FILE__ " allocated timer %d for ramp manager %p\n", ramp->timer, ramp);)
-
-    do {
-      set_timer (ramp->timer, ramp->rate, NULL);
-
-      if (ramp->step >= 0) {
-        if (ramp->intensity > ramp->rampto) {
-          ramp->intensity = ramp->rampto;
-        }
-      } else {
-        if (ramp->intensity < ramp->rampto) {
-          ramp->intensity = ramp->rampto;
-        }
-      }
-
-      ramp->lp.channel = ramp->channel;
-      ramp->lp.level_percent = ramp->intensity;
-      ledlib_set_light_percentage_log (&ramp->lp);
-      PT_WAIT_UNTIL (&ramp->pt, (get_timer(ramp->timer) == 0) ||
-                                 ramp->signal == RAMP_CMD_STOP);
-      ramp->intensity += ramp->step;
-    } while ((ramp->intensity != ramp->rampto) &&
-             (ramp->signal == RAMP_CMD_RESET));
-
-    if (ramp->signal == RAMP_CMD_RESET) {
-      A_(printf (__FILE__ " Set light: channel %d, intensity %d, target %d\n",
-                (int)ramp->channel, (int)ramp->intensity, (int)ramp->rampto);)
-      ramp->lp.channel = ramp->channel;
-      ramp->lp.level_percent = ramp->intensity;
-      ledlib_set_light_percentage_log (&ramp->lp);
-    }
-exit:
-    free_timer(ramp->timer);
-  }
-  PT_END (&ramp->pt);
-}
-
 PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked)
 {
   PT_BEGIN(&rmgr->pt);
 
-  A_(printf (__FILE__ " Starting rampmanager %p on channel %d\n",
+  A_(printf (__FILE__ " Starting ramp manager %p on channel %d\n",
              rmgr, rmgr->channel);)
 
   while (1)
@@ -206,33 +162,47 @@ PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked)
                  rmgr->channel);)
       /* Reset the signal */
       rmgr->signal = RAMP_CMD_RESET;
-      /* Setup and start a ramp job */
+
+      /* Get the proper ramp control instance */
+      rmgr->rctrl = ramp_ctrl_get_ramp_ctrl (rmgr->channel);
+      /* If the controller is running, send a stop signal and wait for it to
+       * stop. */
+      if (ramp_ctrl_get_state (rmgr->rctrl) == RAMP_STATE_RAMPING) {
+        ramp_ctrl_send_stop (rmgr->rctrl);
+        PT_WAIT_UNTIL (&rmgr->pt,
+            ramp_ctrl_get_state (rmgr->rctrl) == RAMP_STATE_DORMANT);
+      }
+
       /* Get current light intensity */
       rmgr->intensity = ledlib_get_light_percentage(rmgr->channel);
       A_(printf (__FILE__ " Start intensity %d\n", rmgr->intensity);)
       if (rmgr->intensity != rmgr->rampto) {
         /* Check difference between new and current */
-        rmgr->cnt = rmgr->rampto - rmgr->intensity;
+        if ((rmgr->rampto - rmgr->intensity) < 0) {
+          rmgr->step *= -1;
+        }
         A_(printf (__FILE__ " Ramping to %d\n", rmgr->rampto);)
 
-        if (rmgr->cnt < 0) {
-          rmgr->step *= -1;
-          rmgr->cnt = abs(rmgr->cnt);
-        }
-
-        rmgr->ramp.channel = rmgr->channel;
-        rmgr->ramp.intensity = rmgr->intensity;
-        rmgr->ramp.rate = rmgr->rate;
-        rmgr->ramp.step = rmgr->step;
-        rmgr->ramp.rampto = rmgr->rampto;
+        /* Copy instance data */
+        rmgr->rctrl->channel = rmgr->channel;
+        rmgr->rctrl->intensity = rmgr->intensity;
+        rmgr->rctrl->rate = rmgr->rate;
+        rmgr->rctrl->step = rmgr->step;
+        rmgr->rctrl->rampto = rmgr->rampto;
 
         /* Set state */
-        if (rmgr->ramp.step > 0)
+        if (rmgr->rctrl->step > 0)
           rmgr->state = INCREASING;
         else
           rmgr->state = DECREASING;
 
-        PT_SPAWN (&rmgr->pt, &rmgr->ramp.pt, do_ramp(&rmgr->ramp));
+        ramp_ctrl_send_start (rmgr->rctrl);
+        /* First we need to wait for the controller to acknowledge the signal */
+        PT_WAIT_UNTIL (&rmgr->pt,
+            ramp_ctrl_get_state (rmgr->rctrl) == RAMP_STATE_RAMPING);
+        /* Now we wait while the ramp controller is processing */
+        PT_WAIT_WHILE (&rmgr->pt,
+            ramp_ctrl_get_state (rmgr->rctrl) == RAMP_STATE_RAMPING);
 
         /* Reset state again */
         rmgr->state = STEADY;

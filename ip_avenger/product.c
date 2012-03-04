@@ -46,6 +46,7 @@
 #include "dac.h"
 #include "httpd-cgi.h"
 #include "product.h"
+#include "ramp_ctrl.h"
 #include "but_mon.h"
 #include "ramp_mgr.h"
 #include "absval_mgr.h"
@@ -75,13 +76,14 @@ void Timer0_Init (void);
  * Protothread instance data
  */
 but_mon_t       but_mon;
-ramp_mgr_t      ramp_mgr[4];
+ramp_mgr_t      ramp_mgr[CFG_NUM_PWM_DRIVERS];
+cycle_mgr_t     cycle_mgr[CFG_NUM_PWM_DRIVERS];
+ramp_ctrl_t     ramp_ctrl[CFG_NUM_PWM_DRIVERS];
 event_thread_t  event_thread;
 absval_mgr_t    absval_mgr;
 adc_event_t     adc_event;
 time_event_t    time_event;
 pir_event_t     pir_event;
-cycle_mgr_t     cycle_mgr;
 
 // ---------------------------------------------------------------------------
 //	pmd()
@@ -174,11 +176,15 @@ void pmd(void) __banked
   for (i=0; i<CFG_NUM_PWM_DRIVERS; i++) {
     ramp_mgr[i].channel = i; /* Default channel */
     init_ramp_mgr(&ramp_mgr[i]);
+    /* The on off cycle manager */
+    cycle_mgr[i].cdata.channel = i;
+    init_cycle_mgr (&cycle_mgr[i]);
+    /* The actual ramp controllers */
+    ramp_ctrl[i].channel = i;
+    init_ramp_ctrl (&ramp_ctrl[i]);
   }
   /* Event action managers */
   init_absval_mgr(&absval_mgr);
-  /* The on off cycle manager */
-  init_cycle_mgr (&cycle_mgr);
 
   /* Event providers */
   init_adc_event(&adc_event);
@@ -300,9 +306,10 @@ void pmd(void) __banked
     /* Event action managers */
     for (i=0; i<CFG_NUM_PWM_DRIVERS; i++) {
       PT_SCHEDULE(handle_ramp_mgr(&ramp_mgr[i]));
+      PT_SCHEDULE(handle_cycle_mgr(&cycle_mgr[i]));
+      PT_SCHEDULE(handle_ramp_ctrl(&ramp_ctrl[i]));
     }
     PT_SCHEDULE(handle_absval_mgr(&absval_mgr));
-    PT_SCHEDULE(handle_cycle_mgr(&cycle_mgr));
     /* Event providers */
     PT_SCHEDULE(handle_adc_event(&adc_event));
     PT_SCHEDULE(handle_event_switch(&event_thread));

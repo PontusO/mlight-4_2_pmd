@@ -145,6 +145,7 @@ static const struct parameter_table parmtab[] = {
   PARAM_ENTRY("rampto", cgi_set_rampto),
   PARAM_ENTRY("rate", cgi_set_rate),
   PARAM_ENTRY("step", cgi_set_step),
+  PARAM_ENTRY("timeon", cgi_set_timeon),
     /* This is the last parameter in the list of html parameters.
      * It's used to trigger the real flash save function
      */
@@ -314,6 +315,14 @@ PARAM_FUNC (set_wcmd)
             s->parms.rp->action_data.ramp_data.rate = s->parms.rate;
             s->parms.rp->action_data.ramp_data.step = s->parms.step;
             break;
+          case ATYPE_CYCLE_ACTION:
+            s->parms.rp->action_data.cycle_data.channel = s->parms.channel;
+            s->parms.rp->action_data.cycle_data.rampto = s->parms.rampto;
+            s->parms.rp->action_data.cycle_data.rate = s->parms.rate;
+            s->parms.rp->action_data.cycle_data.step = s->parms.step;
+            s->parms.rp->action_data.cycle_data.time = s->parms.timeon;
+            break;
+
           default:
             A_(printf (__FILE__ " Incorrect action manager type !");)
             break;
@@ -449,7 +458,6 @@ PARAM_FUNC (set_tscmd)
 {
   util_param_t param = {s, buffer};
 
-  printf ("Running tscmd !\n");
   x_set_tscmd(&param);
 }
 
@@ -734,6 +742,12 @@ PARAM_FUNC (cgi_set_step)
   s->parms.step = atoi(buffer);
   s->parms.step_updated = 1;
   s->parms.num_parms++;
+}
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (cgi_set_timeon)
+{
+  buffer = skip_to_char(buffer, '=');
+  s->parms.timeon = atoi(buffer);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -55,6 +55,7 @@ struct cgi_parameters {
   u8_t rate_updated;
   u8_t step;
   u8_t step_updated;
+  unsigned int timeon;
   u8_t num_parms;
   time_spec_t *ts;        /* Pointer to a time spec structure */
   rule_t *rp;             /* Pointer to a rule */

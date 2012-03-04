@@ -28,53 +28,43 @@
  *
  */
 
-#ifndef cycle_mgr_H_INCLUDED
-#define cycle_mgr_H_INCLUDED
+#ifndef RAMP_CTRL_H_INCLUDED
+#define RAMP_CTRL_H_INCLUDED
 
 #include "pt.h"
-#include "ramp_ctrl.h"
+#include "lightlib.h"
 
-/* Internal signal definitions */
-#define CYC_SIG_NONE      0x00    /** No signal */
-#define CYC_SIG_START     0x01    /** Start cycle */
-#define CYC_SIG_RESTART   0x02    /** Restart cycle */
-#define CYC_SIG_STOP      0x03    /** Stop cycle */
+/* Signal definitions */
+#define RAMP_SIG_NONE      0x00   /** No signal */
+#define RAMP_SIG_START     0x01   /** Start signal */
+#define RAMP_SIG_STOP      0x02   /** Stop signal */
 
-/**
- * Rule data definition
- */
-typedef struct {
-  char channel;         /** The channel the ramping shall take place on */
-  unsigned char rampto; /** The value that it should ramp to */
-  unsigned char rate;   /** Using tick rate.. */
-  unsigned char step;   /** and steps per tick */
-  unsigned int time;    /** The time the light should be on */
-} act_cycle_data_t;
+/* State definitions */
+#define RAMP_STATE_DORMANT  0x00  /** Dormant state */
+#define RAMP_STATE_RAMPING  0x01  /** The ramp is running */
+#define RAMP_STATE_STOPPING 0x02  /** The ramp is stopping */
 
 /*
- * State of the cycle manager
- */
-enum cycle_state_t {
-  CYCLE_STATE_UNDEFINED = 0x00,
-  CYCLE_STATE_DORMANT,
-  CYCLE_STATE_RAMPING_UP,
-  CYCLE_STATE_RAMPING_DN,
-  CYCLE_STATE_WAITING,
-};
-/*
- * Data types used by the cycle_mgr
+ * Data types used by the ramp_ctrl
  */
 typedef struct {
   struct pt pt;
-  ramp_ctrl_t *rctrl;
   u8_t signal;
   u8_t state;
-  u8_t tmr;
-  unsigned int intensity;
-  act_cycle_data_t cdata;
-} cycle_mgr_t;
+  u8_t channel;
+  u16_t rate;
+  char rampto;
+  char intensity;
+  char step;
+  u8_t timer;
+  ld_param_t lp;
+} ramp_ctrl_t;
 
-void init_cycle_mgr(cycle_mgr_t *cycle_mgr) __reentrant __banked;
-PT_THREAD(handle_cycle_mgr(cycle_mgr_t *cycle_mgr) __reentrant __banked);
+void init_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked;
+PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked);
+ramp_ctrl_t *ramp_ctrl_get_ramp_ctrl (u8_t channel) __reentrant __banked;
+void ramp_ctrl_send_start (ramp_ctrl_t *rcmgr) __reentrant __banked;
+void ramp_ctrl_send_stop (ramp_ctrl_t *rcmgr) __reentrant __banked;
+u8_t ramp_ctrl_get_state (ramp_ctrl_t *rcmgr) __reentrant __banked;
 
-#endif // cycle_mgr_H_INCLUDED
+#endif // ramp_ctrl_H_INCLUDED
