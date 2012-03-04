@@ -467,9 +467,9 @@ static unsigned short generate_event_functions(void *arg) __reentrant
       num |= (int)ep;
       num |= (unsigned long)(((action_mgr_t*)ep)->type) << 16;
       sprintf((char *)uip_appdata,
-              "<option value=\"%ld\" %s>%s</option>", num,
+              "<option value=\"%ld\" %s>(%s) %s</option>", num,
               s->parms.modify && s->parms.rp->action == ep ? str_selected : "",
-              GET_ACTION(ep)->action_name);
+              GET_EVENT_BASE(ep).name, GET_ACTION(ep)->action_name);
       break;
     default:
       /* TODO: Implement getting rule from number, if necessery */
@@ -949,9 +949,9 @@ PT_THREAD(get_string(struct httpd_state *s, char *ptr) __reentrant)
     case 11:
     case 12:
     case 13: {
-        ramp_mgr_t *rmgr = get_ramp_mgr(stringno-10);
-        if (rmgr) {
-          string = get_ramp_state(rmgr);
+        ramp_ctrl_t *rcmgr = ramp_ctrl_get_ramp_ctrl (stringno-10);
+        if (rcmgr) {
+          string = ramp_ctrl_get_state_str (rcmgr);
         } else {
           string = (char*)"Invalid string !";
         }

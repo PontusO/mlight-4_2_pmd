@@ -46,6 +46,7 @@
  * Local table containing the registered ramp_ctrl managers
  */
 static ramp_ctrl_t *ramp_ctrl_tab[CFG_NUM_PWM_DRIVERS];
+char *ramp_ctrl_states_str[] = {"Steady", "Increasing", "Decreasing"};
 
 /*
  * Initialize the ramp_ctrl pthread
@@ -110,6 +111,21 @@ u8_t ramp_ctrl_get_state (ramp_ctrl_t *rcmgr) __reentrant __banked
   return rcmgr->state;
 }
 
+/*
+ * return a textual representation of the current state of the controller
+ */
+char *ramp_ctrl_get_state_str (ramp_ctrl_t *rcmgr) __reentrant __banked
+{
+  if (rcmgr->state == RAMP_STATE_DORMANT)
+    return ramp_ctrl_states_str[0];
+  else
+    if (rcmgr->step > 0)
+      return ramp_ctrl_states_str[1];
+    else
+      return ramp_ctrl_states_str[2];
+}
+
+
 /**
  * The mainloop for the ramp controller.
  *
@@ -138,7 +154,6 @@ PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked)
     /* Reset signal and set state to ramping */
     ramp_ctrl->signal = RAMP_SIG_NONE;
     ramp_ctrl->state = RAMP_STATE_RAMPING;
-
 
     A_(printf (__FILE__ " Starting a ramp on channel %d\n",
                ramp_ctrl->channel);)

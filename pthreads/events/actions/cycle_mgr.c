@@ -36,7 +36,7 @@
  *
  */
 #pragma codeseg APP_BANK
-#define PRINT_A     // Enable A prints
+//#define PRINT_A     // Enable A prints
 
 #include "system.h"
 #include "iet_debug.h"
@@ -67,7 +67,7 @@ void init_cycle_mgr(cycle_mgr_t *cycle_mgr) __reentrant __banked
   cycle_mgr->state = CYCLE_STATE_DORMANT;
 
   cycleaction.base.type = EVENT_ACTION_MANAGER;
-  cycleaction.base.name = (char*)cycle_name;
+  cycleaction.base.name = action_base_name_dimmable;
   cycleaction.type = ATYPE_CYCLE_ACTION;
   cycleaction.action_name = (char*)cycle_name;
   cycleaction.vt.stop_action = cycle_mgr_stop;
@@ -126,7 +126,6 @@ void cycle_mgr_trigger (void *input) __reentrant
       cmgr->cdata.time = cycdat->time;
       cmgr->signal = CYC_SIG_RESTART;
     }
-
   }
 }
 

@@ -28,7 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-#define PRINT_A     // Enable A prints
+//#define PRINT_A     // Enable A prints
 
 #include <stdlib.h>
 

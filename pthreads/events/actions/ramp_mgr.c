@@ -48,8 +48,6 @@ void ramp_trigger (void *ldata);
  */
 static ramp_mgr_t *ramp_mgr_tab[CFG_NUM_PWM_DRIVERS];
 static u8_t num_mgrs = 0;
-char *ramp_states_str[] = {"Steady", "Increasing", "Decreasing"};
-
 /* The action manager handle */
 static action_mgr_t  rampmgr;
 static const char *ramp_name = "Light Ramp";
@@ -63,7 +61,7 @@ void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked
   u8_t channel = rmgr->channel;
 
   rampmgr.base.type = EVENT_ACTION_MANAGER;
-  rampmgr.base.name = ramp_name;
+  rampmgr.base.name = action_base_name_dimmable;
   rampmgr.type = ATYPE_RAMP_ACTION;
   rampmgr.action_name = ramp_name;
   rampmgr.vt.stop_action = ramp_stop;
@@ -136,11 +134,6 @@ ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked
   return ptr;
 }
 
-char *get_ramp_state (ramp_mgr_t *rmgr) __reentrant __banked
-{
-  return ramp_states_str[rmgr->state];
-}
-
 /*
  * This thread performs the actual ramping of the light value
  */
@@ -190,12 +183,6 @@ PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked)
         rmgr->rctrl->step = rmgr->step;
         rmgr->rctrl->rampto = rmgr->rampto;
 
-        /* Set state */
-        if (rmgr->rctrl->step > 0)
-          rmgr->state = INCREASING;
-        else
-          rmgr->state = DECREASING;
-
         ramp_ctrl_send_start (rmgr->rctrl);
         /* First we need to wait for the controller to acknowledge the signal */
         PT_WAIT_UNTIL (&rmgr->pt,
@@ -203,9 +190,6 @@ PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked)
         /* Now we wait while the ramp controller is processing */
         PT_WAIT_WHILE (&rmgr->pt,
             ramp_ctrl_get_state (rmgr->rctrl) == RAMP_STATE_RAMPING);
-
-        /* Reset state again */
-        rmgr->state = STEADY;
       }
     }
   }

@@ -47,12 +47,6 @@ typedef struct {
   unsigned char step;
 } act_ramp_data_t;
 
-enum ramp_state {
-  STEADY = 0,
-  INCREASING,
-  DECREASING
-};
-
 typedef struct {
   struct pt pt;
   ramp_ctrl_t *rctrl;
@@ -62,12 +56,10 @@ typedef struct {
   char rampto;
   char step;
   u8_t rate;
-  char state;
 } ramp_mgr_t;
 
 void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked;
 ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant __banked;
-char *get_ramp_state (ramp_mgr_t *rmgr) __reentrant __banked;
 PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked);
 
 #endif // RAMP_MGR_H_INCLUDED

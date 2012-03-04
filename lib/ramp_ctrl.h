@@ -44,6 +44,12 @@
 #define RAMP_STATE_RAMPING  0x01  /** The ramp is running */
 #define RAMP_STATE_STOPPING 0x02  /** The ramp is stopping */
 
+enum ramp_state {
+  STEADY = 0,
+  INCREASING,
+  DECREASING
+};
+
 /*
  * Data types used by the ramp_ctrl
  */
@@ -66,5 +72,6 @@ ramp_ctrl_t *ramp_ctrl_get_ramp_ctrl (u8_t channel) __reentrant __banked;
 void ramp_ctrl_send_start (ramp_ctrl_t *rcmgr) __reentrant __banked;
 void ramp_ctrl_send_stop (ramp_ctrl_t *rcmgr) __reentrant __banked;
 u8_t ramp_ctrl_get_state (ramp_ctrl_t *rcmgr) __reentrant __banked;
+char *ramp_ctrl_get_state_str (ramp_ctrl_t *rcmgr) __reentrant __banked;
 
 #endif // ramp_ctrl_H_INCLUDED
