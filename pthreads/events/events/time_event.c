@@ -149,7 +149,8 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
       binary_to_dat(&tp);
       time_event->time_spec = &sys_cfg.time_events[0];
       for (i=0;i<NMBR_TIME_EVENTS;i++) {
-        if (time_event->time_spec->status & (TIME_EVENT_ENABLED | TIME_EVENT_ENTRY_USED) &&
+        if (time_event->time_spec->status &
+            (TIME_EVENT_ENABLED | TIME_EVENT_ENTRY_USED) &&
             time_event->time_spec->hrs == tp.time.hrs &&
             time_event->time_spec->min == tp.time.min &&
             tp.time.sec == 0) {

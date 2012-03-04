@@ -54,15 +54,17 @@ struct kicker {
 };
 
 typedef void (*timer_cb)(u8_t timer) __reentrant;
+typedef unsigned long timer_time_t;
+//typedef unsigned int timer_time_t;
 
 extern struct kicker kicker;
-extern u16_t swtimer[NUMBER_OF_SWTIMERS];
+extern timer_time_t swtimer[NUMBER_OF_SWTIMERS];
 extern u8_t  timer_table[NUMBER_OF_SWTIMERS];
 
 void init_swtimers(void) ;
-void set_timer(u8_t timer, u16_t time, timer_cb cb) ;
-void set_timer_cnt(u8_t timer, u16_t time) ;
-u16_t get_timer(u8_t timer) ;
+void set_timer(u8_t timer, timer_time_t time, timer_cb cb) ;
+void set_timer_cnt(u8_t timer, timer_time_t time) ;
+timer_time_t get_timer(u8_t timer) ;
 u8_t get_timer_status(u8_t timer) ;
 char alloc_timer(void) ;
 u8_t free_timer(u8_t timer) ;

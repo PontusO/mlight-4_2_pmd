@@ -35,7 +35,7 @@
 
 #include <stdio.h>
 
-u16_t swtimer[NUMBER_OF_SWTIMERS];
+timer_time_t swtimer[NUMBER_OF_SWTIMERS];
 u8_t  timer_table[NUMBER_OF_SWTIMERS];
 timer_cb timer_cbs[NUMBER_OF_SWTIMERS];
 
@@ -180,7 +180,7 @@ u8_t free_timer(u8_t timer)
  * If callbacks are not to be used, this must be set to NULL
  * The timer is started immediatly before returning
  */
-void set_timer(u8_t timer, u16_t time, timer_cb cb)
+void set_timer(u8_t timer, timer_time_t time, timer_cb cb)
 {
   if (timer >= NUMBER_OF_SWTIMERS) {
     A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
@@ -197,7 +197,7 @@ void set_timer(u8_t timer, u16_t time, timer_cb cb)
 /*
  * Renews the timer counter
  */
-void set_timer_cnt(u8_t timer, u16_t time)
+void set_timer_cnt(u8_t timer, timer_time_t time)
 {
   if (timer >= NUMBER_OF_SWTIMERS) {
     A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
@@ -211,9 +211,9 @@ void set_timer_cnt(u8_t timer, u16_t time)
 /*
  * Get the value of a specific timer
  */
-u16_t get_timer(u8_t timer)
+timer_time_t get_timer(u8_t timer)
 {
-  u16_t value;
+  timer_time_t value;
 
   if (timer >= NUMBER_OF_SWTIMERS) {
     A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
