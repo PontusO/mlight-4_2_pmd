@@ -45,6 +45,8 @@
 #define ADC_INT_ON()          EIE2 |= 0x02
 #define ADC_INT_OFF()         EIE2 &= ~0x02
 
+#define USE_ADC_TIMER         2
+
 static struct adc adc[USED_ADC_CHANNELS];
 static __data u8_t adc_chan;
 
@@ -160,13 +162,14 @@ int get_temperature(u8_t channel) __reentrant __banked
 }
 
 
+#if USE_ADC_TIMER == 3
 /*
- * Timer3_Init Used to control the ADC0 sample rate.
+ * adc_timer_init Used to control the ADC0 sample rate.
  *
  * Timer 3 will be set to __using sysclk / 12 (= 1.7MHz)
  *
  */
-void Timer3_Init (int counts) __reentrant __banked
+void adc_timer_init (int counts) __reentrant __banked
 {
 #if BUILD_TARGET == IET912X
   unsigned char store = SFRPAGE;    /* Save the SFR register */
@@ -190,6 +193,43 @@ void Timer3_Init (int counts) __reentrant __banked
   /* return without enabling the timer, let the adc setup do that */
 }
 
+void adc_timer_enable (void)
+{
+  SFRPAGE = TMR3_PAGE;
+  TMR3CN |= 4;
+}
+#elif USE_ADC_TIMER == 2
+/*
+ * adc_timer_init Used to control the ADC0 sample rate.
+ *
+ * Timer 2 will be set to __using sysclk / 12 (= 1.7MHz)
+ *
+ */
+void adc_timer_init (int counts) __reentrant __banked
+{
+#if BUILD_TARGET == IET912X
+  unsigned char store = SFRPAGE;    /* Save the SFR register */
+  SFRPAGE = TMR2_PAGE;
+#endif
+  /* Set timer 3 control register, disabled, use sysclk / 12 */
+  TMR2CN = 0x00;
+
+  RCAP2  = -counts;
+  /* Make sure timer is reloaded immediatly */
+  TMR2 = 0xffff;
+
+#if BUILD_TARGET == IET912X
+  SFRPAGE = store;
+#endif
+}
+
+void adc_timer_enable (void)
+{
+  SFRPAGE = TMR2_PAGE;
+  TMR2CN |= 4;
+}
+#endif
+
 void adc_init(void)
 {
   adc_chan = 0;
@@ -207,18 +247,22 @@ void adc_init(void)
 
   /* Initialize the 12 __bit A/D Converter */
   SFRPAGE = ADC0_PAGE;
+#if USE_ADC_TIMER == 3
   ADC0CN = 0x80 | 0x04;
+#else
+  ADC0CN = 0x80 | 0x0c;
+#endif
   ADC0CF = 0xF8 | 0x00;
   REF0CN = 0x03;
+
   /* Initilize sample rate counter 1500 Hz sample rate*/
-  Timer3_Init(1111);
+  adc_timer_init(1111);
+
   /* Enable ADC interrupts */
   ADC_INT_ON();
+
   /* Start the timer */
-#if BUILD_TARGET == IET912X
-  SFRPAGE   = TMR3_PAGE;
-#endif
-  TMR3CN |= 4;
+  adc_timer_enable ();
 }
 
 /* EOF */

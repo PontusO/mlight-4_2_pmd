@@ -66,7 +66,7 @@ void init_adc_event(adc_event_t *adc_event) __reentrant __banked
     adcevents[i].base.type = EVENT_EVENT_PROVIDER;
     adcevents[i].type = ETYPE_POTENTIOMETER_EVENT;
     adcevents[i].base.name = base_name;
-    adcevents[i].event_name = (char*)adc_names[i];
+    adcevents[i].event_name = (char*)adc_names[3-i];
     /* This will ensure that the light settings will update on start */
     adc_event->prev_pot_val[i] = 100;
   }
@@ -80,9 +80,10 @@ PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
 
   /* Register the event provider */
   for (i=0; i<CFG_NUM_POTS; i++)
-    evnt_register_handle(&adcevents[i]);
+    evnt_register_handle(&adcevents[3-i]);
 
-  A_(printf (__FILE__ " Starting adc_event pthread, handle ptr %p !\n", &adc_event);)
+  A_(printf (__FILE__ " Starting adc_event pthread, handle ptr %p !\n",
+             &adc_event);)
 
   while (1)
   {
@@ -90,6 +91,7 @@ PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
     adc_event->channel = SIG_NEW_ADC_VALUE_RECEIVED;
     SIG_NEW_ADC_VALUE_RECEIVED = -1;
     adc_event->pot_val = adc_get_average(adc_event->channel);
+    //printf ("Pot channel %d, value %d\n", adc_event->channel, adc_event->pot_val);
     if (abs(adc_event->pot_val - adc_event->prev_pot_val[adc_event->channel]) > 4) {
       u16_t temp = adc_event->pot_val;
       /* To create a flicker free lights out ^*/
