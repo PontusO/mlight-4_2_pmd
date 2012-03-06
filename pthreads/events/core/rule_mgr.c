@@ -75,6 +75,7 @@ rule_t *rule_find_free_entry(void) __reentrant __banked
 
   for (i=0; i<MAX_NR_RULES; i++) {
     if (sys_cfg.rules[i].status == RULE_STATUS_FREE) {
+      A_(printf (__AT__ " Found free entry %d\n", i);)
       return &sys_cfg.rules[i];
     }
   }
@@ -238,7 +239,7 @@ rule_t *rule_iter_get_next_entry(evnt_iter_t *iter) __reentrant __banked
 {
   while (++iter->cur < MAX_NR_RULES) {
     if (sys_cfg.rules[iter->cur].status != RULE_STATUS_FREE) {
-      A_(printf (__FILE__ " %p - Returning item %d\n", iter, (int)iter->cur);)
+      A_(printf (__AT__ "Returning item %d\n", (int)iter->cur);)
       return &sys_cfg.rules[iter->cur];
     }
   }

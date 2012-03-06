@@ -29,6 +29,7 @@
  */
 #pragma codeseg APP_BANK
 //#define PRINT_A
+//#define PRINT_B
 
 #include "system.h"
 #include "pt.h"
@@ -146,12 +147,14 @@ char evnt_register_handle(void *handle) __reentrant
   switch (peb->type) {
     case EVENT_EVENT_PROVIDER:
       tmp = find_first_free_entry((void*)event_table, MAX_NR_EVENT_PROVIDERS);
+      A_(printf (__FILE__ " First free event entry was %d\n", tmp);)
       if (tmp == -1) return -1;
       event_table[tmp] = (event_prv_t *)handle;
       nr_registered_events++;
       break;
     case EVENT_ACTION_MANAGER:
       tmp = find_first_free_entry((void*)action_table, MAX_NR_ACTION_MGRS);
+      A_(printf (__FILE__ " First free action entry was %d\n", tmp);)
       if (tmp == -1) return -1;
       action_table[tmp] = (action_mgr_t *)handle;
       nr_registered_actions++;
@@ -241,13 +244,13 @@ void *evnt_iter_get_first_entry(evnt_iter_t *iter) __reentrant __banked
  */
 void *evnt_iter_get_next_entry(evnt_iter_t *iter) __reentrant __banked
 {
-  B_(printf (__FILE__ " cur: %d, tot: %d\n", (int)iter->cur, (int)iter->num);)
+  A_(printf (__AT__ "Iter stats: iter->cur: %d, iter_num: %d\n",
+             iter->cur, iter->num);)
   while (++iter->cur < iter->num) {
     if (iter->tptr[iter->cur]) {
-      B_(printf (__FILE__ " %p - Returning item %d\n", iter, (int)iter->cur);)
+      A_(printf (__AT__ "Returning next entry %p\n", iter->tptr[iter->cur],
+                 iter->cur);)
       return iter->tptr[iter->cur];
-    } else {
-      B_(printf (__FILE__ " %p - No entry at %d\n", iter, (int)iter->cur);)
     }
   }
   return NULL;

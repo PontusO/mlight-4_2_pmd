@@ -53,8 +53,7 @@
         static void x(struct httpd_state *s, char *buffer) __reentrant
 #define PARAM_ENTRY(x,y) \
         { x , y }
-#define NEOP(x) \
-        ((x != ISO_and) && (x != ISO_space) && (x != ISO_cr))
+#define NEOP(x) (x != 0)
 /*---------------------- Local data types -----------------------------------*/
 struct parameter_table {
   const char *param;
@@ -225,21 +224,22 @@ PARAM_FUNC (set_mapx)
   rule_t *rp;
 
   buffer = skip_to_char(buffer, '=');
-  if (*buffer == ISO_and)
-    return;
-  rp = (rule_t __xdata *)atoi(buffer);
+  if (NEOP(*buffer)) {
+    rp = (rule_t __xdata *)atoi(buffer);
 
-  /* We'we got to be careful that the read value is appropriate, so check
-   * that it falls within the array of rules */
-  if (rp == NULL ||
-      rp < &sys_cfg.rules[0] ||
-      rp > &sys_cfg.rules[0] + sizeof sys_cfg.rules) {
-    /* Something's wrong, reset the modify flag */
-    s->parms.modify = 0;
-    A_(printf (__FILE__ " Error, invalid rp value !\n");)
-    return;
+    /* We'we got to be careful that the read value is appropriate, so check
+     * that it falls within the array of rules */
+    if (rp == NULL ||
+        rp < &sys_cfg.rules[0] ||
+        rp > &sys_cfg.rules[0] + sizeof sys_cfg.rules) {
+      /* Something's wrong, reset the modify flag */
+      s->parms.modify = 0;
+      A_(printf (__FILE__ " Error, invalid rp value !\n");)
+      return;
+    }
+    A_(printf (__FILE__ " Setting rp pointer to %p\n", rp);)
+    s->parms.rp = rp;
   }
-  s->parms.rp = rp;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -265,7 +265,7 @@ PARAM_FUNC (set_mapenabled)
 PARAM_FUNC (set_evt)
 {
   buffer = skip_to_char(buffer, '=');
-  if (*buffer != ISO_and) {
+  if (NEOP(*buffer)) {
     s->parms.evt = atol(buffer);
   }
 }
@@ -274,7 +274,7 @@ PARAM_FUNC (set_evt)
 PARAM_FUNC (set_act)
 {
   buffer = skip_to_char(buffer, '=');
-  if (*buffer != ISO_and) {
+  if (NEOP(*buffer)) {
     s->parms.act = atol(buffer);
   }
 }
@@ -285,57 +285,57 @@ PARAM_FUNC (set_wcmd)
   u8_t cmd;
 
   buffer = skip_to_char(buffer, '=');
-  if (*buffer == ISO_and)
-    return;
-  cmd = atoi(buffer);
+  if (NEOP(*buffer)) {
+    cmd = atoi(buffer);
 
-  switch (cmd)
-  {
-    case 1:
+    switch (cmd)
     {
-      /* Create a new event map entry */
-      if (s->parms.rp) {
-        u8_t act = s->parms.act >> 16 & 0xff;
-        u8_t evt = s->parms.evt >> 16 & 0xff;
-        s->parms.rp->event = (event_prv_t __xdata *)(s->parms.evt & 0xffff);
-        s->parms.rp->action = (action_mgr_t __xdata *)(s->parms.act & 0xffff);
-        s->parms.rp->scenario = (unsigned int)evt << 8 | act;
-        if (s->parms.rp->status != RULE_STATUS_ENABLED)
-          s->parms.rp->status = RULE_STATUS_DISABLED;
-        switch (act)
-        {
-          /* Add new case statement for every new action manager */
-          case ATYPE_ABSOLUTE_ACTION:
-            s->parms.rp->action_data.abs_data.channel = s->parms.achannel;
-            s->parms.rp->action_data.abs_data.value = s->parms.level;
-            break;
-          case ATYPE_RAMP_ACTION:
-            s->parms.rp->action_data.ramp_data.channel = s->parms.channel;
-            s->parms.rp->action_data.ramp_data.rampto = s->parms.rampto;
-            s->parms.rp->action_data.ramp_data.rate = s->parms.rate;
-            s->parms.rp->action_data.ramp_data.step = s->parms.step;
-            break;
-          case ATYPE_CYCLE_ACTION:
-            s->parms.rp->action_data.cycle_data.channel = s->parms.channel;
-            s->parms.rp->action_data.cycle_data.rampto = s->parms.rampto;
-            s->parms.rp->action_data.cycle_data.rate = s->parms.rate;
-            s->parms.rp->action_data.cycle_data.step = s->parms.step;
-            s->parms.rp->action_data.cycle_data.time = s->parms.timeon;
-            break;
+      case 1:
+      {
+        /* Create a new event map entry */
+        if (s->parms.rp) {
+          u8_t act = s->parms.act >> 16 & 0xff;
+          u8_t evt = s->parms.evt >> 16 & 0xff;
+          s->parms.rp->event = (event_prv_t __xdata *)(s->parms.evt & 0xffff);
+          s->parms.rp->action = (action_mgr_t __xdata *)(s->parms.act & 0xffff);
+          s->parms.rp->scenario = (unsigned int)evt << 8 | act;
+          if (s->parms.rp->status != RULE_STATUS_ENABLED)
+            s->parms.rp->status = RULE_STATUS_DISABLED;
+          switch (act)
+          {
+            /* Add new case statement for every new action manager */
+            case ATYPE_ABSOLUTE_ACTION:
+              s->parms.rp->action_data.abs_data.channel = s->parms.achannel;
+              s->parms.rp->action_data.abs_data.value = s->parms.level;
+              break;
+            case ATYPE_RAMP_ACTION:
+              s->parms.rp->action_data.ramp_data.channel = s->parms.channel;
+              s->parms.rp->action_data.ramp_data.rampto = s->parms.rampto;
+              s->parms.rp->action_data.ramp_data.rate = s->parms.rate;
+              s->parms.rp->action_data.ramp_data.step = s->parms.step;
+              break;
+            case ATYPE_CYCLE_ACTION:
+              s->parms.rp->action_data.cycle_data.channel = s->parms.channel;
+              s->parms.rp->action_data.cycle_data.rampto = s->parms.rampto;
+              s->parms.rp->action_data.cycle_data.rate = s->parms.rate;
+              s->parms.rp->action_data.cycle_data.step = s->parms.step;
+              s->parms.rp->action_data.cycle_data.time = s->parms.timeon;
+              break;
 
-          default:
-            A_(printf (__FILE__ " Incorrect action manager type !");)
-            break;
+            default:
+              A_(printf (__FILE__ " Incorrect action manager type !");)
+              break;
+          }
         }
+        /* Write new configuration to flash */
+        write_config_to_flash();
+        break;
       }
-      /* Write new configuration to flash */
-      write_config_to_flash();
-      break;
-    }
 
-    default:
-      A_(printf (__FILE__ " Invalid wcmd value !\n");)
-      break;
+      default:
+        A_(printf (__FILE__ " Invalid wcmd value !\n");)
+        break;
+    }
   }
 }
 
@@ -366,21 +366,21 @@ PARAM_FUNC (set_tsx)
   time_spec_t *ts;
 
   buffer = skip_to_char(buffer, '=');
-  if (*buffer == ISO_and)
-    return;
-  ts = (time_spec_t __xdata *)atoi(buffer);
+  if (NEOP(*buffer)) {
+    ts = (time_spec_t __xdata *)atoi(buffer);
 
-  /* We'we got to be careful that the read value is appropriate, so check
-   * that it falls within the array of time_spec_t's */
-  if (ts < &sys_cfg.time_events[0] ||
-      ts > &sys_cfg.time_events[0] + sizeof sys_cfg.time_events) {
-    s->parms.modify = FALSE;
-    A_(printf (__FILE__ " Error, invalid ts value !\n");)
-    return;
+    /* We'we got to be careful that the read value is appropriate, so check
+     * that it falls within the array of time_spec_t's */
+    if (ts < &sys_cfg.time_events[0] ||
+        ts > &sys_cfg.time_events[0] + sizeof sys_cfg.time_events) {
+      s->parms.modify = FALSE;
+      A_(printf (__FILE__ " Error, invalid ts value !\n");)
+      return;
+    }
+    /* Need to clear the weekday entry */
+    ts->weekday  = 0;
+    s->parms.ts = ts;
   }
-  /* Need to clear the weekday entry */
-  ts->weekday  = 0;
-  s->parms.ts = ts;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -424,7 +424,7 @@ PARAM_FUNC (set_tstime)
    * here, nasty !? you bet */
   if (s->parms.ts) {
     buffer = skip_to_char(buffer, '=');
-    if (*buffer != ISO_and) {
+    if (NEOP(*buffer)) {
       s->parms.ts->hrs = atoi(buffer);
       if (s->parms.ts->hrs > 23)
         s->parms.ts->hrs = 23;
@@ -509,7 +509,7 @@ PARAM_FUNC (set_webport)
   IDENTIFIER_NOT_USED (s);
 
   buffer = skip_to_char(buffer, '=');
-  if (*buffer != ISO_and) {
+  if (NEOP(*buffer)) {
     sys_cfg.http_port = atoi(buffer);
     /* Block non http ports below 80 */
     if (sys_cfg.http_port < 80) {
@@ -554,7 +554,7 @@ PARAM_FUNC (set_timeport)
   IDENTIFIER_NOT_USED (s);
 
   buffer = skip_to_char(buffer, '=');
-  if (*buffer != ISO_and)
+  if (NEOP(*buffer))
     sys_cfg.time_port = atoi(buffer);
 }
 /*---------------------------------------------------------------------------*/
@@ -563,7 +563,7 @@ PARAM_FUNC (set_interval)
   IDENTIFIER_NOT_USED (s);
 
   buffer = skip_to_char(buffer, '=');
-  if (*buffer != ISO_and) {
+  if (NEOP(*buffer)) {
     sys_cfg.update_interval = atoi(buffer);
     /* Update Interval can never be 0, so adjust */
     if (!sys_cfg.update_interval)
@@ -580,7 +580,7 @@ PARAM_FUNC (set_timevalue)
     */
   if (!sys_cfg.enable_time) {
     buffer = skip_to_char(buffer, '=');
-    if (*buffer != ISO_and) {
+    if (NEOP(*buffer)) {
       hrs = atoi(buffer);
       /* We should be checking for a colon here but since it has been converted
        * to web characters it is now '%3A'. So we check for a percent and
@@ -603,7 +603,7 @@ PARAM_FUNC (set_datevalue)
     */
   if (!sys_cfg.enable_time) {
     buffer = skip_to_char(buffer, '=');
-    if (*buffer != ISO_and) {
+    if (NEOP(*buffer)) {
       year=atoi(buffer);
       buffer = skip_to_char(buffer, '-');
       month = atoi(buffer);
@@ -699,55 +699,68 @@ PARAM_FUNC (set_password)
 PARAM_FUNC (cgi_set_achannel)
 {
   buffer = skip_to_char(buffer, '=');
-  s->parms.achannel = atoi(buffer);
-  s->parms.achannel_updated = 1;
-  s->parms.num_parms++;
+  if (NEOP(*buffer)) {
+    s->parms.achannel = atoi(buffer);
+    s->parms.achannel_updated = 1;
+    s->parms.num_parms++;
+  }
 }
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (cgi_set_channel)
 {
   buffer = skip_to_char(buffer, '=');
-  s->parms.channel = atoi(buffer);
-  s->parms.channel_updated = 1;
-  s->parms.num_parms++;
+  if (NEOP(*buffer)) {
+    s->parms.channel = atoi(buffer);
+    s->parms.channel_updated = 1;
+    s->parms.num_parms++;
+  }
 }
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (cgi_set_level)
 {
   buffer = skip_to_char(buffer, '=');
-  s->parms.level = atoi(buffer);
-  s->parms.level_updated = 1;
-  s->parms.num_parms++;
+  if (NEOP(*buffer)) {
+    s->parms.level = atoi(buffer);
+    s->parms.level_updated = 1;
+    s->parms.num_parms++;
+  }
 }
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (cgi_set_rampto)
 {
   buffer = skip_to_char(buffer, '=');
-  s->parms.rampto = atoi(buffer);
-  s->parms.rampto_updated = 1;
-  s->parms.num_parms++;
+  if (NEOP(*buffer)) {
+    s->parms.rampto = atoi(buffer);
+    s->parms.rampto_updated = 1;
+    s->parms.num_parms++;
+  }
 }
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (cgi_set_rate)
 {
   buffer = skip_to_char(buffer, '=');
-  s->parms.rate = atoi(buffer);
-  s->parms.rate_updated = 1;
-  s->parms.num_parms++;
+  if (NEOP(*buffer)) {
+    s->parms.rate = atoi(buffer);
+    s->parms.rate_updated = 1;
+    s->parms.num_parms++;
+  }
 }
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (cgi_set_step)
 {
   buffer = skip_to_char(buffer, '=');
-  s->parms.step = atoi(buffer);
-  s->parms.step_updated = 1;
-  s->parms.num_parms++;
+  if (NEOP(*buffer)) {
+    s->parms.step = atoi(buffer);
+    s->parms.step_updated = 1;
+    s->parms.num_parms++;
+  }
 }
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (cgi_set_timeon)
 {
   buffer = skip_to_char(buffer, '=');
-  s->parms.timeon = atoi(buffer);
+  if (NEOP(*buffer))
+    s->parms.timeon = atoi(buffer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -794,6 +807,7 @@ void parse_input(struct httpd_state *s, char *buf) __banked
   }
 
   s->parms.rp = rule_find_free_entry();
+  A_(printf (__AT__ "Rule pointer is %p\n", s->parms.rp);)
   s->parms.modify = FALSE;
 
   while (*buf != ISO_space)

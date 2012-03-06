@@ -199,7 +199,7 @@ PT_THREAD(start_ramp(struct httpd_state *s, char *ptr) __reentrant)
       /* Get the ramp controller associated with our channel */
       ramp_ctrl_t *rcptr = ramp_ctrl_get_ramp_ctrl (s->parms.channel);
       if (!rcptr) {
-        A_(printf (__FILE__ " %p is not a valid ramp manager !\n", rmptr);)
+        A_(printf (__FILE__ " %p is not a valid ramp manager !\n", rcptr);)
         sprintf((char *)uip_appdata, "%s04>", error_string);
       } else {
         /* Assert a signal to the ramp manager to start a ramp */
@@ -452,23 +452,24 @@ static unsigned short generate_event_functions(void *arg) __reentrant
   struct httpd_state *s = (struct httpd_state *)arg;
   void *ep = (void *)s->ptr;
   unsigned long num = 0;
+  char *sptr = uip_appdata;
 
   switch (GET_EVENT_BASE(ep).type)
   {
     case 1:
       num |= (int)ep;
       num |= (unsigned long)(((event_prv_t*)ep)->type) << 16;
-      sprintf((char *)uip_appdata,
-              "<option value=\"%ld\" %s>(%s) %s</option>", num,
-              s->parms.modify && s->parms.rp->event == ep ? str_selected : "",
+      sptr += sprintf (sptr, "<option value=\"%ld\" %s>", num,
+              s->parms.modify && s->parms.rp->event == ep ? str_selected : "");
+      sprintf (sptr, "(%s) %s</option>",
               GET_EVENT_BASE(ep).name, GET_EVENT(ep)->event_name);
       break;
     case 2:
       num |= (int)ep;
       num |= (unsigned long)(((action_mgr_t*)ep)->type) << 16;
-      sprintf((char *)uip_appdata,
-              "<option value=\"%ld\" %s>(%s) %s</option>", num,
-              s->parms.modify && s->parms.rp->action == ep ? str_selected : "",
+      sptr += sprintf (sptr, "<option value=\"%ld\" %s>", num,
+              s->parms.modify && s->parms.rp->action == ep ? str_selected : "");
+      sprintf (sptr, "(%s) %s</option>",
               GET_EVENT_BASE(ep).name, GET_ACTION(ep)->action_name);
       break;
     default:
@@ -476,6 +477,7 @@ static unsigned short generate_event_functions(void *arg) __reentrant
       A_(printf (__FILE__ " You need to implement new features dude !\n");)
       break;
   }
+
   return strlen(uip_appdata);
 }
 

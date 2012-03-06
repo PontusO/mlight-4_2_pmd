@@ -59,6 +59,10 @@
     PSBANK = xxxp_temp;                     \
   } while (0)
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define __AT__ __FILE__ ":" TOSTRING(__LINE__) " "
+
 // Some combinations of debug prints.
 #ifdef PRINT_ALL
   #define PRINT_A

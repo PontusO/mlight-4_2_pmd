@@ -66,8 +66,11 @@ void ADC_ISR (void) __interrupt AD0INT_VECTOR __using 2
 
   /* I really don't know why this has to be here, but it
    * just wont work otherwise */
-  if (adc_chan > USED_ADC_CHANNELS)
+  if (adc_chan > USED_ADC_CHANNELS) {
+    adc_chan = 0;
     printf ("ERROR: adc_chan=%d\r\n", adc_chan);
+    goto exit;
+  }
 
   adc[adc_chan].values[w_ptr] = sample;
   adc[adc_chan].last_sample = sample;
@@ -108,6 +111,7 @@ void ADC_ISR (void) __interrupt AD0INT_VECTOR __using 2
 
   /* Set up channel for next measurement */
   AMX0SL = adc[adc_chan].channel;
+exit:
 #if BUILD_TARGET == IET912X
   AD0INT = 0;
 #else
