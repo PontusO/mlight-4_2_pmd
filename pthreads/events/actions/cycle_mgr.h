@@ -46,7 +46,7 @@
 typedef struct {
   char channel;         /** The channel the ramping shall take place on */
   unsigned char rampto; /** The value that it should ramp to */
-  unsigned char rate;   /** Using tick rate.. */
+  u16_t rate;           /** Using tick rate.. */
   unsigned char step;   /** and steps per tick */
   unsigned int time;    /** The time the light should be on */
 } act_cycle_data_t;

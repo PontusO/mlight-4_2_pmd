@@ -43,7 +43,7 @@
 typedef struct {
   char channel;
   unsigned char rampto;
-  unsigned char rate;
+  u16_t rate;
   unsigned char step;
 } act_ramp_data_t;
 
@@ -55,7 +55,7 @@ typedef struct {
   char intensity;
   char rampto;
   char step;
-  u8_t rate;
+  u16_t rate;
 } ramp_mgr_t;
 
 void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked;

@@ -120,12 +120,12 @@ window.onload = function() {
 <hr color="#258D92" size="2" width="90%"><table width="90%" class="mytab">
 <col style="width:40%" /><tr><td>Output Channel</td><td><select name="channel">%! get-option 2
 </select></td></tr>
-<tr><td>Ramp to Level (0-100)</td><td><input type="text" name="rampto" size="6" maxlength="5" value="%! get-int 7
+<tr><td>Ramp to Level (0-100)</td><td><input type="text" name="rampto" size="3" maxlength="3" value="%! get-int 7
 "></td></tr>
-<tr><td>Ramp Rate (1-10)</td><td><input type="text" name="rate" size="3" maxlength="2" value="%! get-int 8
-"></td></tr>
+<tr><td>Ramp Rate (1-99999)</td><td><input type="text" name="rate" size="3" maxlength="5" value="%! get-int 8
+"> Number of ticks per increment.</td></tr>
 <tr><td>Ramp Step (1-10)</td><td><input type="text" name="step" size="3" maxlength="2" value="%! get-int 9
-"></td></tr>
+"> Number of steps each increment.</td></tr>
 </table>
 </div>
 
