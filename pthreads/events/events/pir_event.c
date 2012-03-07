@@ -80,14 +80,14 @@ static void allocate_hw (pir_event_t *pir_event)
   /* Setup dac operation */
   if (allocate_dac(0) != DAC_ERR_OK) {
     add_error_to_log (1);
-    A_(printf(__FILE__ " Could not allocate dac !\n");)
+    A_(printf(__AT__ " Could not allocate dac !\n");)
   }
   tmp = DAC_MAX_SCALE * (long)sys_cfg.pir_sensitivity / 100;
   write_dac (0, (u16_t)tmp);
   /* And set the comparator up */
   if (allocate_comparator(0) != COMP_ERR_OK) {
     add_error_to_log (1);
-    A_(printf(__FILE__ " Could not allocate comparator !\n");)
+    A_(printf(__AT__ " Could not allocate comparator !\n");)
   }
   /* Set up a timer to wait for the dac and comparator to settle */
   pir_event->tmr = alloc_timer();
@@ -107,10 +107,10 @@ PT_THREAD(handle_pir_event(pir_event_t *pir_event) __reentrant __banked)
   /* Register the event provider */
   if (evnt_register_handle(&pirevent) < 0) {
     add_error_to_log (2);
-    A_(printf (__FILE__ " Could not register pir event !\n");)
+    A_(printf (__AT__ " Could not register pir event !\n");)
   }
 
-  A_(printf (__FILE__ " Starting pir_event pthread, handle ptr %p !\n", &pir_event);)
+  A_(printf (__AT__ " Starting pir_event pthread, handle ptr %p !\n", &pir_event);)
 
   /* Make sure the hardware is initialized if necessary */
   if (sys_cfg.pir_enabled) {
@@ -125,7 +125,7 @@ again:
     if (!sys_cfg.pir_enabled) {
       /* If the sensor input is disabled, wait here for it to be enabled */
       PT_WAIT_UNTIL (&pir_event->pt, sys_cfg.pir_enabled);
-      A_(printf(__FILE__ " PIR sensor has been enabled !\n");)
+      A_(printf(__AT__ " PIR sensor has been enabled !\n");)
       allocate_hw (pir_event);
       PT_WAIT_UNTIL (&pir_event->pt, !get_timer(pir_event->tmr));
       free_timer (pir_event->tmr);
@@ -136,10 +136,10 @@ again:
                                      get_timer (pir_event->ltmr) == 0) ||
                                     !sys_cfg.pir_enabled);
     if (!sys_cfg.pir_enabled) {
-      A_(printf(__FILE__ " PIR Sensor turned off !\n");)
+      A_(printf(__AT__ " PIR Sensor turned off !\n");)
       goto again;
     }
-    A_(printf(__FILE__ " PIR sensor triggered !\n");)
+    A_(printf(__AT__ " PIR sensor triggered !\n");)
 
     /* Set and restart timer */
     set_timer (pir_event->ltmr, sys_cfg.pir_lockout * 100, NULL);
@@ -150,7 +150,7 @@ again:
     /* And wait for it to go high again */
     PT_WAIT_UNTIL (&pir_event->pt, get_comparator_state(0) || !sys_cfg.pir_enabled);
 
-    A_(printf(__FILE__ " PIR sensor returned to normal again !\n");)
+    A_(printf(__AT__ " PIR sensor returned to normal again !\n");)
   } /* while (1) */
 
   PT_END(&pir_event->pt);

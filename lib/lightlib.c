@@ -243,7 +243,7 @@ char ledlib_set_light_percentage_log (ld_param_t *params) __reentrant __banked
   if (channel >= CFG_NUM_LIGHT_DRIVERS || value > 100)
     return -1;
   else
-    B_(printf (__FILE__ " Channel: %d, value %d\n", channel, value);)
+    B_(printf (__AT__ " Channel: %d, value %d\n", channel, value);)
 
   light_drivers[channel].pwm_percent = value;
   if (light_drivers[channel].driver_type == LIGHT_PWM) {

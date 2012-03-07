@@ -132,7 +132,7 @@ u8_t free_timer(u8_t timer)
   u8_t j;
 #endif
   if (timer >= NUMBER_OF_SWTIMERS) {
-    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    A_(printf (__AT__ " Requested timer exceeded max number of timers !\n");)
     return 0;
   }
 
@@ -183,7 +183,7 @@ u8_t free_timer(u8_t timer)
 void set_timer(u8_t timer, timer_time_t time, timer_cb cb)
 {
   if (timer >= NUMBER_OF_SWTIMERS) {
-    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    A_(printf (__AT__ " Requested timer exceeded max number of timers !\n");)
     return;
   }
 
@@ -200,7 +200,7 @@ void set_timer(u8_t timer, timer_time_t time, timer_cb cb)
 void set_timer_cnt(u8_t timer, timer_time_t time)
 {
   if (timer >= NUMBER_OF_SWTIMERS) {
-    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    A_(printf (__AT__ " Requested timer exceeded max number of timers !\n");)
     return;
   }
   ET0 = INTERRUPT_OFF;
@@ -216,7 +216,7 @@ timer_time_t get_timer(u8_t timer)
   timer_time_t value;
 
   if (timer >= NUMBER_OF_SWTIMERS) {
-    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    A_(printf (__AT__ " Requested timer exceeded max number of timers !\n");)
     return 0;
   }
 
@@ -233,7 +233,7 @@ timer_time_t get_timer(u8_t timer)
 u8_t get_timer_status(u8_t timer)
 {
   if (timer >= NUMBER_OF_SWTIMERS) {
-    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    A_(printf (__AT__ " Requested timer exceeded max number of timers !\n");)
     return TMR_ERROR;
   }
   return timer_table[timer];
@@ -245,7 +245,7 @@ u8_t get_timer_status(u8_t timer)
 void stop_timer(u8_t timer)
 {
   if (timer >= NUMBER_OF_SWTIMERS) {
-    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    A_(printf (__AT__ " Requested timer exceeded max number of timers !\n");)
     return;
   }
 
@@ -260,7 +260,7 @@ void stop_timer(u8_t timer)
 void start_timer(u8_t timer)
 {
   if (timer >= NUMBER_OF_SWTIMERS) {
-    A_(printf (__FILE__ " Requested timer exceeded max number of timers !\n");)
+    A_(printf (__AT__ " Requested timer exceeded max number of timers !\n");)
     return;
   }
 

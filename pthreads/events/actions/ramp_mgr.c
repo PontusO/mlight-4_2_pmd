@@ -68,7 +68,7 @@ void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked
   rampmgr.vt.trigger_action = ramp_trigger;
 
   if (channel < CFG_NUM_PWM_DRIVERS) {
-    A_(printf (__FILE__ " Initializing ramp mgr %p on channel %d\n",
+    A_(printf (__AT__ " Initializing ramp mgr %p on channel %d\n",
                rmgr, channel);)
     memset (rmgr, 0, sizeof *rmgr);
     PT_INIT(&rmgr->pt);
@@ -83,7 +83,7 @@ void init_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked
 
   if (first && evnt_register_handle(&rampmgr) < 0) {
     first = 0;
-    A_(printf (__FILE__ " Could not register ramp manager !\n");)
+    A_(printf (__AT__ " Could not register ramp manager !\n");)
     return;
   }
   first = 0;
@@ -102,7 +102,7 @@ void ramp_trigger (void *input) __reentrant
   char rmgr;
   act_ramp_data_t *rampdata = (act_ramp_data_t *)input;
 
-  A_(printf(__FILE__ " Starting ramp on channel %d\n",
+  A_(printf(__AT__ " Starting ramp on channel %d\n",
           (int)rampdata->channel);)
   rmgr = rampdata->channel - 1;
 
@@ -113,10 +113,10 @@ void ramp_trigger (void *input) __reentrant
     ramp_mgr_tab[rmgr]->step = rampdata->step;
     ramp_mgr_tab[rmgr]->signal = 1;
 
-    B_(printf (__FILE__ " Ramp Data:\n");)
-    B_(printf (__FILE__ "  Ramp to   : %d\n", rampdata->rampto);)
-    B_(printf (__FILE__ "  Ramp rate : %d\n", rampdata->rate);)
-    B_(printf (__FILE__ "  Ramp step : %d\n", rampdata->step);)
+    B_(printf (__AT__ " Ramp Data:\n");)
+    B_(printf (__AT__ "  Ramp to   : %d\n", rampdata->rampto);)
+    B_(printf (__AT__ "  Ramp rate : %d\n", rampdata->rate);)
+    B_(printf (__AT__ "  Ramp step : %d\n", rampdata->step);)
   }
 }
 
@@ -128,7 +128,7 @@ ramp_mgr_t *get_ramp_mgr (u8_t channel) __reentrant banked
     return NULL;
 
   ptr = ramp_mgr_tab[channel];
-  A_(printf (__FILE__ " Returning requested ramp manager for channel %d @ %p\n",
+  A_(printf (__AT__ " Returning requested ramp manager for channel %d @ %p\n",
              ptr->channel, ptr);)
 
   return ptr;
@@ -143,7 +143,7 @@ PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked)
 {
   PT_BEGIN(&rmgr->pt);
 
-  A_(printf (__FILE__ " Starting ramp manager %p on channel %d\n",
+  A_(printf (__AT__ " Starting ramp manager %p on channel %d\n",
              rmgr, rmgr->channel);)
 
   while (1)
@@ -151,7 +151,7 @@ PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked)
     /* Wait for a ramp command to arrive */
     PT_WAIT_UNTIL (&rmgr->pt, rmgr->signal);
     if (rmgr->signal == RAMP_CMD_START) {
-      A_(printf (__FILE__ " Received a start ramp request on channel %d\n",
+      A_(printf (__AT__ " Received a start ramp request on channel %d\n",
                  rmgr->channel);)
       /* Reset the signal */
       rmgr->signal = RAMP_CMD_RESET;
@@ -168,13 +168,13 @@ PT_THREAD(handle_ramp_mgr(ramp_mgr_t *rmgr) __reentrant __banked)
 
       /* Get current light intensity */
       rmgr->intensity = ledlib_get_light_percentage(rmgr->channel);
-      A_(printf (__FILE__ " Start intensity %d\n", rmgr->intensity);)
+      A_(printf (__AT__ " Start intensity %d\n", rmgr->intensity);)
       if (rmgr->intensity != rmgr->rampto) {
         /* Check difference between new and current */
         if ((rmgr->rampto - rmgr->intensity) < 0) {
           rmgr->step *= -1;
         }
-        A_(printf (__FILE__ " Ramping to %d\n", rmgr->rampto);)
+        A_(printf (__AT__ " Ramping to %d\n", rmgr->rampto);)
 
         /* Copy instance data */
         rmgr->rctrl->channel = rmgr->channel;

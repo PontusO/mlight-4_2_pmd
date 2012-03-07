@@ -76,12 +76,12 @@ void init_cycle_mgr(cycle_mgr_t *cycle_mgr) __reentrant __banked
   if (cycle_mgr->cdata.channel < CFG_NUM_PWM_DRIVERS) {
     cycle_mgr_tab[cycle_mgr->cdata.channel] = cycle_mgr;
   } else {
-    A_(printf (__FILE__ " Channel is incorrect !\n");)
+    A_(printf (__AT__ " Channel is incorrect !\n");)
   }
 
   if (first && evnt_register_handle(&cycleaction) < 0) {
     first = 0;
-    A_(printf (__FILE__ " Could not register cycle manager !\n");)
+    A_(printf (__AT__ " Could not register cycle manager !\n");)
     return;
   }
   first = 0;
@@ -102,7 +102,7 @@ void cycle_mgr_trigger (void *input) __reentrant
   cycle_mgr_t *cmgr;
   act_cycle_data_t *cycdat = (act_cycle_data_t *)input;
 
-  A_(printf (__FILE__ " Entered the trigger function !\n");)
+  A_(printf (__AT__ " Entered the trigger function !\n");)
 
   if (cycdat->channel <= CFG_NUM_PWM_DRIVERS) {
     /* Get manager instance */
@@ -133,7 +133,7 @@ PT_THREAD(handle_cycle_mgr(cycle_mgr_t *cycle_mgr) __reentrant __banked)
 {
   PT_BEGIN(&cycle_mgr->pt);
 
-  A_(printf (__FILE__ " Starting cycle_mgr %p on channel %d !\n",
+  A_(printf (__AT__ " Starting cycle_mgr %p on channel %d !\n",
              cycle_mgr, cycle_mgr->cdata.channel);)
 
   cycle_mgr->tmr = alloc_timer ();
@@ -146,7 +146,7 @@ PT_THREAD(handle_cycle_mgr(cycle_mgr_t *cycle_mgr) __reentrant __banked)
      * accepted. */
     cycle_mgr->state = CYCLE_STATE_RAMPING_UP;
 
-    A_(printf (__FILE__ " Received a cycle event trigger !\n");)
+    A_(printf (__AT__ " Received a cycle event trigger !\n");)
 
     /* Get the proper ramp control instance */
     cycle_mgr->rctrl = ramp_ctrl_get_ramp_ctrl (cycle_mgr->cdata.channel);
@@ -159,12 +159,12 @@ PT_THREAD(handle_cycle_mgr(cycle_mgr_t *cycle_mgr) __reentrant __banked)
           ramp_ctrl_get_state (cycle_mgr->rctrl) == RAMP_STATE_DORMANT);
     }
 
-    A_(printf (__FILE__ " Start intensity %d\n", cycle_mgr->intensity);)
+    A_(printf (__AT__ " Start intensity %d\n", cycle_mgr->intensity);)
 
     /* Currently we only do the cycle if the requested light intensity is
      * higher than the one already set */
     if (cycle_mgr->intensity < cycle_mgr->cdata.rampto) {
-      A_(printf (__FILE__ " Ramping to %d\n", cycle_mgr->cdata.rampto);)
+      A_(printf (__AT__ " Ramping to %d\n", cycle_mgr->cdata.rampto);)
 
       /* Copy instance data for first ramp */
       if (cycle_mgr->signal == CYC_SIG_START)
@@ -196,7 +196,7 @@ again:
       /* Set the waiting time to the requested timeout in minutes */
       set_timer (cycle_mgr->tmr, cycle_mgr->cdata.time * 100 * 60, NULL);
       /* Wait for the timer to reach 0 */
-      A_(printf (__FILE__ " Starting Timer !\n");)
+      A_(printf (__AT__ " Starting Timer !\n");)
       PT_WAIT_UNTIL (&cycle_mgr->pt, !get_timer (cycle_mgr->tmr) ||
                      cycle_mgr->signal == CYC_SIG_START);
       if (cycle_mgr->signal == CYC_SIG_RESTART) {
@@ -206,7 +206,7 @@ again:
       cycle_mgr->signal = CYC_SIG_NONE;
       /* Indicate that we are rampng down again */
       cycle_mgr->state = CYCLE_STATE_RAMPING_DN;
-      A_(printf (__FILE__ " Timer Done !\n");)
+      A_(printf (__AT__ " Timer Done !\n");)
 
       /* Copy instance data for second ramp */
       cycle_mgr->rctrl->intensity =
@@ -216,9 +216,9 @@ again:
       cycle_mgr->rctrl->step = cycle_mgr->cdata.step * -1;
       cycle_mgr->rctrl->rampto = cycle_mgr->intensity;
 
-      A_(printf (__FILE__ " Start intensity %d\n",
+      A_(printf (__AT__ " Start intensity %d\n",
           cycle_mgr->rctrl->intensity);)
-      A_(printf (__FILE__ " Rampto %d\n",
+      A_(printf (__AT__ " Rampto %d\n",
           cycle_mgr->rctrl->rampto);)
 
       /* Start the ramp again */
@@ -236,7 +236,7 @@ again:
     } else {
       /* Reset the signal */
       cycle_mgr->signal = CYC_SIG_NONE;
-      A_(printf (__FILE__ " Condition is not met !\n");)
+      A_(printf (__AT__ " Condition is not met !\n");)
     }
   }
 

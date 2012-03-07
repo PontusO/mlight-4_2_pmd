@@ -55,8 +55,8 @@ void init_event_switch(event_thread_t *et)
   memset (action_table, 0, sizeof *action_table);
   memset (event_table, 0, sizeof *event_table);
 
-  B_(printf(__FILE__ " Action table ptr %p\n", action_table);)
-  B_(printf(__FILE__ " Event table ptr %p\n", event_table);)
+  B_(printf(__AT__ " Action table ptr %p\n", action_table);)
+  B_(printf(__AT__ " Event table ptr %p\n", event_table);)
 }
 
 /* **************************** Events ***********************************/
@@ -111,10 +111,10 @@ static char find_first_free_entry(void **table, char max)
 {
   char i;
 
-  B_(printf(__FILE__ " table pointer %p\n", table);)
+  B_(printf(__AT__ " table pointer %p\n", table);)
   for (i=0; i<max; i++) {
     if (!table[i]) {
-      A_(printf (__FILE__ " Using entry %d\n", i);)
+      A_(printf (__AT__ " Using entry %d\n", i);)
       return i;
     }
   }
@@ -143,24 +143,24 @@ char evnt_register_handle(void *handle) __reentrant
   char tmp;
   event_base_t *peb = (event_base_t *)GET_EVENT_BASE(handle);
 
-  A_(printf (__FILE__ " Registering %s\n", peb->name);)
+  A_(printf (__AT__ " Registering %s\n", peb->name);)
   switch (peb->type) {
     case EVENT_EVENT_PROVIDER:
       tmp = find_first_free_entry((void*)event_table, MAX_NR_EVENT_PROVIDERS);
-      A_(printf (__FILE__ " First free event entry was %d\n", tmp);)
+      A_(printf (__AT__ " First free event entry was %d\n", tmp);)
       if (tmp == -1) return -1;
       event_table[tmp] = (event_prv_t *)handle;
       nr_registered_events++;
       break;
     case EVENT_ACTION_MANAGER:
       tmp = find_first_free_entry((void*)action_table, MAX_NR_ACTION_MGRS);
-      A_(printf (__FILE__ " First free action entry was %d\n", tmp);)
+      A_(printf (__AT__ " First free action entry was %d\n", tmp);)
       if (tmp == -1) return -1;
       action_table[tmp] = (action_mgr_t *)handle;
       nr_registered_actions++;
       break;
     default:
-      A_(printf(__FILE__ " Error: Incorrect event type entered !\n");)
+      A_(printf(__AT__ " Error: Incorrect event type entered !\n");)
       return -1;
   }
   return tmp;
@@ -211,7 +211,7 @@ void *evnt_iter_get_first_entry(evnt_iter_t *iter) __reentrant __banked
   void *ptr;
   char *pctr;
 
-  B_(printf (__FILE__ " Getting first entry, type=%d\n", (int)iter->type);)
+  B_(printf (__AT__ " Getting first entry, type=%d\n", (int)iter->type);)
   switch (iter->type) {
     case EVENT_EVENT_PROVIDER:
       ptr = (void*)event_table;
@@ -222,7 +222,7 @@ void *evnt_iter_get_first_entry(evnt_iter_t *iter) __reentrant __banked
       pctr = &nr_registered_actions;
       break;
     default:
-      A_(printf(__FILE__ " Error: Incorrect event type entered !\n");)
+      A_(printf(__AT__ " Error: Incorrect event type entered !\n");)
       return NULL;
   }
 
@@ -230,7 +230,7 @@ void *evnt_iter_get_first_entry(evnt_iter_t *iter) __reentrant __banked
   iter->cur = 0;
   iter->tptr = ptr;
   iter->num = *pctr;
-  B_(printf (__FILE__ " %p - cur: %d, tot: %d, ptr: %p",
+  B_(printf (__AT__ " %p - cur: %d, tot: %d, ptr: %p",
              iter, (int)iter->cur, (int)iter->num, iter->tptr);)
   B_(printf (" retptr %p\n", iter->tptr[iter->cur]);)
 

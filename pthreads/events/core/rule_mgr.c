@@ -144,7 +144,7 @@ static rule_t *query_events(void)
   for (i=0; i<MAX_NR_RULES; i++) {
     if ((sys_cfg.rules[i].status == RULE_STATUS_ENABLED) &&
         (sys_cfg.rules[i].r_data->event_signal)) {        // Check if signal has been triggered
-      A_(printf (__FILE__ " Event Provider %d, Signal Content %d\n",
+      A_(printf (__AT__ " Event Provider %d, Signal Content %d\n",
               i, sys_cfg.rules[i].r_data->event_signal);)
       return (rule_t *)&sys_cfg.rules[i];
     }
@@ -166,11 +166,11 @@ PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant)
 {
   PT_BEGIN(&et->pt);
 
-  A_(printf(__FILE__ " Started the event switch !\n");)
+  A_(printf(__AT__ " Started the event switch !\n");)
 
   while (1) {
     PT_WAIT_UNTIL(&et->pt, query_events() != NULL);
-    A_(printf(__FILE__ " Received an event !\n");)
+    A_(printf(__AT__ " Received an event !\n");)
     /* Walk through the rule table and execute all triggered action managers */
     for (et->i=0; et->i<MAX_NR_RULES; et->i++) {
       if ((sys_cfg.rules[et->i].status == RULE_STATUS_ENABLED) &&
@@ -184,13 +184,13 @@ PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant)
             et->new_action->vt.stop_action();
           /* And execute the new trigger with data from the rule action data */
           if (et->new_action->vt.trigger_action) {
-            A_(printf (__FILE__ " Executing action trigger function.\n");)
+            A_(printf (__AT__ " Executing action trigger function.\n");)
             et->new_action->vt.trigger_action((void*)sys_cfg.rules[et->i].action_data);
           } else {
-            A_(printf(__FILE__ " Error: No action trigger defined !\n");)
+            A_(printf(__AT__ " Error: No action trigger defined !\n");)
           }
         } else {
-          A_(printf(__FILE__ " Error: No action mapped to event %d\n", et->current_event);)
+          A_(printf(__AT__ " Error: No action mapped to event %d\n", et->current_event);)
         }
       }
     }

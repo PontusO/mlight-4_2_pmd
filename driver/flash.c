@@ -204,7 +204,7 @@ void write_config_to_flash(void)
 
   // Get new check sum of entire block minus last word
   chksum = flash_chksum(FLASH_WO_VER);
-  B_(printf (__FILE__ " New FLASH checksum %d, verfication word %d\r\n", (int)chksum, (int)(-1 - chksum));)
+  B_(printf (__AT__ " New FLASH checksum %d, verfication word %d\r\n", (int)chksum, (int)(-1 - chksum));)
   write_new_verification_word(-1 - chksum);
 }
 
@@ -260,7 +260,7 @@ static int flash_chksum(u8_t command)
       break;
   }
 
-  B_(printf(__FILE__ " Iterating %d\r\n", (int)loop);)
+  B_(printf(__AT__ " Iterating %d\r\n", (int)loop);)
   for (i=0 ; i<loop ; i++)
   {
     chksum += *dest++;
@@ -290,17 +290,17 @@ u8_t validate_config_flash(void)
   __code int *memptr = (__code int *)LAST_PAGE_ADDRESS;
 
   chksum = flash_chksum(ENTIRE_FLASH);
-  B_(printf (__FILE__ " FLASH checksum %d\r\n", (int)chksum);)
+  B_(printf (__AT__ " FLASH checksum %d\r\n", (int)chksum);)
 
   /* Check if the content is valid */
   if (chksum != -1) {
-    B_(printf (__FILE__ " Initializing FLASH\r\n");)
+    B_(printf (__AT__ " Initializing FLASH\r\n");)
     // Go and get the default values from flash
     load_default_config();
     // Write it to flash
     write_config_to_flash();
   } else {
-    B_(printf (__FILE__ " Loading existing FLASH configuration\r\n");)
+    B_(printf (__AT__ " Loading existing FLASH configuration\r\n");)
     load_sys_config();
   }
   load_network_params();

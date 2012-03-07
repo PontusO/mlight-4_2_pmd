@@ -61,7 +61,7 @@ void init_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked
   if (ramp_ctrl->channel < CFG_NUM_PWM_DRIVERS) {
     ramp_ctrl_tab[ramp_ctrl->channel] = ramp_ctrl;
   } else {
-    A_(printf (__FILE__ " Channel is incorrect !\n");)
+    A_(printf (__AT__ " Channel is incorrect !\n");)
   }
 }
 
@@ -146,7 +146,7 @@ PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked)
 
   /* Allocate a timer for this thread */
   ramp_ctrl->timer = alloc_timer();
-  A_(printf (__FILE__ " Starting ramp controller %p on channel %d\n",
+  A_(printf (__AT__ " Starting ramp controller %p on channel %d\n",
              ramp_ctrl, ramp_ctrl->channel);)
 
   while (1) {
@@ -155,7 +155,7 @@ PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked)
     ramp_ctrl->signal = RAMP_SIG_NONE;
     ramp_ctrl->state = RAMP_STATE_RAMPING;
 
-    A_(printf (__FILE__ " Starting a ramp on channel %d\n",
+    A_(printf (__AT__ " Starting a ramp on channel %d\n",
                ramp_ctrl->channel);)
 
     do {

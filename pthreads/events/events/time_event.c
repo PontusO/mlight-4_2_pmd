@@ -96,7 +96,7 @@ char add_time_event (time_spec_t *ts)
 
   ptr = get_first_free_time_event_entry(&index);
   if (!ptr) {
-    A_(printf (__FILE__ " No free entries left !\n");)
+    A_(printf (__AT__ " No free entries left !\n");)
     return -1;
   }
   memcpy (ptr, ts, sizeof ts);
@@ -106,7 +106,7 @@ char add_time_event (time_spec_t *ts)
    * Now update the event table with the new entry.
    */
   if (index >= NMBR_TIME_EVENTS) {
-    A_(printf (__FILE__ " Error in time event event structures !\n");)
+    A_(printf (__AT__ " Error in time event event structures !\n");)
     return -1;
   }
 
@@ -122,7 +122,7 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
   u8_t i;
   PT_BEGIN(&time_event->pt);
 
-  A_(printf (__FILE__ " Starting time_event pthread!\n");)
+  A_(printf (__AT__ " Starting time_event pthread!\n");)
 
   /* Register all stored time event handles */
   for (i=0;i<NMBR_TIME_EVENTS;i++) {
@@ -154,7 +154,7 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
             time_event->time_spec->hrs == tp.time.hrs &&
             time_event->time_spec->min == tp.time.min &&
             tp.time.sec == 0) {
-          A_(printf (__FILE__ " Handling a time event !\n");)
+          A_(printf (__AT__ " Handling a time event !\n");)
           rule_send_event_signal (&time_events[i]);
         }
         time_event->time_spec++;

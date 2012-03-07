@@ -234,10 +234,10 @@ PARAM_FUNC (set_mapx)
         rp > &sys_cfg.rules[0] + sizeof sys_cfg.rules) {
       /* Something's wrong, reset the modify flag */
       s->parms.modify = 0;
-      A_(printf (__FILE__ " Error, invalid rp value !\n");)
+      A_(printf (__AT__ " Error, invalid rp value !\n");)
       return;
     }
-    A_(printf (__FILE__ " Setting rp pointer to %p\n", rp);)
+    A_(printf (__AT__ " Setting rp pointer to %p\n", rp);)
     s->parms.rp = rp;
   }
 }
@@ -323,7 +323,7 @@ PARAM_FUNC (set_wcmd)
               break;
 
             default:
-              A_(printf (__FILE__ " Incorrect action manager type !");)
+              A_(printf (__AT__ " Incorrect action manager type !");)
               break;
           }
         }
@@ -333,7 +333,7 @@ PARAM_FUNC (set_wcmd)
       }
 
       default:
-        A_(printf (__FILE__ " Invalid wcmd value !\n");)
+        A_(printf (__AT__ " Invalid wcmd value !\n");)
         break;
     }
   }
@@ -374,7 +374,7 @@ PARAM_FUNC (set_tsx)
     if (ts < &sys_cfg.time_events[0] ||
         ts > &sys_cfg.time_events[0] + sizeof sys_cfg.time_events) {
       s->parms.modify = FALSE;
-      A_(printf (__FILE__ " Error, invalid ts value !\n");)
+      A_(printf (__AT__ " Error, invalid ts value !\n");)
       return;
     }
     /* Need to clear the weekday entry */
@@ -400,7 +400,7 @@ PARAM_FUNC (set_tsname)
     *buffer = 0x00;
     ts_update = TRUE;
   } else {
-    A_(printf (__FILE__ " Serious error occured !\n");)
+    A_(printf (__AT__ " Serious error occured !\n");)
   }
 }
 
@@ -448,7 +448,7 @@ PARAM_FUNC (set_tsday)
     buffer -= 2;
     day = *buffer-0x31;
     s->parms.ts->weekday |= (1 << day);
-    A_(printf (__FILE__ " Day: %d\n", day);)
+    A_(printf (__AT__ " Day: %d\n", day);)
     ts_update = TRUE;
   }
 }
@@ -655,7 +655,7 @@ PARAM_FUNC (set_save)
     }
     if (need_reset) {
       need_reset = FALSE;
-      A_(printf (__FILE__ " Performing a planned software reset !\n");)
+      A_(printf (__AT__ " Performing a planned software reset !\n");)
       RSTSRC |= 0x10; // Force a software reset
     }
   }
@@ -819,7 +819,7 @@ void parse_input(struct httpd_state *s, char *buf) __banked
     *tok = 0;
     /* Here we simply try to parse the tokenized parameter
      * If the parameter does not exist, we simply discard it silently */
-    A_(printf(__FILE__ " Parsing token %s\n", token);)
+    A_(printf(__AT__ " Parsing token %s\n", token);)
     parse_expr(s, token);
   }
 }

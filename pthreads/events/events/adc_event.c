@@ -82,7 +82,7 @@ PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
   for (i=0; i<CFG_NUM_POTS; i++)
     evnt_register_handle(&adcevents[3-i]);
 
-  A_(printf (__FILE__ " Starting adc_event pthread, handle ptr %p !\n",
+  A_(printf (__AT__ " Starting adc_event pthread, handle ptr %p !\n",
              &adc_event);)
 
   while (1)
@@ -110,7 +110,7 @@ PT_THREAD(handle_adc_event(adc_event_t *adc_event) __reentrant __banked)
       /* Make sure maximum value is maxed out */
       if (adc_event->pot_val >= 0xff00)
         adc_event->pot_val = 0xffff;
-      A_(printf (__FILE__ " pot_val = %04x\n", adc_event->pot_val);)
+      A_(printf (__AT__ " pot_val = %04x\n", adc_event->pot_val);)
       adc_event->prev_pot_val[adc_event->channel] = temp;
 
       /* Get the action data pointer from the rule manager */
