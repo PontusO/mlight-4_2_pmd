@@ -63,8 +63,8 @@ struct parameter_table {
 /*---------------------- Local data ----------------------------------------*/
 /* Form parameters that needs to be parsed */
 static const struct parameter_table parmtab[] = {
-  PARAM_ENTRY("user", set_username),
-  PARAM_ENTRY("password", set_password),
+  PARAM_ENTRY("usr", set_username),
+  PARAM_ENTRY("pwd", set_password),
   PARAM_ENTRY("node", set_device_id),
   PARAM_ENTRY("hostip", set_ip),
   PARAM_ENTRY("netmask", set_netmask),
@@ -483,6 +483,7 @@ PARAM_FUNC (set_ip)
 {
   static uip_ipaddr_t ip;
   IDENTIFIER_NOT_USED (s);
+  buffer = skip_to_char(buffer, '=');
   uiplib_ipaddrconv(buffer, (u8_t*)&sys_cfg.ip_addr);
   need_reset = TRUE;
 }
@@ -492,6 +493,7 @@ PARAM_FUNC (set_netmask)
 {
   static uip_ipaddr_t ip;
   IDENTIFIER_NOT_USED (s);
+  buffer = skip_to_char(buffer, '=');
   uiplib_ipaddrconv(buffer, (u8_t*)&sys_cfg.netmask);
   need_reset = TRUE;
 }
@@ -500,6 +502,7 @@ PARAM_FUNC (set_gateway)
 {
   static uip_ipaddr_t ip;
   IDENTIFIER_NOT_USED (s);
+  buffer = skip_to_char(buffer, '=');
   uiplib_ipaddrconv(buffer, (u8_t*)&sys_cfg.gw_addr);
   need_reset = TRUE;
 }
@@ -546,6 +549,7 @@ PARAM_FUNC (set_time)
 {
   static uip_ipaddr_t ip;
   IDENTIFIER_NOT_USED (s);
+  buffer = skip_to_char(buffer, '=');
   uiplib_ipaddrconv(buffer, (u8_t*)&sys_cfg.time_server);
 }
 /*---------------------------------------------------------------------------*/
@@ -664,35 +668,35 @@ PARAM_FUNC (set_save)
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_username)
 {
-  u8_t *ptr = sys_cfg.username;
-  char i = 8;
-
+  char *ptr;
   IDENTIFIER_NOT_USED (s);
 
+  ptr = sys_cfg.username;
+  s->i = 8;
   buffer = skip_to_char(buffer, '=');
 
-  while ((*buffer != ISO_and) && (i >= 0)) {
+  while (NEOP(*buffer) && (s->i-- >= 0)) {
     *ptr++ = *buffer++;
-    i--;
   }
   *buffer = 0x00;
+  printf ("%s\n", sys_cfg.username);
 }
 
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_password)
 {
-  u8_t *ptr = sys_cfg.password;
-  char i = 8;
-
+  char *ptr;
   IDENTIFIER_NOT_USED (s);
 
+  ptr = sys_cfg.password;
+  s->i = 8;
   buffer = skip_to_char(buffer, '=');
 
-  while ((*buffer != ISO_and) && (i >= 0)) {
+  while (NEOP(*buffer) && (s->i-- >= 0)) {
     *ptr++ = *buffer++;
-    i--;
   }
   *buffer = 0x00;
+  printf ("%s\n", sys_cfg.password);
 }
 
 /*---------------------------------------------------------------------------*/

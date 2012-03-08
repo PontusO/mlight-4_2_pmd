@@ -261,8 +261,8 @@ enum error_codes_t {
 /*
  * Action manager base type names
  */
-char *action_base_name_dimmable = "Dimmable action";
-char *action_base_name_onoff = "On/Off action";
+const char *action_base_name_dimmable = "Dimmable action";
+const char *action_base_name_onoff = "On/Off action";
 
 char evnt_register_handle(void *handler) __reentrant;
 void init_event_switch(event_thread_t *et);

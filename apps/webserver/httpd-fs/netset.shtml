@@ -11,6 +11,10 @@
 "></td></tr>
 <tr><td>HTTP port</td><td><input type="text" name="webport" size="5" maxlength="5" value="%! get-ip-num 5
 "></td></tr>
+<tr><td>User Name</td><td><input type="text" name="usr" size="16" maxlength="8" value="%! get-string 3
+"></td></tr>
+<tr><td>Password</td><td><input type="password" name="pwd" size="16" maxlength="8" value="%! get-string 4
+"></td></tr>
 </table></center><p>The unit will be reset when you click Save.<br>Enter the new network address in the browser to connect the unit again.</p>
 <hr color="#258D92" size="2" width="90%"><br>
 <input type="submit" name="submit" value="save">

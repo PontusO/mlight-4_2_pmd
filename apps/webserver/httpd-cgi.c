@@ -516,29 +516,29 @@ PT_THREAD(get_current_date(struct httpd_state *s, char *ptr) __reentrant)
 static
 PT_THREAD(get_tz_options(struct httpd_state *s, char *ptr) __reentrant)
 {
-  IDENTIFIER_NOT_USED(ptr);
   PSOCK_BEGIN(&s->sout);
+  IDENTIFIER_NOT_USED(ptr);
 
   for (s->i = -11 ; s->i<12 ; s->i++) {
-    s->ptr = uip_appdata;
-    s->ptr += sprintf((char *)s->ptr, "<option value='%d'", s->i);
+    char *ptr = uip_appdata;
+    ptr += sprintf(ptr, "<option value=\"%d\"", s->i);
 
     /* Mark the selected option */
     if (s->i == sys_cfg.time_zone) {
-      s->ptr += sprintf((char *)s->ptr, " selected>GMT");
+      ptr += sprintf(ptr, " selected>GMT");
     } else {
-      s->ptr += sprintf((char *)s->ptr, ">GMT");
+      ptr += sprintf(ptr, ">GMT");
     }
 
     /* GMT has no values */
     if (s->i == 0)
-      sprintf((char *)s->ptr, "</option>");
+      ptr += sprintf(ptr, "</option>");
     else if (s->i < 0)
-      sprintf((char *)s->ptr, " %d hrs</option>", s->i);
+      ptr += sprintf(ptr, " %d hrs</option>", s->i);
     else
-      sprintf((char *)s->ptr, " +%d hrs</option>", s->i);
+      ptr += sprintf(ptr, " +%d hrs</option>", s->i);
 
-    PSOCK_SEND_STR(&s->sout, uip_appdata);
+    PSOCK_SEND_STR (&s->sout, uip_appdata);
   }
 
   PSOCK_END(&s->sout);
@@ -586,32 +586,6 @@ PT_THREAD(set_param(struct httpd_state *s, char *ptr) __reentrant)
    * Tricky stuff =)
    */
   sprintf(uip_appdata, "<OK>");
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_user_name(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, sys_cfg.username);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_password(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, sys_cfg.password);
   PSOCK_SEND_STR(&s->sout, uip_appdata);
 
   PSOCK_END(&s->sout);
@@ -919,6 +893,13 @@ PT_THREAD(get_string(struct httpd_state *s, char *ptr) __reentrant)
       }
       break;
 
+    case 3:
+      string = sys_cfg.username;
+      break;
+
+    case 4:
+      string = sys_cfg.password;
+      break;
 
     case 10:
     case 11:

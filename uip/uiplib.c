@@ -32,15 +32,13 @@
  * $Id: uiplib.c,v 1.2 2006/06/12 08:00:31 adam Exp $
  *
  */
-#pragma codeseg  APP_BANK
-
 #include "uip.h"
 #include "uiplib.h"
-
+#include "iet_debug.h"
 
 /*-----------------------------------------------------------------------------------*/
 unsigned char
-uiplib_ipaddrconv(char *addrstr, unsigned char *ipaddr) __reentrant __banked
+uiplib_ipaddrconv(char *addrstr, unsigned char *ipaddr)
 {
   unsigned char tmp;
   char c;
