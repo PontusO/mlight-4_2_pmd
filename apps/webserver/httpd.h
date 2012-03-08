@@ -83,8 +83,11 @@ struct httpd_state {
   unsigned short content_length;
   u8_t is_authorized;
   struct cgi_parameters parms;
-  int i;      /* Free agent, can be used by cgi's to create loops */
-  void *ptr;  /* Free agent, can freely be used by cgi's */
+  int i, j;         /* Free agents, can be used by cgi's to create loops */
+  void *ptr;        /* Free agent, can freely be used by cgi's */
+  event_prv_t *ep;  /* Usefull pointers, for use by cgi's */
+  action_mgr_t *am;
+  unsigned long num;
 };
 
 void httpd_init(void) __banked;

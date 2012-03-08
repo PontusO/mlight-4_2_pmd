@@ -311,33 +311,6 @@ PT_THREAD(get_rtc(struct httpd_state *s, char *ptr) __reentrant)
 static char *weekdays[] =
   {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 static u8_t order[] = {0x20,0x10,0x08,0x04,0x02,0x02,0x40};
-static unsigned short generate_time_events(void *arg) __reentrant
-{
-  struct httpd_state *s = (struct httpd_state *)arg;
-  time_spec_t *ts;
-  int i;
-  u8_t j;
-
-  ts = &sys_cfg.time_events[s->i];
-  i = sprintf((char *)uip_appdata,
-              "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td>", s->i);
-  i += sprintf((char *)uip_appdata+i,
-              "<td>%s</td>", (ts->status & TIME_EVENT_ENABLED) ? "Yes" : "No");
-  i += sprintf((char *)uip_appdata+i, "<td>%s</td>", ts->name);
-  i += sprintf((char *)uip_appdata+i, "<td>Time %02d:%02d</td>", ts->hrs, ts->min);
-  i += sprintf((char *)uip_appdata+i, "<td>Weekdays: ");
-
-  /* Resolve week days */
-  for (j=0;j<7;j++) {
-    if (ts->weekday & order[j]) {
-      i += sprintf((char *)uip_appdata+i, "%s ", weekdays[j]);
-    }
-  }
-
-  sprintf((char *)uip_appdata+i, "</td></tr>");
-  return strlen(uip_appdata);
-}
-
 #pragma save
 #pragma nogcse
 static
@@ -348,11 +321,29 @@ PT_THREAD(get_time_events(struct httpd_state *s, char *ptr) __reentrant)
   PSOCK_BEGIN(&s->sout);
 
   for(s->i=0; s->i < NMBR_TIME_EVENTS; ++s->i) {
-    time_spec_t *ts;
+    s->ptr = &sys_cfg.time_events[s->i];
+    if (((time_spec_t *)s->ptr)->status & TIME_EVENT_ENTRY_USED) {
+      u8_t j;
+      s->j = sprintf((char *)uip_appdata,
+                  "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td>", s->i);
+      s->j += sprintf((char *)uip_appdata+s->j,
+                  "<td>%s</td>", (((time_spec_t *)s->ptr)->status &
+                                  TIME_EVENT_ENABLED) ? "Yes" : "No");
+      s->j += sprintf((char *)uip_appdata+s->j, "<td>%s</td>",
+                   ((time_spec_t *)s->ptr)->name);
+      s->j += sprintf((char *)uip_appdata+s->j, "<td>Time %02d:",
+                   ((time_spec_t *)s->ptr)->hrs);
+      s->j += sprintf((char *)uip_appdata+s->j, "%02d</td>",
+                   ((time_spec_t *)s->ptr)->min);
+      s->j += sprintf((char *)uip_appdata+s->j, "<td>Weekdays: ");
 
-    ts = &sys_cfg.time_events[s->i];
-    if (ts->status & TIME_EVENT_ENTRY_USED) {
-      PSOCK_GENERATOR_SEND (&s->sout, generate_time_events, s);
+      /* Resolve week days */
+      for (j=0;j<7;j++) {
+        if (((time_spec_t *)s->ptr)->weekday & order[j]) {
+          s->j += sprintf((char *)uip_appdata+s->j, "%s ", weekdays[j]);
+        }
+      }
+      PSOCK_SEND_STR(&s->sout, uip_appdata);
     }
   }
 
@@ -399,28 +390,6 @@ PT_THREAD(get_tsday(struct httpd_state *s, char *ptr) __reentrant)
 }
 
 /*---------------------------------------------------------------------------*/
-static unsigned short generate_event_map(void *arg) __reentrant
-{
-  struct httpd_state *s = (struct httpd_state *)arg;
-  rule_t *r = (rule_t *)s->ptr;
-  event_prv_t *ep;
-  action_mgr_t *am;
-  int i;
-
-  ep = r->event;
-  am = r->action;
-  i = sprintf((char *)uip_appdata,
-              "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td>", s->i);
-  i += sprintf((char *)uip_appdata+i,
-              "<td>%s</td>", (r->status == RULE_STATUS_ENABLED) ? "Yes" : "No");
-  i += sprintf((char *)uip_appdata+i, "<td>(%s) %s</td>", ep->base.name, ep->event_name);
-  i += sprintf((char *)uip_appdata+i, "<td>%s</td>", am->action_name);
-  i += sprintf((char *)uip_appdata+i, "<td>None</td>");
-  i += sprintf((char *)uip_appdata+i, "</td></tr>");
-
-  return strlen(uip_appdata);
-}
-
 #pragma save
 #pragma nogcse
 static
@@ -436,8 +405,21 @@ PT_THREAD(map_get_events(struct httpd_state *s, char *ptr) __reentrant)
     s->ptr = rule_iter_get_first_entry(&s->parms.iter);
     s->i = 0;
     while (s->ptr) {
-      PSOCK_GENERATOR_SEND (&s->sout, generate_event_map, s);
-      s->ptr = (rule_t *)rule_iter_get_next_entry(&s->parms.iter);
+      s->ep = ((rule_t *)s->ptr)->event;
+      s->am = ((rule_t *)s->ptr)->action;
+
+      s->j = sprintf((char *)uip_appdata,
+                  "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td>", s->i);
+      s->j += sprintf((char *)uip_appdata+s->j,
+                  "<td>%s</td>", (((rule_t *)s->ptr)->status ==
+                                  RULE_STATUS_ENABLED) ? "Yes" : "No");
+      s->j += sprintf((char *)uip_appdata+s->j, "<td>(%s) ", s->ep->base.name);
+      s->j += sprintf((char *)uip_appdata+s->j, "%s</td>", s->ep->event_name);
+      s->j += sprintf((char *)uip_appdata+s->j, "<td>%s</td>", s->am->action_name);
+      s->j += sprintf((char *)uip_appdata+s->j, "<td>None</td>");
+      sprintf((char *)uip_appdata+s->j, "</td></tr>");
+      PSOCK_SEND_STR(&s->sout, uip_appdata);
+      s->ptr = rule_iter_get_next_entry(&s->parms.iter);
       s->i++;
     }
   }
@@ -447,40 +429,6 @@ PT_THREAD(map_get_events(struct httpd_state *s, char *ptr) __reentrant)
 #pragma restore
 
 /*---------------------------------------------------------------------------*/
-static unsigned short generate_event_functions(void *arg) __reentrant
-{
-  struct httpd_state *s = (struct httpd_state *)arg;
-  void *ep = (void *)s->ptr;
-  unsigned long num = 0;
-  char *sptr = uip_appdata;
-
-  switch (GET_EVENT_BASE(ep).type)
-  {
-    case 1:
-      num |= (int)ep;
-      num |= (unsigned long)(((event_prv_t*)ep)->type) << 16;
-      sptr += sprintf (sptr, "<option value=\"%ld\" %s>", num,
-              s->parms.modify && s->parms.rp->event == ep ? str_selected : "");
-      sprintf (sptr, "(%s) %s</option>",
-              GET_EVENT_BASE(ep).name, GET_EVENT(ep)->event_name);
-      break;
-    case 2:
-      num |= (int)ep;
-      num |= (unsigned long)(((action_mgr_t*)ep)->type) << 16;
-      sptr += sprintf (sptr, "<option value=\"%ld\" %s>", num,
-              s->parms.modify && s->parms.rp->action == ep ? str_selected : "");
-      sprintf (sptr, "(%s) %s</option>",
-              GET_EVENT_BASE(ep).name, GET_ACTION(ep)->action_name);
-      break;
-    default:
-      /* TODO: Implement getting rule from number, if necessery */
-      A_(printf (__AT__ " You need to implement new features dude !\n");)
-      break;
-  }
-
-  return strlen(uip_appdata);
-}
-
 #pragma save
 #pragma nogcse
 static
@@ -498,7 +446,36 @@ PT_THREAD(get_evntfuncs(struct httpd_state *s, char *ptr) __reentrant)
   } else {
     s->ptr = evnt_iter_get_first_entry(&s->parms.iter);
     while (s->ptr) {
-      PSOCK_GENERATOR_SEND (&s->sout, generate_event_functions, s);
+      switch (GET_EVENT_BASE(s->ptr).type)
+      {
+        case 1:
+          s->num = (int)s->ptr;
+          s->num |= (unsigned long)(((event_prv_t *)s->ptr)->type) << 16;
+          s->j = sprintf (uip_appdata, "<option value=\"%ld\" ", s->num);
+          s->j += sprintf ((char *)uip_appdata+s->j, "%s>",
+              s->parms.modify && s->parms.rp->event == s->ptr ? str_selected : "");
+          s->j += sprintf ((char *)uip_appdata+s->j, "(%s) ",
+              GET_EVENT_BASE(s->ptr).name);
+          sprintf ((char *)uip_appdata+s->j, "%s</option>",
+              GET_EVENT(s->ptr)->event_name);
+          break;
+        case 2:
+          s->num = (int)s->ptr;
+          s->num |= (unsigned long)(((action_mgr_t*)s->ptr)->type) << 16;
+          s->j  = sprintf ((char *)uip_appdata, "<option value=\"%ld\" ", s->num);
+          s->j += sprintf ((char *)uip_appdata+s->j, "%s>",
+              s->parms.modify && s->parms.rp->action == s->ptr ? str_selected : "");
+          s->j += sprintf ((char *)uip_appdata+s->j, "(%s) ",
+              GET_EVENT_BASE(s->ptr).name);
+          sprintf ((char *)uip_appdata+s->j, "%s</option>",
+              GET_ACTION(s->ptr)->action_name);
+          break;
+        default:
+          /* TODO: Implement getting rule from number, if necessery */
+          A_(printf (__AT__ " You need to implement new features dude !\n");)
+          break;
+      }
+      PSOCK_SEND_STR(&s->sout, uip_appdata);
       s->ptr = (event_prv_t *)evnt_iter_get_next_entry(&s->parms.iter);
     }
   }
@@ -543,25 +520,23 @@ PT_THREAD(get_tz_options(struct httpd_state *s, char *ptr) __reentrant)
   PSOCK_BEGIN(&s->sout);
 
   for (s->i = -11 ; s->i<12 ; s->i++) {
-    char *ptr;
-
-    ptr = uip_appdata;
-    ptr += sprintf(ptr, "<option value='%d'", s->i);
+    s->ptr = uip_appdata;
+    s->ptr += sprintf((char *)s->ptr, "<option value='%d'", s->i);
 
     /* Mark the selected option */
     if (s->i == sys_cfg.time_zone) {
-      ptr += sprintf(ptr, " selected>GMT");
+      s->ptr += sprintf((char *)s->ptr, " selected>GMT");
     } else {
-      ptr += sprintf(ptr, ">GMT");
+      s->ptr += sprintf((char *)s->ptr, ">GMT");
     }
 
     /* GMT has no values */
     if (s->i == 0)
-      sprintf(ptr, "</option>");
+      sprintf((char *)s->ptr, "</option>");
     else if (s->i < 0)
-      sprintf(ptr, " %d hrs</option>", s->i);
+      sprintf((char *)s->ptr, " %d hrs</option>", s->i);
     else
-      sprintf(ptr, " +%d hrs</option>", s->i);
+      sprintf((char *)s->ptr, " +%d hrs</option>", s->i);
 
     PSOCK_SEND_STR(&s->sout, uip_appdata);
   }
@@ -646,16 +621,14 @@ PT_THREAD(get_password(struct httpd_state *s, char *ptr) __reentrant)
 static
 PT_THREAD(get_ip_num(struct httpd_state *s, char *ptr) __reentrant)
 {
-  char ip_group;
-
   PSOCK_BEGIN(&s->sout);
 
   while (*ptr != ' ')
     ptr++;
   ptr++;
-  ip_group = atoi(ptr);
+  s->i = atoi(ptr);
 
-  switch(ip_group)
+  switch(s->i)
   {
     case 1:
       /* Host IP */

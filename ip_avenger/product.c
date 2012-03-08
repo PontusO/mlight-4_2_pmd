@@ -67,6 +67,7 @@ extern __bit digit_select;
 extern __bit callback_kicker;
 
 #define UPDATE_INTERVAL   25
+#define NEW_STACK         0x80
 
 void cleanup( void );
 extern void config();
@@ -192,6 +193,9 @@ void pmd(void) __banked
   init_time_event (&time_event);
   /* PIR events */
   init_pir_event (&pir_event);
+
+  printf ("Stack pointer (SP)=0x%02x, Adjusting to 0x%02x\n", SP, SP-3);
+  SP -= 3;
 
   while(1)
   {
