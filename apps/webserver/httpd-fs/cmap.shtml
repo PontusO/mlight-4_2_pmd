@@ -88,7 +88,8 @@ window.onload = function() {
 }
 //-->
 </SCRIPT>
-<h1>New Event Route</h1><hr color="#258D92" size="2" width="90%">
+<h1>%! get-string 5
+ Event Route</h1><hr color="#258D92" size="2" width="90%">
 <form action="map.shtml" id="mapfrm">
 <input type="hidden" name="mapx" value="%! get-int 2
 "><center>

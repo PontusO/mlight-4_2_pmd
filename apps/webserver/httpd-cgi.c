@@ -117,9 +117,11 @@ static const struct httpd_cgi_call *calls[] = {
   NULL
 };
 
-static char *ip_format = "%d.%d.%d.%d";
-static char *error_string = "<ERROR ";
-static char *str_selected = "selected";
+static const char *ip_format = "%d.%d.%d.%d";
+static const char *error_string = "<ERROR ";
+static const char *str_selected = "selected";
+static const char *cgi_string_new = "New";
+static const char *cgi_string_modify = "Modify";
 
 static
 PT_THREAD(set_level(struct httpd_state *s, char *ptr) __reentrant)
@@ -902,6 +904,13 @@ PT_THREAD(get_string(struct httpd_state *s, char *ptr) __reentrant)
 
     case 4:
       string = sys_cfg.password;
+      break;
+
+    case 5:
+      if (s->parms.modify)
+        string = cgi_string_modify;
+      else
+        string = cgi_string_new;
       break;
 
     case 10:

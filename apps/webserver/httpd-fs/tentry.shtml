@@ -1,5 +1,6 @@
 %!: /header.html
-<h1>New Time Event</h1><hr color="#258D92" size="2" width="90%">
+<h1>%! get-string 5
+ Time Event</h1><hr color="#258D92" size="2" width="90%">
 <form action="tevents.shtml"><center><table width="90%" class="mytab">
 <input type="hidden" name="tsx" value="%! get-int 3
 ">
