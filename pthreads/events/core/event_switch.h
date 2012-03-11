@@ -277,8 +277,8 @@ action_mgr_t *rule_get_action_from_event (event_prv_t *ep);
 rule_t *query_events(void);
 PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant);
 
-void rule_setup_v_data_pointers (void);
-void rule_send_event_signal (event_prv_t *ep);
+void rule_setup_v_data_pointers (u8_t clear)  __reentrant __banked;
+void rule_send_event_signal (event_prv_t *ep)  __reentrant __banked;
 union rule_action_data *rule_get_action_dptr (event_prv_t *ep) __reentrant;
 rule_t *rule_find_free_entry(void) __reentrant __banked;
 char rule_iter_create (evnt_iter_t *iter) __reentrant __banked;

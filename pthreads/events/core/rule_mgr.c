@@ -55,13 +55,14 @@ rule_data_t rule_data[MAX_NR_RULES];
 /*
  * Setup the volatile rule data table pointers in the rule table.
  */
-void rule_setup_v_data_pointers (void)
+void rule_setup_v_data_pointers (u8_t clear) __reentrant __banked
 {
   u8_t i;
 
   for (i=0; i<MAX_NR_RULES; i++) {
     sys_cfg.rules[i].r_data = &rule_data[i];
-    memset (&rule_data[i], 0, sizeof rule_data[i]);
+    if (clear)
+      memset (&rule_data[i], 0, sizeof rule_data[i]);
   }
 }
 
@@ -116,7 +117,7 @@ union rule_action_data *rule_get_action_dptr (event_prv_t *ep) __reentrant
 /*
  * Set the trigger signal in all rules that have the specified event.
  */
-void rule_send_event_signal (event_prv_t *ep)
+void rule_send_event_signal (event_prv_t *ep) __reentrant __banked
 {
   u8_t i;
 

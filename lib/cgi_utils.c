@@ -37,6 +37,7 @@
 #include "cgi_utils.h"
 #include "httpd-param.h"
 #include "flash.h"
+#include "event_switch.h"
 
 /*---------------------------------------------------------------------------*/
 static char *skip_to_char(char *buf, char chr) __reentrant
@@ -63,8 +64,13 @@ void x_set_mapcmd(util_param_t *param) __reentrant __banked
     for (i=0; i<MAX_NR_RULES; i++) {
       /* Check only entries in the marklist */
       if (rp->status != RULE_STATUS_FREE) {
-        if ( param->s->parms.marklist & lst) {
-          memset (rp, 0, sizeof *rp);
+        if (param->s->parms.marklist & lst) {
+          /* First clear volatile data area */
+          memset (rp->r_data, 0, sizeof (rule_data_t));
+          /* Now, clear the entire entry */
+          memset (rp, 0, sizeof (rule_t));
+          /* Restore all data pointers without clearing them */
+          rule_setup_v_data_pointers (0);
           rp->status = RULE_STATUS_FREE;
         }
         /* Move to next entry in the marklist */

@@ -48,7 +48,7 @@ void init_event_switch(event_thread_t *et)
 
   /* These pointers are most likely already in the table, but in case
    * they are not (First startup, Factory default) we always do this */
-  rule_setup_v_data_pointers ();
+  rule_setup_v_data_pointers (1);
 
   nr_registered_actions = 0;
   nr_registered_events = 0;

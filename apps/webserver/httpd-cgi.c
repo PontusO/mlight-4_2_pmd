@@ -674,6 +674,9 @@ PT_THREAD(get_check_box(struct httpd_state *s, char *ptr) __reentrant)
     case 1:
       if (s->parms.rp && s->parms.modify)
         state = s->parms.rp->status & RULE_STATUS_ENABLED;
+        if (state)
+          printf (__AT__ "Debug Msg: s->parms.rp=%p, s->parms.modify=%d\n",
+                  s->parms.rp, s->parms.modify);
       break;
 
     case 2:
