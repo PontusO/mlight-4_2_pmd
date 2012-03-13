@@ -4,7 +4,7 @@
 <!--
 function validate() {
 var ok=1;
-elem = document.getElementById("idlevel"); if (!isNumOk(elem, 0, 100)) ok=0;
+elem = document.getElementById("idlevel"); if (!isNumOk(elem, 0, 65535)) ok=0;
 elem = document.getElementById("idrampto"); if (!isNumOk(elem, 0, 100)) ok=0;
 elem = document.getElementById("idrate"); if (!isNumOk(elem, 1, 99999)) ok=0;
 elem = document.getElementById("idstep"); if (!isNumOk(elem, 1, 10)) ok=0;
@@ -101,7 +101,7 @@ window.onload = function() {
 <hr color="#258D92" size="2" width="90%"><table width="90%" class="mytab">
 <col style="width:40%" /><tr><td>Output Channel</td><td><select name="achannel">%! get-option 1
 </select></td></tr>
-<tr><td>Output Level Preset</td><td><input type="text" id="idlevel" name="level" size="6" maxlength="5" value="%! get-int 6
+<tr><td>Output Level Preset (0-65535)</td><td><input type="text" id="idlevel" name="level" size="6" maxlength="5" value="%! get-int 6
 "></td></tr>
 </table>
 </div>
