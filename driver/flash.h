@@ -42,7 +42,7 @@ void write_config_to_flash(void);
 struct sys_config
 {
   struct uip_eth_addr mac_addr;   /* MAC address of the node */
-  char device_id[8];              /* Device ID, allocate 8 bytes for this */
+  char device_id[9];              /* Device ID, allocate 9 bytes for this */
   u8_t ip_addr[4];                /* IP address of the node */
   u8_t netmask[4];                /* network mask of the node */
   u8_t gw_addr[4];                /* the default gateway of the node */

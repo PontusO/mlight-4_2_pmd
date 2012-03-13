@@ -104,6 +104,7 @@
 		<Unit filename="..\apps\webserver\httpd-fs\tentry.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\tevents.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\timeset.shtml" />
+		<Unit filename="..\apps\webserver\httpd-fs\validate.js" />
 		<Unit filename="..\apps\webserver\httpd-fsdata.c">
 			<Option compilerVar="CC" />
 			<Option compile="0" />

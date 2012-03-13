@@ -1,12 +1,23 @@
 %!: /header.html
+<script type="text/javascript" src="validate.js"></script>
+<script type="text/javascript">
+<!--
+function validate() {
+var ok=1;
+elem = document.getElementById("idlevel"); if (!isNumOk(elem, 0, 100)) ok=0;
+elem = document.getElementById("idlock"); if (!isNumOk(elem, 1, 128)) ok=0;
+if (!ok) { return doAlert(); }
+return true; }
+//-->
+</script>
 <center>
 <h1>PIR Settings</h1><hr color="#258D92" size="2" width="90%">
-<form><input type="hidden" name="pirclr"><center><table width="90%" class="mytab">
+<form onsubmit="return validate();"><input type="hidden" name="pirclr"><center><table width="90%" class="mytab">
 <tr><td>Enable PIR Sensor</td><td><input type="checkbox" name="pirena"%! get-check 3
 ></td></tr>
-<tr><td>Sensitivity Level (0%-100%)</td><td><input type="text" name="pirlevel" size="4" maxlength="3" value="%! get-int 4
+<tr><td>Sensitivity Level (0%-100%)</td><td><input type="text" id="idlevel" name="pirlevel" size="4" maxlength="3" value="%! get-int 4
 "></td></tr>
-<tr><td>After trigger lockout time (1-128 seconds)</td><td><input type="text" name="pirlock" size="4" maxlength="3" value="%! get-int 5
+<tr><td>After trigger lockout time (1-128 seconds)</td><td><input type="text" id="idlock" name="pirlock" size="4" maxlength="3" value="%! get-int 5
 "></td></tr>
 </table></center>
 <hr color="#258D92" size="2" width="90%"><br>

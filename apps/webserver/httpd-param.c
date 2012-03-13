@@ -464,18 +464,14 @@ PARAM_FUNC (set_tscmd)
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_device_id)
 {
-  u8_t *ptr = sys_cfg.device_id;
-  char i = 8;
-
-  IDENTIFIER_NOT_USED (s);
+  char *ptr = sys_cfg.device_id;
+  s->i = 8;
 
   buffer = skip_to_char(buffer, '=');
-
-  while ((*buffer != ISO_and) && (*buffer != ISO_space) && (i >= 0)) {
+  while (NEOP(*buffer) && (s->i-- >= 0)) {
     *ptr++ = *buffer++;
-    i--;
   }
-  *buffer = 0x00;
+  *ptr = 0x00;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -668,35 +664,27 @@ PARAM_FUNC (set_save)
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_username)
 {
-  char *ptr;
-  IDENTIFIER_NOT_USED (s);
-
-  ptr = sys_cfg.username;
+  char *ptr = sys_cfg.username;
   s->i = 8;
-  buffer = skip_to_char(buffer, '=');
 
+  buffer = skip_to_char(buffer, '=');
   while (NEOP(*buffer) && (s->i-- >= 0)) {
     *ptr++ = *buffer++;
   }
-  *buffer = 0x00;
-  printf ("%s\n", sys_cfg.username);
+  *ptr = 0x00;
 }
 
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_password)
 {
-  char *ptr;
-  IDENTIFIER_NOT_USED (s);
-
-  ptr = sys_cfg.password;
+  char *ptr = sys_cfg.password;
   s->i = 8;
-  buffer = skip_to_char(buffer, '=');
 
+  buffer = skip_to_char(buffer, '=');
   while (NEOP(*buffer) && (s->i-- >= 0)) {
     *ptr++ = *buffer++;
   }
-  *buffer = 0x00;
-  printf ("%s\n", sys_cfg.password);
+  *ptr = 0x00;
 }
 
 /*---------------------------------------------------------------------------*/

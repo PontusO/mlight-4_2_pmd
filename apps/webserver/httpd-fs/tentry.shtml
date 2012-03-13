@@ -1,14 +1,25 @@
 %!: /header.html
+<script type="text/javascript" src="validate.js"></script>
+<script type="text/javascript">
+<!--
+function validate() {
+var ok=1;
+elem = document.getElementById("idname"); if (!isStrOk(elem, 1, 8)) ok=0;
+elem = document.getElementById("idtime"); if (!isTime(elem)) ok=0;
+if (!ok) { return doAlert(); }
+return true; }
+//-->
+</script>
 <h1>%! get-string 5
  Time Event</h1><hr color="#258D92" size="2" width="90%">
-<form action="tevents.shtml"><center><table width="90%" class="mytab">
+<form onsubmit="return validate();" action="tevents.shtml"><center><table width="90%" class="mytab">
 <input type="hidden" name="tsx" value="%! get-int 3
 ">
-<tr><td>Event Name</td><td colspan="8"><input type="text" name="tsname" size="16" maxlength="8" value="%! get-string 2
+<tr><td>Event Name</td><td colspan="8"><input type="text" id="idname" name="tsname" size="16" maxlength="8" value="%! get-string 2
 "></td></tr>
 <tr><td>Enabled</td><td colspan="8"><input type="checkbox" name="tsena"%! get-check 0
 ></td></tr>
-<tr><td>Enter Time (ex. 21:50)</td><td colspan="8"><input type="text" name="tstim" size="6" maxlength="5" value="%! get-tstime
+<tr><td>Enter Time (ex. 21:50)</td><td colspan="8"><input type="text" id="idtime" name="tstim" size="6" maxlength="5" value="%! get-tstime
 "></td></tr>
 <tr><td>Schedule</td>
 <td><div>Mon<br><input type="checkbox" name="tsd6" %! get-tsday 6

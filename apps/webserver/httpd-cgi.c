@@ -758,35 +758,35 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
 
     /* Retrieve the alevel value in cmap.shtml */
     case 6:
-      intno = 0;
-      if (s->parms.modify) {
+      intno = 1;
+      if (s->parms.modify)
         myint = s->parms.rp->action_data.abs_data.value;
-        intno = 1;
-      }
+      else
+        myint = 0;
       break;
 
     case 7:
-      intno = 0;
-      if (s->parms.modify) {
+      intno = 1;
+      if (s->parms.modify)
         myint = s->parms.rp->action_data.ramp_data.rampto;
-        intno = 1;
-      }
+      else
+        myint = 0;
       break;
 
     case 8:
-      intno = 0;
-      if (s->parms.modify) {
+      intno = 1;
+      if (s->parms.modify)
         myint = s->parms.rp->action_data.ramp_data.rate;
-        intno = 1;
-      }
+      else
+        myint = 1;
       break;
 
     case 9:
-      intno = 0;
-      if (s->parms.modify) {
+      intno = 1;
+      if (s->parms.modify)
         myint = s->parms.rp->action_data.ramp_data.step;
-        intno = 1;
-      }
+      else
+        myint = 1;
       break;
 
     case 10:
@@ -798,11 +798,11 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
       break;
 
     case 14:
-      intno = 0;
-      if (s->parms.modify) {
+      intno = 1;
+      if (s->parms.modify)
         myint = s->parms.rp->action_data.cycle_data.time;
-        intno = 1;
-      }
+      else
+        myint = 1;
       break;
 
   }
