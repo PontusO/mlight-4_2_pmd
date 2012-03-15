@@ -41,5 +41,6 @@ PT_THREAD(get_tz_options_util(struct httpd_state *s) __reentrant __banked);
 
 void x_set_mapcmd(util_param_t *param) __reentrant __banked;
 void x_set_tscmd(util_param_t *param) __reentrant __banked;
+void x_set_wcmd(util_param_t *param) __reentrant __banked;
 
 #endif // CGI_UTILS_H_INCLUDED

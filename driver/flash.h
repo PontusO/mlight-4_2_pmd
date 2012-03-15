@@ -58,6 +58,11 @@ struct sys_config
   u8_t pir_enabled;               /* Indicates if the PIR sensor is enabled */
   u8_t pir_sensitivity;           /* Indicates the sensitivty of the PIR sensor */
   u8_t pir_lockout;               /* Minimum time between triggered events */
+  /* Digital input settings */
+  u8_t in1_mode;                  /* Select the operation mode of the input pin */
+  u8_t in1_inverted;              /* Selects if the pin is inverted or not */
+  u8_t in2_mode;
+  u8_t in2_inverted;
   /* Time Events */
   u8_t nmbr_time_events;          /* The number of time events in the table */
   time_spec_t time_events[16];    /* Array of time events */

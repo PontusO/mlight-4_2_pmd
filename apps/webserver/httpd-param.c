@@ -137,6 +137,12 @@ static const struct parameter_table parmtab[] = {
   PARAM_ENTRY("pirena", set_pirena),
   PARAM_ENTRY("pirlevel", set_pirlevel),
   PARAM_ENTRY("pirlock", set_pirlock),
+  /* Digital input parameters */
+  PARAM_ENTRY("digclr", set_digclr),
+  PARAM_ENTRY("in1m", set_in1m),
+  PARAM_ENTRY("in1s", set_in1s),
+  PARAM_ENTRY("in2m", set_in2m),
+  PARAM_ENTRY("in2s", set_in2s),
 	/* Parameters used in xcgi commands */
   PARAM_ENTRY("channel", cgi_set_channel),
   PARAM_ENTRY("achannel", cgi_set_achannel),
@@ -171,6 +177,59 @@ static char *skip_to_char(char *buf, char chr) __reentrant
   buf++;
 
   return buf;
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_digclr)
+{
+  IDENTIFIER_NOT_USED(s);
+  IDENTIFIER_NOT_USED(buffer);
+
+  /* Simply prepare these flag in case it was not set to true (Stupid html) */
+  sys_cfg.in1_inverted = FALSE;
+  sys_cfg.in2_inverted = FALSE;
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_in1m)
+{
+  IDENTIFIER_NOT_USED(s);
+  buffer = skip_to_char(buffer, '=');
+  if (NEOP(*buffer)) {
+    sys_cfg.in1_mode = atoi(buffer);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_in2m)
+{
+  IDENTIFIER_NOT_USED(s);
+  buffer = skip_to_char(buffer, '=');
+  if (NEOP(*buffer)) {
+    sys_cfg.in2_mode = atoi(buffer);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_in1s)
+{
+  IDENTIFIER_NOT_USED(s);
+
+  buffer = skip_to_char(buffer, '=');
+  if (strncmp(buffer, "on", 2) == 0) {
+    sys_cfg.in1_inverted = TRUE;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_in2s)
+{
+  IDENTIFIER_NOT_USED(s);
+
+  buffer = skip_to_char(buffer, '=');
+  if (strncmp(buffer, "on", 2) == 0) {
+    sys_cfg.in2_inverted = TRUE;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -282,61 +341,9 @@ PARAM_FUNC (set_act)
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_wcmd)
 {
-  u8_t cmd;
+  util_param_t param = {s, buffer};
 
-  buffer = skip_to_char(buffer, '=');
-  if (NEOP(*buffer)) {
-    cmd = atoi(buffer);
-
-    switch (cmd)
-    {
-      case 1:
-      {
-        /* Create a new event map entry */
-        if (s->parms.rp) {
-          u8_t act = s->parms.act >> 16 & 0xff;
-          u8_t evt = s->parms.evt >> 16 & 0xff;
-          s->parms.rp->event = (event_prv_t __xdata *)(s->parms.evt & 0xffff);
-          s->parms.rp->action = (action_mgr_t __xdata *)(s->parms.act & 0xffff);
-          s->parms.rp->scenario = (unsigned int)evt << 8 | act;
-          if (s->parms.rp->status != RULE_STATUS_ENABLED)
-            s->parms.rp->status = RULE_STATUS_DISABLED;
-          switch (act)
-          {
-            /* Add new case statement for every new action manager */
-            case ATYPE_ABSOLUTE_ACTION:
-              s->parms.rp->action_data.abs_data.channel = s->parms.achannel;
-              s->parms.rp->action_data.abs_data.value = s->parms.level;
-              break;
-            case ATYPE_RAMP_ACTION:
-              s->parms.rp->action_data.ramp_data.channel = s->parms.channel;
-              s->parms.rp->action_data.ramp_data.rampto = s->parms.rampto;
-              s->parms.rp->action_data.ramp_data.rate = s->parms.rate;
-              s->parms.rp->action_data.ramp_data.step = s->parms.step;
-              break;
-            case ATYPE_CYCLE_ACTION:
-              s->parms.rp->action_data.cycle_data.channel = s->parms.channel;
-              s->parms.rp->action_data.cycle_data.rampto = s->parms.rampto;
-              s->parms.rp->action_data.cycle_data.rate = s->parms.rate;
-              s->parms.rp->action_data.cycle_data.step = s->parms.step;
-              s->parms.rp->action_data.cycle_data.time = s->parms.timeon;
-              break;
-
-            default:
-              A_(printf (__AT__ " Incorrect action manager type !");)
-              break;
-          }
-        }
-        /* Write new configuration to flash */
-        write_config_to_flash();
-        break;
-      }
-
-      default:
-        A_(printf (__AT__ " Invalid wcmd value !\n");)
-        break;
-    }
-  }
+  x_set_wcmd(&param);
 }
 
 /*---------------------------------------------------------------------------*/

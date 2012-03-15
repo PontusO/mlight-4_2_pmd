@@ -66,13 +66,8 @@
 #include <stdlib.h>
 
 /* Time CGI's */
-HTTPD_CGI_CALL(L_get_current_time, "get-cur-tim", get_current_time);
-HTTPD_CGI_CALL(L_get_current_date, "get-cur-date", get_current_date);
+HTTPD_CGI_CALL(L_get_current_time_date, "get-timdat", get_current_time_date);
 HTTPD_CGI_CALL(L_get_tz_options, "get-tz-opt", get_tz_options);
-HTTPD_CGI_CALL(L_get_time_tz, "get-time-tz", get_time_tz);
-HTTPD_CGI_CALL(L_get_rtc, "get-rtc", get_rtc);
-/* Other */
-HTTPD_CGI_CALL(L_set_param, "set-param", set_param);
 /* Generic data type CGI's */
 HTTPD_CGI_CALL(f_get_ip_num, "get-ip-num", get_ip_num);
 HTTPD_CGI_CALL(f_get_check_box, "get-check", get_check_box);
@@ -99,12 +94,8 @@ static const struct httpd_cgi_call *calls[] = {
   &f_get_string,
   &f_get_int,
   &f_get_option,
-  &L_get_current_time,
-  &L_get_current_date,
+  &L_get_current_time_date,
   &L_get_tz_options,
-  &L_get_time_tz,
-  &L_get_rtc,
-  &L_set_param,
   &f_get_time_events,
   &f_get_tstime,
   &f_get_tsday,
@@ -328,15 +319,11 @@ PT_THREAD(get_time_events(struct httpd_state *s, char *ptr) __reentrant)
       u8_t j;
       s->j = sprintf((char *)uip_appdata,
                   "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td>", s->i);
-      s->j += sprintf((char *)uip_appdata+s->j,
-                  "<td>%s</td>", (((time_spec_t *)s->ptr)->status &
-                                  TIME_EVENT_ENABLED) ? "Yes" : "No");
-      s->j += sprintf((char *)uip_appdata+s->j, "<td>%s</td>",
-                   ((time_spec_t *)s->ptr)->name);
-      s->j += sprintf((char *)uip_appdata+s->j, "<td>Time %02d:",
-                   ((time_spec_t *)s->ptr)->hrs);
-      s->j += sprintf((char *)uip_appdata+s->j, "%02d</td>",
-                   ((time_spec_t *)s->ptr)->min);
+      s->j += sprintf((char *)uip_appdata+s->j, "<td>%s</td><td>%s</td>",
+          (((time_spec_t *)s->ptr)->status & TIME_EVENT_ENABLED) ? "Yes" : "No",
+          ((time_spec_t *)s->ptr)->name);
+      s->j += sprintf((char *)uip_appdata+s->j, "<td>Time %02d:%02d</td>",
+                   ((time_spec_t *)s->ptr)->hrs, ((time_spec_t *)s->ptr)->min);
       s->j += sprintf((char *)uip_appdata+s->j, "<td>Weekdays: ");
 
       /* Resolve week days */
@@ -411,15 +398,13 @@ PT_THREAD(map_get_events(struct httpd_state *s, char *ptr) __reentrant)
       s->am = ((rule_t *)s->ptr)->action;
 
       s->j = sprintf((char *)uip_appdata,
-                  "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td>", s->i);
+          "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td><td>%s</td>",
+          s->i, (((rule_t *)s->ptr)->status == RULE_STATUS_ENABLED) ?
+          "Yes" : "No");
+      s->j += sprintf((char *)uip_appdata+s->j, "<td>(%s) %s</td>",
+          s->ep->base.name, s->ep->event_name);
       s->j += sprintf((char *)uip_appdata+s->j,
-                  "<td>%s</td>", (((rule_t *)s->ptr)->status ==
-                                  RULE_STATUS_ENABLED) ? "Yes" : "No");
-      s->j += sprintf((char *)uip_appdata+s->j, "<td>(%s) ", s->ep->base.name);
-      s->j += sprintf((char *)uip_appdata+s->j, "%s</td>", s->ep->event_name);
-      s->j += sprintf((char *)uip_appdata+s->j, "<td>%s</td>", s->am->action_name);
-      s->j += sprintf((char *)uip_appdata+s->j, "<td>None</td>");
-      sprintf((char *)uip_appdata+s->j, "</td></tr>");
+          "<td>%s</td><td>None</td></td></tr>", s->am->action_name);
       PSOCK_SEND_STR(&s->sout, uip_appdata);
       s->ptr = rule_iter_get_next_entry(&s->parms.iter);
       s->i++;
@@ -488,25 +473,30 @@ PT_THREAD(get_evntfuncs(struct httpd_state *s, char *ptr) __reentrant)
 
 /*---------------------------------------------------------------------------*/
 static
-PT_THREAD(get_current_time(struct httpd_state *s, char *ptr) __reentrant)
+PT_THREAD(get_current_time_date(struct httpd_state *s, char *ptr) __reentrant)
 {
   PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
 
-  print_time_formated(uip_appdata);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
+  while (*ptr != ' ')
+    ptr++;
+  ptr++;
+  s->i = atoi(ptr);
 
-  PSOCK_END(&s->sout);
-}
+  switch (s->i)
+  {
+    /* Return the time */
+    case 1:
+    print_time_formated(uip_appdata);
+    break;
 
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_current_date(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
+    case 2:
+    print_date_formated(uip_appdata);
+    break;
 
-  print_date_formated(uip_appdata);
+    case 3:
+    print_datetime_formated(uip_appdata);
+    break;
+  }
   PSOCK_SEND_STR(&s->sout, uip_appdata);
 
   PSOCK_END(&s->sout);
@@ -546,52 +536,6 @@ PT_THREAD(get_tz_options(struct httpd_state *s, char *ptr) __reentrant)
   PSOCK_END(&s->sout);
 }
 #pragma restore
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_rtc(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  print_datetime_formated(uip_appdata);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_time_tz(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  sprintf(uip_appdata, "%d", sys_cfg.time_zone);
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(set_param(struct httpd_state *s, char *ptr) __reentrant)
-{
-  PSOCK_BEGIN(&s->sout);
-  IDENTIFIER_NOT_USED(ptr);
-
-  /* This cgi was meant to actually verify that parameters being written are
-   * parameters that are allowed to be written. This is not implemented yet
-   * though. And as cgi's are executed after parameter parsing we need
-   * something that does the validation ahead of parsing the parameters and
-   * then reports this to this function.
-   * Tricky stuff =)
-   */
-  sprintf(uip_appdata, "<OK>");
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-
-  PSOCK_END(&s->sout);
-}
 
 /*---------------------------------------------------------------------------*/
 static
@@ -643,10 +587,6 @@ PT_THREAD(get_ip_num(struct httpd_state *s, char *ptr) __reentrant)
       /* Time server Port */
       sprintf((char *)uip_appdata, "%u", (u16_t)sys_cfg.time_port);
       break;
-
-    default:
-      sprintf((char *)uip_appdata, "Invalid IP group !");
-      break;
   }
 
   PSOCK_SEND_STR(&s->sout, uip_appdata);
@@ -676,9 +616,6 @@ PT_THREAD(get_check_box(struct httpd_state *s, char *ptr) __reentrant)
     case 1:
       if (s->parms.rp && s->parms.modify)
         state = s->parms.rp->status & RULE_STATUS_ENABLED;
-        if (state)
-          printf (__AT__ "Debug Msg: s->parms.rp=%p, s->parms.modify=%d\n",
-                  s->parms.rp, s->parms.modify);
       break;
 
     case 2:
@@ -688,6 +625,16 @@ PT_THREAD(get_check_box(struct httpd_state *s, char *ptr) __reentrant)
 
     case 3:
       if (sys_cfg.pir_enabled)
+        state = TRUE;
+      break;
+
+    case 4:
+      if (sys_cfg.in1_inverted)
+        state = TRUE;
+      break;
+
+    case 5:
+      if (sys_cfg.in2_inverted)
         state = TRUE;
       break;
 
@@ -816,6 +763,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
   PSOCK_END(&s->sout);
 }
 
+static const char *inmodes[] = { "Single Throw (Toggle)", "Dual Throw (Switch)" };
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
@@ -834,36 +782,51 @@ PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
     /* Generate options for achannel on cmap.shtml */
     case 1:
     {
-      char i;
-      char *ptr = uip_appdata;
-
-      for (i=1; i<5; i++) {
-        ptr += sprintf(ptr, "<option value=\"%d\"%s>%d", i,
-            (s->parms.modify &&
-             s->parms.rp->action_data.abs_data.channel == i) ?
-             " selected" : "", i);
+      s->j = 0;
+      for (s->i=1; s->i<5; s->i++) {
+        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"", s->i);
+        s->j += sprintf((char*)uip_appdata+s->j, "%s>%d", (s->parms.modify &&
+            s->parms.rp->action_data.abs_data.channel == s->i) ?
+            " selected" : "", s->i);
       }
-      break;
     }
+    break;
 
     /* Generate options for channel on cmap.shtml */
     case 2:
     {
-      char i;
-      char *ptr = uip_appdata;
-
-      for (i=1; i<5; i++) {
-        ptr += sprintf(ptr, "<option value=\"%d\"%s>%d", i,
-            (s->parms.modify &&
-             s->parms.rp->action_data.ramp_data.channel == i) ?
-             " selected" : "", i);
+      s->j = 0;
+      for (s->i=1; s->i<5; s->i++) {
+        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"", s->i);
+        s->j += sprintf((char*)uip_appdata+s->j, "%s>%d", (s->parms.modify &&
+            s->parms.rp->action_data.ramp_data.channel == s->i) ?
+            " selected" : "", s->i);
       }
-      break;
     }
+    break;
 
-    default:
-      A_(printf (__AT__ " Unknown option parameter !\n");)
-      break;
+    /* Options for input modes on dig.shtml */
+    case 3:
+    {
+      s->j = 0;
+      for (s->i=0; s->i<2; s->i++) {
+        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"", s->i);
+        s->j += sprintf((char*)uip_appdata+s->j, "%s>%s",
+            (sys_cfg.in1_mode == s->i) ? " selected" : "", inmodes[s->i]);
+      }
+    }
+    break;
+
+    case 4:
+    {
+      s->j = 0;
+      for (s->i=0; s->i<2; s->i++) {
+        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"", s->i);
+        s->j += sprintf((char*)uip_appdata+s->j, "%s>%s",
+            (sys_cfg.in2_mode == s->i) ? " selected" : "", inmodes[s->i]);
+      }
+    }
+    break;
   }
 
   PSOCK_SEND_STR(&s->sout, uip_appdata);

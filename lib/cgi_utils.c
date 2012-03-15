@@ -38,6 +38,7 @@
 #include "httpd-param.h"
 #include "flash.h"
 #include "event_switch.h"
+#include "iet_debug.h"
 
 /*---------------------------------------------------------------------------*/
 static char *skip_to_char(char *buf, char chr) __reentrant
@@ -146,6 +147,64 @@ void x_set_tscmd(util_param_t *param) __reentrant __banked
       }
       /* Move to next active entry in the list */
       ts++;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+void x_set_wcmd(util_param_t *param) __reentrant __banked
+{
+  u8_t cmd;
+  param->buffer = skip_to_char(param->buffer, '=');
+  if (*param->buffer != 0) {
+    cmd = atoi(param->buffer);
+    switch (cmd)
+    {
+      case 1:
+      {
+        /* Create a new event map entry */
+        if (param->s->parms.rp) {
+          u8_t act = param->s->parms.act >> 16 & 0xff;
+          u8_t evt = param->s->parms.evt >> 16 & 0xff;
+          param->s->parms.rp->event = (event_prv_t __xdata *)(param->s->parms.evt & 0xffff);
+          param->s->parms.rp->action = (action_mgr_t __xdata *)(param->s->parms.act & 0xffff);
+          param->s->parms.rp->scenario = (unsigned int)evt << 8 | act;
+          if (param->s->parms.rp->status != RULE_STATUS_ENABLED)
+            param->s->parms.rp->status = RULE_STATUS_DISABLED;
+          switch (act)
+          {
+            /* Add new case statement for every new action manager */
+            case ATYPE_ABSOLUTE_ACTION:
+              param->s->parms.rp->action_data.abs_data.channel = param->s->parms.achannel;
+              param->s->parms.rp->action_data.abs_data.value = param->s->parms.level;
+              break;
+            case ATYPE_RAMP_ACTION:
+              param->s->parms.rp->action_data.ramp_data.channel = param->s->parms.channel;
+              param->s->parms.rp->action_data.ramp_data.rampto = param->s->parms.rampto;
+              param->s->parms.rp->action_data.ramp_data.rate = param->s->parms.rate;
+              param->s->parms.rp->action_data.ramp_data.step = param->s->parms.step;
+              break;
+            case ATYPE_CYCLE_ACTION:
+              param->s->parms.rp->action_data.cycle_data.channel = param->s->parms.channel;
+              param->s->parms.rp->action_data.cycle_data.rampto = param->s->parms.rampto;
+              param->s->parms.rp->action_data.cycle_data.rate = param->s->parms.rate;
+              param->s->parms.rp->action_data.cycle_data.step = param->s->parms.step;
+              param->s->parms.rp->action_data.cycle_data.time = param->s->parms.timeon;
+              break;
+
+            default:
+              A_(printf (__AT__ " Incorrect action manager type !");)
+              break;
+          }
+        }
+        /* Write new configuration to flash */
+        write_config_to_flash();
+        break;
+      }
+
+      default:
+        A_(printf (__AT__ " Invalid wcmd value !\n");)
+        break;
     }
   }
 }

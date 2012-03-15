@@ -15,7 +15,7 @@ return true; }
 //-->
 </script>
 <h1>Time Settings</h1><hr color="#258D92" size="2" width="90%"><form onsubmit="return validate();"><input type="hidden" name="resettime">
-<center><table width="90%" class="mytab"><tr><td>Current Date: </td><td>%! get-rtc
+<center><table width="90%" class="mytab"><tr><td>Current Date: </td><td>%! get-timdat 3
 </td></tr>
 <tr><td>Enable Automatic Time Updates</td><td><input type="checkbox" id="iden" name="entim" %! get-check 2
 ></td></tr>
@@ -25,9 +25,9 @@ return true; }
 "></td></tr>
 <tr><td>Update Interval (1-192 hrs)</td><td><input type="text" id="idint" name="intrvl" size="6" maxlength="3" align="right" value="%! get-int 1
 "></td></tr>
-<tr><td>Enter Time (ex. 21:50)</td><td><input type="text" id="idtim" name="timval" size="6" maxlength="5" value="%! get-cur-tim
+<tr><td>Enter Time (ex. 21:50)</td><td><input type="text" id="idtim" name="timval" size="6" maxlength="5" value="%! get-timdat 1
 "></td></tr>
-<tr><td>Enter Date (ex. 2009-04-20)</td><td><input type="text" id="iddate" name="datval" size="11" maxlength="10" value="%! get-cur-date
+<tr><td>Enter Date (ex. 2009-04-20)</td><td><input type="text" id="iddate" name="datval" size="11" maxlength="10" value="%! get-timdat 2
 "></td></tr>
 <tr><td>Timezone</td><td>
 <select name="tz">%! get-tz-opt
