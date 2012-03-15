@@ -266,13 +266,9 @@ const char *action_base_name_onoff = "On/Off action";
 
 char evnt_register_handle(void *handler) __reentrant;
 void init_event_switch(event_thread_t *et);
-event_prv_t *get_event_from_num (u8_t entry) __reentrant __banked;
-action_mgr_t *get_action_from_num (u8_t entry) __reentrant __banked;
 char evnt_iter_create (evnt_iter_t *iter) __reentrant __banked;
 void *evnt_iter_get_first_entry(evnt_iter_t *iter) __reentrant __banked;
 void *evnt_iter_get_next_entry(evnt_iter_t *iter) __reentrant __banked;
-char get_num_from_event (event_prv_t *ptr) __reentrant __banked;
-char get_num_from_action (action_mgr_t *ptr) __reentrant __banked;
 action_mgr_t *rule_get_action_from_event (event_prv_t *ep);
 rule_t *query_events(void);
 PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant);

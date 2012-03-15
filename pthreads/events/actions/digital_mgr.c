@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Pontus Oldberg.
+ * Copyright (c) 2012, Pontus Oldberg.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,21 +28,33 @@
  *
  */
 
-#ifndef absval_mgr_H_INCLUDED
-#define absval_mgr_H_INCLUDED
+#pragma codeseg APP_BANK
+//#define PRINT_A     // Enable A prints
 
-#include "pt.h"
+#include "system.h"
+#include "iet_debug.h"
+#include "digital_mgr.h"
 
 /*
- * This data structure defines the data required by this action manager.
- * It should be implemented by the event provider that intends to
- * communicate with this manager.
+ * Initialize the digital_mgr pthread
  */
-typedef struct act_absolute_data_s {
-  char channel;
-  int value;
-} act_absolute_data_t;
+void init_digital_mgr(digital_mgr_t *digital_mgr) __reentrant __banked
+{
+  PT_INIT(&digital_mgr->pt);
+}
 
-void init_absval_mgr(void) __reentrant __banked;
+PT_THREAD(handle_digital_mgr(digital_mgr_t *digital_mgr) __reentrant __banked)
+{
+  PT_BEGIN(&digital_mgr->pt);
 
-#endif // absval_mgr_H_INCLUDED
+  A_(printf (__AT__ "Starting digital_mgr pthread!\n");)
+
+  while (1)
+  {
+    PT_YIELD (&digital_mgr->pt);
+  }
+
+  PT_END(&digital_mgr->pt);
+}
+
+/* EOF */

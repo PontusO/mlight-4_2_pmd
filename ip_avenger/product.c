@@ -50,6 +50,7 @@
 #include "but_mon.h"
 #include "ramp_mgr.h"
 #include "absval_mgr.h"
+#include "digital_mgr.h"
 #include "cycle_mgr.h"
 #include "event_switch.h"
 #include "adc_event.h"
@@ -76,15 +77,14 @@ void Timer0_Init (void);
 /*
  * Protothread instance data
  */
-but_mon_t       but_mon;
 ramp_mgr_t      ramp_mgr[CFG_NUM_PWM_DRIVERS];
 cycle_mgr_t     cycle_mgr[CFG_NUM_PWM_DRIVERS];
 ramp_ctrl_t     ramp_ctrl[CFG_NUM_PWM_DRIVERS];
 event_thread_t  event_thread;
-absval_mgr_t    absval_mgr;
 adc_event_t     adc_event;
 time_event_t    time_event;
 pir_event_t     pir_event;
+digital_mgr_t   digital_mgr;
 
 // ---------------------------------------------------------------------------
 //	pmd()
@@ -169,7 +169,6 @@ void pmd(void) __banked
 
   /* **********************Initialize system pthreads *******************/
   init_rtc();
-  init_but_mon(&but_mon);
 
   /* The event switch must be initialized before event providers and action mgrs. */
   init_event_switch(&event_thread);
@@ -185,7 +184,9 @@ void pmd(void) __banked
     init_ramp_ctrl (&ramp_ctrl[i]);
   }
   /* Event action managers */
-  init_absval_mgr(&absval_mgr);
+  init_absval_mgr();
+  /* The digital output manager */
+  init_digital_mgr(&digital_mgr);
 
   /* Event providers */
   init_adc_event(&adc_event);
@@ -306,14 +307,13 @@ void pmd(void) __banked
      */
     PT_SCHEDULE(handle_kicker(&kicker));
     PT_SCHEDULE(handle_time_client(&tc));
-    PT_SCHEDULE(handle_but_mon(&but_mon));
     /* Event action managers */
     for (i=0; i<CFG_NUM_PWM_DRIVERS; i++) {
       PT_SCHEDULE(handle_ramp_mgr(&ramp_mgr[i]));
       PT_SCHEDULE(handle_cycle_mgr(&cycle_mgr[i]));
       PT_SCHEDULE(handle_ramp_ctrl(&ramp_ctrl[i]));
     }
-    PT_SCHEDULE(handle_absval_mgr(&absval_mgr));
+    PT_SCHEDULE(handle_digital_mgr(&digital_mgr));
     /* Event providers */
     PT_SCHEDULE(handle_adc_event(&adc_event));
     PT_SCHEDULE(handle_event_switch(&event_thread));

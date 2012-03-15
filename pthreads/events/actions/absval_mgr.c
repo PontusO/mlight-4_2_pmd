@@ -37,7 +37,6 @@
 #include "lightlib.h"
 
 /* Function prototypes */
-void absval_stop (void);
 void absval_trigger (void *ldata);
 
 /* The action manager handle */
@@ -45,23 +44,19 @@ static action_mgr_t  absvalmgr;
 static const char *absval_name = "Set absolute light level";
 
 /*
- * Initialize the absval_mgr pthread
+ * Initialize the absval_mgr
  */
-void init_absval_mgr(absval_mgr_t *absval_mgr) __reentrant __banked
+void init_absval_mgr(void) __reentrant __banked
 {
-  PT_INIT(&absval_mgr->pt);
-
   absvalmgr.base.type = EVENT_ACTION_MANAGER;
   absvalmgr.base.name = action_base_name_dimmable;
   absvalmgr.type = ATYPE_ABSOLUTE_ACTION;
   absvalmgr.action_name = (char*)absval_name;
-  absvalmgr.vt.stop_action = absval_stop;
+  absvalmgr.vt.stop_action = NULL;
   absvalmgr.vt.trigger_action = absval_trigger;
-}
 
-/* No thread (yet) to interrupt so we don't do anything here */
-void absval_stop (void) __reentrant
-{
+  /* register this non threaded action manager */
+  evnt_register_handle(&absvalmgr);
 }
 
 /* Set new data */
@@ -70,27 +65,11 @@ void absval_trigger (void *input) __reentrant
   ld_param_t led_params;
   act_absolute_data_t *absdata = (act_absolute_data_t *)input;
 
-  A_(printf(__AT__ " Channel %d, Value %04x\n",
-          (int)absdata->channel,
+  A_(printf(__AT__ " Channel %d, Value %04x\n", (int)absdata->channel,
           absdata->value);)
   led_params.channel = absdata->channel-1;
   led_params.level_absolute = absdata->value;
   ledlib_set_light_abs (&led_params);
-}
-
-PT_THREAD(handle_absval_mgr(absval_mgr_t *absval_mgr) __reentrant __banked)
-{
-  PT_BEGIN(&absval_mgr->pt);
-
-  evnt_register_handle(&absvalmgr);
-  A_(printf(__AT__ " Starting absval_mgr pthread!\n");)
-
-  while (1)
-  {
-    PT_YIELD(&absval_mgr->pt);
-  }
-
-  PT_END(&absval_mgr->pt);
 }
 
 /* EOF */

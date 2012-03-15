@@ -28,21 +28,19 @@
  *
  */
 
-#ifndef absval_mgr_H_INCLUDED
-#define absval_mgr_H_INCLUDED
+#ifndef DIGITAL_MGR_H_INCLUDED
+#define DIGITAL_MGR_H_INCLUDED
 
 #include "pt.h"
 
 /*
- * This data structure defines the data required by this action manager.
- * It should be implemented by the event provider that intends to
- * communicate with this manager.
+ * Data types used by the digital_mgr
  */
-typedef struct act_absolute_data_s {
-  char channel;
-  int value;
-} act_absolute_data_t;
+typedef struct digital_mgr_p {
+  struct pt pt;
+} digital_mgr_t;
 
-void init_absval_mgr(void) __reentrant __banked;
+void init_digital_mgr(digital_mgr_t *digital_mgr) __reentrant __banked;
+PT_THREAD(handle_digital_mgr(digital_mgr_t *digital_mgr) __reentrant __banked);
 
-#endif // absval_mgr_H_INCLUDED
+#endif // DIGITAL_MGR_H_INCLUDED

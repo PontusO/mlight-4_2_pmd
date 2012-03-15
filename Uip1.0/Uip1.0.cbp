@@ -213,10 +213,6 @@
 		</Unit>
 		<Unit filename="..\lib\ramp_ctrl.h" />
 		<Unit filename="..\pmd\doc\Readme" />
-		<Unit filename="..\pthreads\but_mon.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\pthreads\but_mon.h" />
 		<Unit filename="..\pthreads\events\actions\absval_mgr.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -225,6 +221,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pthreads\events\actions\cycle_mgr.h" />
+		<Unit filename="..\pthreads\events\actions\digital_mgr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\events\actions\digital_mgr.h" />
 		<Unit filename="..\pthreads\events\actions\ramp_mgr.c">
 			<Option compilerVar="CC" />
 		</Unit>

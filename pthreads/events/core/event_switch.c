@@ -60,53 +60,6 @@ void init_event_switch(event_thread_t *et)
 }
 
 /* **************************** Events ***********************************/
-/**
- * Lookup the ID number from a supplied pointer. If the provider was
- * found the corresponding ID is returned, otherwise -1 is returned.
- */
-/* TODO: Rewrite to handle all event types */
-char get_num_from_event (event_prv_t *ptr) __reentrant __banked
-{
-  u8_t i;
-
-  for (i=0; i<MAX_NR_EVENT_PROVIDERS; i++) {
-    if (event_table[i] && event_table[i] == ptr)
-      return i;
-  }
-  return -1;
-}
-
-/**
- * Lookup the ID number from a supplied pointer. If the provider was
- * found the corresponding ID is returned, otherwise -1 is returned.
- */
-char get_num_from_action (action_mgr_t *ptr) __reentrant __banked
-{
-  u8_t i;
-
-  for (i=0; i<MAX_NR_EVENT_PROVIDERS; i++) {
-    if (action_table[i] && action_table[i] == ptr)
-      return i;
-  }
-  return -1;
-}
-
-event_prv_t *get_event_from_num (u8_t entry) __reentrant __banked
-{
-  if (entry < MAX_NR_EVENT_PROVIDERS)
-    return event_table[entry];
-  else
-    return NULL;
-}
-
-action_mgr_t *get_action_from_num (u8_t entry) __reentrant __banked
-{
-  if (entry < MAX_NR_ACTION_MGRS)
-    return action_table[entry];
-  else
-    return NULL;
-}
-
 static char find_first_free_entry(void **table, char max)
 {
   char i;
@@ -164,28 +117,6 @@ char evnt_register_handle(void *handle) __reentrant
       return -1;
   }
   return tmp;
-}
-
-/*
- * This function will unregister the specified handle from the event switch.
- * Probably most needed for rules configuration but can be used for dynamic
- * event providers and action managers as well.
- *
- * FIXME: Does not work at all yet
- */
-char unregister_event_pvdr(char entry) __reentrant
-{
-  if (entry >= MAX_NR_EVENT_PROVIDERS)
-    return -1;
-  if (!nr_registered_events)
-    return -2;
-  if (!event_table[entry])
-    return -3;
-
-  event_table[entry] = 0;
-  nr_registered_events--;
-
-  return 0;
 }
 
 /*
