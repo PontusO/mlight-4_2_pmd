@@ -126,11 +126,12 @@ static const struct parameter_table parmtab[] = {
   PARAM_ENTRY("tsd7", set_tsday),
   /* map.shtml */
   PARAM_ENTRY("mapcmd", set_mapcmd),
-  /* Create route parameters */
+  /* Create route parameters cmap.shtml */
   PARAM_ENTRY("mapx", set_mapx),
   PARAM_ENTRY("mapenabled", set_mapenabled),
   PARAM_ENTRY("evt", set_evt),
   PARAM_ENTRY("act", set_act),
+  PARAM_ENTRY("rmode", set_rmode),
   PARAM_ENTRY("wcmd", set_wcmd),  /* Write command */
   /* PIR parameters */
   PARAM_ENTRY("pirclr", set_pirclr),
@@ -751,6 +752,16 @@ PARAM_FUNC (cgi_set_step)
   if (NEOP(*buffer)) {
     s->parms.step = atoi(buffer);
     s->parms.step_updated = 1;
+    s->parms.num_parms++;
+  }
+}
+/*---------------------------------------------------------------------------*/
+PARAM_FUNC (set_rmode)
+{
+  buffer = skip_to_char(buffer, '=');
+  if (NEOP(*buffer)) {
+    s->parms.ramp_mode = atoi(buffer);
+    s->parms.ramp_mode_updated = 1;
     s->parms.num_parms++;
   }
 }

@@ -48,7 +48,6 @@
 #include "product.h"
 #include "ramp_ctrl.h"
 #include "but_mon.h"
-#include "ramp_mgr.h"
 #include "absval_mgr.h"
 #include "digital_mgr.h"
 #include "cycle_mgr.h"
@@ -77,7 +76,6 @@ void Timer0_Init (void);
 /*
  * Protothread instance data
  */
-ramp_mgr_t      ramp_mgr[CFG_NUM_PWM_DRIVERS];
 cycle_mgr_t     cycle_mgr[CFG_NUM_PWM_DRIVERS];
 ramp_ctrl_t     ramp_ctrl[CFG_NUM_PWM_DRIVERS];
 event_thread_t  event_thread;
@@ -174,8 +172,6 @@ void pmd(void) __banked
   init_event_switch(&event_thread);
   /* Initialize all pwm ramp managers */
   for (i=0; i<CFG_NUM_PWM_DRIVERS; i++) {
-    ramp_mgr[i].channel = i; /* Default channel */
-    init_ramp_mgr(&ramp_mgr[i]);
     /* The on off cycle manager */
     cycle_mgr[i].cdata.channel = i;
     init_cycle_mgr (&cycle_mgr[i]);
@@ -309,7 +305,6 @@ void pmd(void) __banked
     PT_SCHEDULE(handle_time_client(&tc));
     /* Event action managers */
     for (i=0; i<CFG_NUM_PWM_DRIVERS; i++) {
-      PT_SCHEDULE(handle_ramp_mgr(&ramp_mgr[i]));
       PT_SCHEDULE(handle_cycle_mgr(&cycle_mgr[i]));
       PT_SCHEDULE(handle_ramp_ctrl(&ramp_ctrl[i]));
     }

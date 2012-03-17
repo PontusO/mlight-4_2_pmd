@@ -90,7 +90,6 @@
 
 #include "adc_event.h"
 #include "absval_mgr.h"
-#include "ramp_mgr.h"
 #include "cycle_mgr.h"
 
 #define MAX_NR_ACTION_MGRS      5
@@ -208,7 +207,6 @@ union rule_event_data {
  */
 union rule_action_data {
   act_absolute_data_t abs_data;
-  act_ramp_data_t ramp_data;
   act_cycle_data_t cycle_data;
 };
 
@@ -261,8 +259,8 @@ enum error_codes_t {
 /*
  * Action manager base type names
  */
-const char *action_base_name_dimmable = "Dimmable action";
-const char *action_base_name_onoff = "On/Off action";
+const char const *action_base_name_dimmable = "Dimmable action";
+const char const *action_base_name_onoff = "On/Off action";
 
 char evnt_register_handle(void *handler) __reentrant;
 void init_event_switch(event_thread_t *et);

@@ -35,10 +35,14 @@
 #include "ramp_ctrl.h"
 
 /* Internal signal definitions */
-#define CYC_SIG_NONE      0x00    /** No signal */
-#define CYC_SIG_START     0x01    /** Start cycle */
-#define CYC_SIG_RESTART   0x02    /** Restart cycle */
-#define CYC_SIG_STOP      0x03    /** Stop cycle */
+#define CYC_SIG_NONE          0x00    /** No signal */
+#define CYC_SIG_START         0x01    /** Start cycle */
+#define CYC_SIG_RESTART       0x02    /** Restart cycle */
+#define CYC_SIG_STOP          0x03    /** Stop cycle */
+
+/* Defines the behaviour of the ramp */
+#define CYC_MODE_SINGLE_RAMP   0x00    /** Only do a intro ramp */
+#define CYC_MODE_DUAL_RAMP     0x01    /** Do both intro and end ramp */
 
 /**
  * Rule data definition
@@ -49,6 +53,7 @@ typedef struct {
   u16_t rate;           /** Using tick rate.. */
   unsigned char step;   /** and steps per tick */
   unsigned int time;    /** The time the light should be on */
+  u8_t mode;            /** Indicates the mode of a ramp */
 } act_cycle_data_t;
 
 /*

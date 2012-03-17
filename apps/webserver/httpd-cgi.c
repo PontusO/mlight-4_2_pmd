@@ -59,7 +59,6 @@
 #include "iet_debug.h"
 
 #include "lightlib.h"
-#include "ramp_mgr.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -76,7 +75,6 @@ HTTPD_CGI_CALL(f_get_int, "get-int", get_int);
 HTTPD_CGI_CALL(f_get_option, "get-option", get_option);
 
 HTTPD_CGI_CALL(f_get_time_events, "te-get-time-events", get_time_events);
-HTTPD_CGI_CALL(f_get_tstime, "get-tstime", get_tstime);
 HTTPD_CGI_CALL(f_get_tsday, "get-tsday", get_tsday);
 
 HTTPD_CGI_CALL(f_map_get_events, "map-get-events", map_get_events);
@@ -97,7 +95,6 @@ static const struct httpd_cgi_call *calls[] = {
   &L_get_current_time_date,
   &L_get_tz_options,
   &f_get_time_events,
-  &f_get_tstime,
   &f_get_tsday,
   &f_map_get_events,
   &f_set_level,
@@ -301,7 +298,7 @@ PT_THREAD(get_rtc(struct httpd_state *s, char *ptr) __reentrant)
  * </tr>
  *
  */
-static char *weekdays[] =
+static const char *weekdays[] =
   {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 static u8_t order[] = {0x20,0x10,0x08,0x04,0x02,0x02,0x40};
 #pragma save
@@ -339,20 +336,6 @@ PT_THREAD(get_time_events(struct httpd_state *s, char *ptr) __reentrant)
   PSOCK_END(&s->sout);
 }
 #pragma restore
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_tstime(struct httpd_state *s, char *ptr) __reentrant)
-{
-  IDENTIFIER_NOT_USED (ptr);
-  PSOCK_BEGIN(&s->sout);
-  if (s->parms.ts && s->parms.modify) {
-    sprintf ((char*)uip_appdata, "%02d:%02d",
-             s->parms.ts->hrs, s->parms.ts->min);
-    PSOCK_SEND_STR(&s->sout, uip_appdata);
-  }
-  PSOCK_END(&s->sout);
-}
 
 /*---------------------------------------------------------------------------*/
 static
@@ -495,6 +478,13 @@ PT_THREAD(get_current_time_date(struct httpd_state *s, char *ptr) __reentrant)
 
     case 3:
     print_datetime_formated(uip_appdata);
+    break;
+
+    case 4:
+      if (s->parms.modify) {
+      sprintf ((char*)uip_appdata, "%02d:%02d",
+               s->parms.ts->hrs, s->parms.ts->min);
+    }
     break;
   }
   PSOCK_SEND_STR(&s->sout, uip_appdata);
@@ -715,7 +705,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
     case 7:
       intno = 1;
       if (s->parms.modify)
-        myint = s->parms.rp->action_data.ramp_data.rampto;
+        myint = s->parms.rp->action_data.cycle_data.rampto;
       else
         myint = 0;
       break;
@@ -723,7 +713,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
     case 8:
       intno = 1;
       if (s->parms.modify)
-        myint = s->parms.rp->action_data.ramp_data.rate;
+        myint = s->parms.rp->action_data.cycle_data.rate;
       else
         myint = 1;
       break;
@@ -731,7 +721,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
     case 9:
       intno = 1;
       if (s->parms.modify)
-        myint = s->parms.rp->action_data.ramp_data.step;
+        myint = s->parms.rp->action_data.cycle_data.step;
       else
         myint = 1;
       break;
@@ -763,7 +753,10 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
   PSOCK_END(&s->sout);
 }
 
-static const char *inmodes[] = { "Single Throw (Toggle)", "Dual Throw (Switch)" };
+static const char const *inmodes[] = {
+  "Single Throw (Toggle)", "Dual Throw (Switch)" };
+static const char const *rmodes[] = {
+  "Single Ramp", "Dual Ramp" };
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
@@ -784,10 +777,10 @@ PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
     {
       s->j = 0;
       for (s->i=1; s->i<5; s->i++) {
-        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"", s->i);
-        s->j += sprintf((char*)uip_appdata+s->j, "%s>%d", (s->parms.modify &&
-            s->parms.rp->action_data.abs_data.channel == s->i) ?
-            " selected" : "", s->i);
+        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%d",
+                s->i, (s->parms.modify &&
+                        s->parms.rp->action_data.abs_data.channel == s->i) ?
+                        " selected" : "", s->i);
       }
     }
     break;
@@ -797,10 +790,10 @@ PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
     {
       s->j = 0;
       for (s->i=1; s->i<5; s->i++) {
-        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"", s->i);
-        s->j += sprintf((char*)uip_appdata+s->j, "%s>%d", (s->parms.modify &&
-            s->parms.rp->action_data.ramp_data.channel == s->i) ?
-            " selected" : "", s->i);
+        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%d",
+                s->i, (s->parms.modify &&
+                        s->parms.rp->action_data.cycle_data.channel == s->i) ?
+                        " selected" : "", s->i);
       }
     }
     break;
@@ -810,9 +803,9 @@ PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
     {
       s->j = 0;
       for (s->i=0; s->i<2; s->i++) {
-        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"", s->i);
-        s->j += sprintf((char*)uip_appdata+s->j, "%s>%s",
-            (sys_cfg.in1_mode == s->i) ? " selected" : "", inmodes[s->i]);
+        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%s",
+                s->i, (sys_cfg.in1_mode == s->i) ? " selected" : "",
+                inmodes[s->i]);
       }
     }
     break;
@@ -821,12 +814,24 @@ PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
     {
       s->j = 0;
       for (s->i=0; s->i<2; s->i++) {
-        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"", s->i);
-        s->j += sprintf((char*)uip_appdata+s->j, "%s>%s",
-            (sys_cfg.in2_mode == s->i) ? " selected" : "", inmodes[s->i]);
+        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%s",
+                s->i, (sys_cfg.in2_mode == s->i) ? " selected" : "",
+                inmodes[s->i]);
       }
     }
     break;
+
+    case 5:
+    {
+      s->j = 0;
+      for (s->i=0; s->i<2; s->i++) {
+        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%s",
+                s->i, (s->parms.modify &&
+                        s->parms.rp->action_data.cycle_data.mode == s->i) ?
+                        " selected" : "", rmodes[s->i]);
+      }
+
+    }
   }
 
   PSOCK_SEND_STR(&s->sout, uip_appdata);

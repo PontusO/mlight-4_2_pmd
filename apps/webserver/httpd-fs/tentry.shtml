@@ -19,7 +19,7 @@ return true; }
 "></td></tr>
 <tr><td>Enabled</td><td colspan="8"><input type="checkbox" name="tsena"%! get-check 0
 ></td></tr>
-<tr><td>Enter Time (ex. 21:50)</td><td colspan="8"><input type="text" id="idtime" name="tstim" size="6" maxlength="5" value="%! get-tstime
+<tr><td>Enter Time (ex. 21:50)</td><td colspan="8"><input type="text" id="idtime" name="tstim" size="6" maxlength="5" value="%! get-timdat 4
 "></td></tr>
 <tr><td>Schedule</td>
 <td><div>Mon<br><input type="checkbox" name="tsd6" %! get-tsday 6

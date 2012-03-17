@@ -33,7 +33,6 @@
 
 #include "pt.h"
 #include "absval_mgr.h"
-#include "ramp_mgr.h"
 #include "event_switch.h"
 
 #define CFG_NUM_POTS    4

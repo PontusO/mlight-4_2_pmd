@@ -178,18 +178,13 @@ void x_set_wcmd(util_param_t *param) __reentrant __banked
               param->s->parms.rp->action_data.abs_data.channel = param->s->parms.achannel;
               param->s->parms.rp->action_data.abs_data.value = param->s->parms.level;
               break;
-            case ATYPE_RAMP_ACTION:
-              param->s->parms.rp->action_data.ramp_data.channel = param->s->parms.channel;
-              param->s->parms.rp->action_data.ramp_data.rampto = param->s->parms.rampto;
-              param->s->parms.rp->action_data.ramp_data.rate = param->s->parms.rate;
-              param->s->parms.rp->action_data.ramp_data.step = param->s->parms.step;
-              break;
             case ATYPE_CYCLE_ACTION:
               param->s->parms.rp->action_data.cycle_data.channel = param->s->parms.channel;
               param->s->parms.rp->action_data.cycle_data.rampto = param->s->parms.rampto;
               param->s->parms.rp->action_data.cycle_data.rate = param->s->parms.rate;
               param->s->parms.rp->action_data.cycle_data.step = param->s->parms.step;
               param->s->parms.rp->action_data.cycle_data.time = param->s->parms.timeon;
+              param->s->parms.rp->action_data.cycle_data.mode = param->s->parms.ramp_mode;
               break;
 
             default:

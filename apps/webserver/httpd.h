@@ -45,6 +45,8 @@
 struct cgi_parameters {
   u8_t achannel;
   u8_t achannel_updated;
+  u8_t ramp_mode;
+  u8_t ramp_mode_updated;
   u8_t channel;
   u8_t channel_updated;
   u8_t level;
