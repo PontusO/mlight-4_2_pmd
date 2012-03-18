@@ -62,7 +62,7 @@ static const int logvec[] = { 0x0000,
  */
 static u16_t calc_pwm (pwm_perc_t value) __reentrant
 {
-  pwm_perc_t step, ret, index;
+  pwm_perc_t ret, index;
 
   if (value > MAX_PERCENTAGE_VALUE) value = 1000;
 
@@ -72,10 +72,9 @@ static u16_t calc_pwm (pwm_perc_t value) __reentrant
   if (value % (MAX_PERCENTAGE_VALUE / 100) == 0) {
     ret = logvec[index];
   } else {
-    /* Calculate the step per integrated step */
-    step = (logvec[index+1] - logvec[index]) / 10;
-    /* Interpolate the correct value */
-    ret = logvec[index] + step * (value % (MAX_PERCENTAGE_VALUE / 100));
+    /* Calculate next value in the interpolated series */
+    ret = logvec[index] + ((logvec[index+1] - logvec[index]) *
+                           (value % (MAX_PERCENTAGE_VALUE / 100)) / 10);
   }
   return ret;
 }
