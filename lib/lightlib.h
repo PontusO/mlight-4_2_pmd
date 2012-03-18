@@ -33,11 +33,13 @@
 /* Configuration constants for the driver block */
 #define CFG_NUM_LIGHT_DRIVERS   6
 #define CFG_NUM_PWM_DRIVERS     4
-
-#define MAX_INTENSITY           0xffff
+#define LOGVEC_LENGTH           100
+#define MAX_PERCENTAGE_VALUE    1000
 /*
- * Data types used by the button monitor
+ * Data types used by the light library
  */
+typedef unsigned int pwm_perc_t;
+
 /* Light driver types */
 enum light_driver_type {
   LIGHT_NONE,
@@ -48,21 +50,21 @@ enum light_driver_type {
 /* Declaration of the light driver object */
 struct light_driver {
   u8_t driver_type;
-  u8_t pwm_percent;
+  pwm_perc_t pwm_percent;
   u16_t pwm_ratio;
   u8_t io_pin;
 };
 
 typedef struct {
   u8_t channel;
-  u8_t level_percent;
+  pwm_perc_t level_percent;
   u16_t level_absolute;
 } ld_param_t;
 
 /* Prototypes for the lib */
 void init_ledlib(void) __reentrant __banked;
 char ledlib_set_light_percentage_log (ld_param_t *) __reentrant __banked;
-u8_t ledlib_get_light_percentage (u8_t channel) __reentrant __banked;
+pwm_perc_t ledlib_get_light_percentage (u8_t channel) __reentrant __banked;
 char ledlib_set_light_abs (ld_param_t *) __reentrant  __banked;
 u16_t ledlib_get_light_abs (u8_t channel)  __reentrant __banked;
 u8_t ledlib_get_type (u8_t channel) __reentrant __banked;

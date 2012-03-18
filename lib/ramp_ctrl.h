@@ -59,8 +59,8 @@ typedef struct {
   u8_t state;
   u8_t channel;
   u16_t rate;
-  char rampto;
-  char intensity;
+  pwm_perc_t rampto;
+  pwm_perc_t intensity;
   char step;
   u8_t timer;
   ld_param_t lp;

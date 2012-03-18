@@ -51,7 +51,7 @@ struct cgi_parameters {
   u8_t channel_updated;
   u8_t level;
   u8_t level_updated;
-  u8_t rampto;
+  pwm_perc_t rampto;
   u8_t rampto_updated;
   u16_t rate;
   u8_t rate_updated;
