@@ -357,6 +357,7 @@ httpd_appcall(void) __banked
 
   if (uip_closed() || uip_aborted() || uip_timedout()) {
   } else if (uip_connected()) {
+    memset (s, 0, sizeof (*s));
     PSOCK_INIT(&s->sin, s->inputbuf, sizeof(s->inputbuf) - 1);
     PSOCK_INIT(&s->sout, s->inputbuf, sizeof(s->inputbuf) - 1);
     PT_INIT(&s->outputpt);
