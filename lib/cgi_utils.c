@@ -183,7 +183,13 @@ void x_set_wcmd(util_param_t *param) __reentrant __banked
               param->s->parms.rp->action_data.cycle_data.rampto = param->s->parms.rampto;
               param->s->parms.rp->action_data.cycle_data.rate = param->s->parms.rate;
               param->s->parms.rp->action_data.cycle_data.step = param->s->parms.step;
-              param->s->parms.rp->action_data.cycle_data.time = param->s->parms.timeon;
+              /* Special handling of timeon needed since the html GET command
+               * will not include timeon in the URI when it has been disabled by
+               * the GUI */
+              if (!param->s->parms.timeon)
+                param->s->parms.rp->action_data.cycle_data.time = 1;
+              else
+                param->s->parms.rp->action_data.cycle_data.time = param->s->parms.timeon;
               param->s->parms.rp->action_data.cycle_data.mode = param->s->parms.ramp_mode;
               break;
 
