@@ -27,16 +27,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef PIR_EVENT_H_INCLUDED
-#define PIR_EVENT_H_INCLUDED
+#ifndef DIG_EVENT_H_INCLUDED
+#define DIG_EVENT_H_INCLUDED
+
+#define NUMBER_OF_DIG_INPUTS   2
 
 typedef struct {
   struct pt pt;
   u8_t tmr;   /* Generic short period timer */
   u8_t ltmr;  /* Timer for the lockout period */
-} pir_event_t;
+} dig_event_t;
 
-void init_pir_event(pir_event_t *pir_event) __reentrant __banked;
-PT_THREAD(handle_pir_event(pir_event_t *pir_event) __reentrant __banked);
+void init_dig_event(dig_event_t *dig_event) __reentrant __banked;
+PT_THREAD(handle_dig_event(dig_event_t *dig_event) __reentrant __banked);
 
-#endif // PIR_EVENT_H_INCLUDED
+#endif // DIG_EVENT_H_INCLUDED

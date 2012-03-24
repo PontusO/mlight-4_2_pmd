@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Pontus Oldberg.
+ * Copyright (c) 2011, Pontus Oldberg.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,16 +27,63 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef PIR_EVENT_H_INCLUDED
-#define PIR_EVENT_H_INCLUDED
+#pragma codeseg APP_BANK
+//#define PRINT_A     // Enable A prints
 
-typedef struct {
-  struct pt pt;
-  u8_t tmr;   /* Generic short period timer */
-  u8_t ltmr;  /* Timer for the lockout period */
-} pir_event_t;
+#include <stdlib.h>
 
-void init_pir_event(pir_event_t *pir_event) __reentrant __banked;
-PT_THREAD(handle_pir_event(pir_event_t *pir_event) __reentrant __banked);
+#include "system.h"
+#include "flash.h"
+#include "iet_debug.h"
+#include "event_switch.h"
+#include "dig_event.h"
+#include "swtimers.h"
 
-#endif // PIR_EVENT_H_INCLUDED
+#include "comparator.h"
+#include "dac.h"
+
+/* Event handle */
+static event_prv_t digevent[NUMBER_OF_DIG_INPUTS];
+static const char *base_name = "Digital Input";
+static const char *dig_names[] = { "Push Button 1", "Push Button 2" };
+
+/*
+ * Initialize the dig_event pthread
+ */
+void init_dig_event(dig_event_t *dig_event) __reentrant __banked
+{
+  char i;
+
+  PT_INIT(&dig_event->pt);
+
+  /* Initialize the event data */
+  for (i=0;i<NUMBER_OF_DIG_INPUTS;i++) {
+    digevent[i].base.type = EVENT_EVENT_PROVIDER;
+    digevent[i].base.name = base_name;
+    digevent[i].type = ETYPE_DIG_INPUT_EVENT;
+    digevent[i].event_name = (char*)dig_names[i];
+  }
+}
+
+/*
+ * The pir main thread
+ */
+PT_THREAD(handle_dig_event(dig_event_t *dig_event) __reentrant __banked)
+{
+  char i;
+
+  PT_BEGIN(&dig_event->pt);
+
+  /* Register the event provider */
+  for (i=0; i<NUMBER_OF_DIG_INPUTS; i++)
+    evnt_register_handle(&digevent[i]);
+
+  while (1)
+  {
+    PT_YIELD (&dig_event->pt);
+  }
+
+  PT_END(&dig_event->pt);
+}
+
+/* EOF */

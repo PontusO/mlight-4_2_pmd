@@ -78,7 +78,8 @@ typedef struct {
 } time_event_t;
 
 void init_time_event(time_event_t *time_event) __reentrant __banked;
-time_spec_t *get_first_free_time_event_entry(unsigned char *index) __reentrant __banked;
+time_spec_t *get_first_free_time_event_entry(u8_t *index) __reentrant __banked;
+char add_time_event (time_spec_t *ts, u8_t index) __banked;
 PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked);
 
 #endif // TIME_EVENT_H_INCLUDED

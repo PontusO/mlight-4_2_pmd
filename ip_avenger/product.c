@@ -55,6 +55,7 @@
 #include "adc_event.h"
 #include "time_event.h"
 #include "pir_event.h"
+#include "dig_event.h"
 #include "lightlib.h"
 
 extern static u16_t half_Sec;
@@ -82,6 +83,7 @@ event_thread_t  event_thread;
 adc_event_t     adc_event;
 time_event_t    time_event;
 pir_event_t     pir_event;
+dig_event_t     dig_event;
 digital_mgr_t   digital_mgr;
 
 // ---------------------------------------------------------------------------
@@ -190,6 +192,8 @@ void pmd(void) __banked
   init_time_event (&time_event);
   /* PIR events */
   init_pir_event (&pir_event);
+  /* Button events */
+  init_dig_event (&dig_event);
 
   printf ("Stack pointer (SP)=0x%02x, Adjusting to 0x%02x\n", SP, SP-3);
   SP -= 3;
@@ -311,9 +315,10 @@ void pmd(void) __banked
     PT_SCHEDULE(handle_digital_mgr(&digital_mgr));
     /* Event providers */
     PT_SCHEDULE(handle_adc_event(&adc_event));
-    PT_SCHEDULE(handle_event_switch(&event_thread));
-    PT_SCHEDULE(handle_time_event(&time_event));
     PT_SCHEDULE(handle_pir_event(&pir_event));
+    PT_SCHEDULE(handle_dig_event(&dig_event));
+    PT_SCHEDULE(handle_time_event(&time_event));
+    PT_SCHEDULE(handle_event_switch(&event_thread));
   }	// end of 'while (1)'
 }
 

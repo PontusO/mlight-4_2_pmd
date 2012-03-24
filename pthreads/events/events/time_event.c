@@ -66,7 +66,7 @@ void init_time_event(time_event_t *time_event) __reentrant __banked
  *   ptr = get_first_free_time_event_entry(&index);
  *
  */
-time_spec_t *get_first_free_time_event_entry(unsigned char *index) __reentrant __banked
+time_spec_t *get_first_free_time_event_entry(u8_t *index) __reentrant __banked
 {
   time_spec_t *ptr;
   u8_t i;
@@ -89,30 +89,21 @@ time_spec_t *get_first_free_time_event_entry(unsigned char *index) __reentrant _
  *
  * Return 0 if operation was ok, otherwise -1
  */
-char add_time_event (time_spec_t *ts)
+char add_time_event (time_spec_t *ts, u8_t index) __banked
 {
-  time_spec_t *ptr;
-  u8_t index;
-
-  ptr = get_first_free_time_event_entry(&index);
-  if (!ptr) {
-    A_(printf (__AT__ " No free entries left !\n");)
-    return -1;
-  }
-  memcpy (ptr, ts, sizeof ts);
-  ptr->status |= TIME_EVENT_ENTRY_USED;
-
   /*
-   * Now update the event table with the new entry.
+   * Update the event table with the new entry.
    */
   if (index >= NMBR_TIME_EVENTS) {
-    A_(printf (__AT__ " Error in time event event structures !\n");)
+    A_(printf (__AT__ "Error in time event event structures !\n");)
     return -1;
   }
 
   time_events[index].base.type = EVENT_EVENT_PROVIDER;
   time_events[index].type = ETYPE_TIME_EVENT;
-  time_events[index].base.name = ts->name;
+  time_events[index].base.name = time_event_name;
+  time_events[index].event_name = ts->name;
+  evnt_register_handle (&time_events[index]);
 
   return 0;
 }
@@ -122,7 +113,7 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
   u8_t i;
   PT_BEGIN(&time_event->pt);
 
-  A_(printf (__AT__ " Starting time_event pthread!\n");)
+  A_(printf (__AT__ "Starting time_event pthread!\n");)
 
   /* Register all stored time event handles */
   for (i=0;i<NMBR_TIME_EVENTS;i++) {
@@ -154,7 +145,7 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
             time_event->time_spec->hrs == tp.time.hrs &&
             time_event->time_spec->min == tp.time.min &&
             tp.time.sec == 0) {
-          A_(printf (__AT__ " Handling a time event !\n");)
+          A_(printf (__AT__ "Handling a time event !\n");)
           rule_send_event_signal (&time_events[i]);
         }
         time_event->time_spec++;

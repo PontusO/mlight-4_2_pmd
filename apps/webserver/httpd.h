@@ -60,6 +60,7 @@ struct cgi_parameters {
   unsigned int timeon;
   u8_t num_parms;
   time_spec_t *ts;        /* Pointer to a time spec structure */
+  u8_t ts_index;          /* Index if time spec structure */
   rule_t *rp;             /* Pointer to a rule */
   unsigned long marklist; /* List of Mark check boxes (up to 16) */
   u8_t modify;            /* Modify flag, indicated the user pressed a modify button */

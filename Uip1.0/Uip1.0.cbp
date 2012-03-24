@@ -233,6 +233,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pthreads\events\events\adc_event.h" />
+		<Unit filename="..\pthreads\events\events\dig_event.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\pthreads\events\events\dig_event.h" />
 		<Unit filename="..\pthreads\events\events\pir_event.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -644,6 +644,7 @@ PARAM_FUNC (set_save)
     /* Actions needed for the time event set page */
     if (ts_update) {
       s->parms.ts->status |= TIME_EVENT_ENTRY_USED;
+      add_time_event (s->parms.ts, s->parms.ts_index);
     }
     /* Write new configuration to flash */
     write_config_to_flash();
@@ -810,7 +811,7 @@ void parse_input(struct httpd_state *s, char *buf) __banked
   memset (&s->parms, 0, sizeof s->parms);
 
   /* In case these parameters belong to tentry.shtml */
-  s->parms.ts = get_first_free_time_event_entry(NULL);
+  s->parms.ts = get_first_free_time_event_entry (&s->parms.ts_index);
   if (s->parms.ts) {
     memset (s->parms.ts, 0, sizeof *(s->parms.ts));
     ts_update = FALSE;
