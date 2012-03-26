@@ -65,8 +65,8 @@ const struct sys_config default_cfg = {
   (u8_t)0,                                /* Default input 2 operation mode */
   (u8_t)0,                                /* Default is non inverted */
   2,                                      /* The number of time events in the table */
-  { { 3, { 'M', 'o', 'r', 'n', 'i', 'n', 'g', 0, 0 }, 6, 50, 0x7c }, /* Array of time events */
-  { 2, { 'E', 'v', 'e', 'n', 'i', 'n', 'g', 0, 0 }, 20, 30, 3 },
+  { { 3, { 'M', 'o', 'r', 'n', 'i', 'n', 'g', 0, 0 }, 8, 00, 0x7f }, /* Array of time events */
+  { 3, { 'E', 'v', 'e', 'n', 'i', 'n', 'g', 0, 0 }, 23, 45, 7f },
   { 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
   { 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
   { 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 0, 0 },
