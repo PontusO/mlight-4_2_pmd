@@ -68,6 +68,12 @@ function setData (frm)
       } else if (atype == 3) {
         enLayer ('cycle');
       }
+    } else if (etype == 4) {
+      if (atype == 1) {
+        enLayer ('abs');
+      } else if (atype == 3) {
+        enLayer ('cycle');
+      }
     }
     frm.submit.disabled=false;
   } else {

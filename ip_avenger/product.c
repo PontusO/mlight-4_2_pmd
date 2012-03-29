@@ -49,7 +49,6 @@
 #include "ramp_ctrl.h"
 #include "but_mon.h"
 #include "absval_mgr.h"
-#include "digital_mgr.h"
 #include "cycle_mgr.h"
 #include "event_switch.h"
 #include "adc_event.h"
@@ -84,7 +83,6 @@ adc_event_t     adc_event;
 time_event_t    time_event;
 pir_event_t     pir_event;
 dig_event_t     dig_event;
-digital_mgr_t   digital_mgr;
 
 // ---------------------------------------------------------------------------
 //	pmd()
@@ -183,8 +181,6 @@ void pmd(void) __banked
   }
   /* Event action managers */
   init_absval_mgr();
-  /* The digital output manager */
-  init_digital_mgr(&digital_mgr);
 
   /* Event providers */
   init_adc_event(&adc_event);
@@ -312,7 +308,6 @@ void pmd(void) __banked
       PT_SCHEDULE(handle_cycle_mgr(&cycle_mgr[i]));
       PT_SCHEDULE(handle_ramp_ctrl(&ramp_ctrl[i]));
     }
-    PT_SCHEDULE(handle_digital_mgr(&digital_mgr));
     /* Event providers */
     PT_SCHEDULE(handle_adc_event(&adc_event));
     PT_SCHEDULE(handle_pir_event(&pir_event));

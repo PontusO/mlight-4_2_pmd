@@ -150,7 +150,7 @@ typedef struct {
  */
 typedef enum {
   ATYPE_ABSOLUTE_ACTION = 0x01,
-  ATYPE_RAMP_ACTION = 0x02,
+  ATYPE_RAMP_ACTION = 0x02, /* Has been removed from the system */
   ATYPE_CYCLE_ACTION = 0x03,
 } event_action_t;
 
@@ -275,6 +275,7 @@ PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant);
 void rule_setup_v_data_pointers (u8_t clear)  __reentrant __banked;
 void rule_send_event_signal (event_prv_t *ep)  __reentrant __banked;
 union rule_action_data *rule_get_action_dptr (event_prv_t *ep) __reentrant;
+rule_t *rule_lookup_from_event (event_prv_t *ep);
 rule_t *rule_find_free_entry(void) __reentrant __banked;
 char rule_iter_create (evnt_iter_t *iter) __reentrant __banked;
 rule_t *rule_iter_get_first_entry(evnt_iter_t *iter) __reentrant __banked;

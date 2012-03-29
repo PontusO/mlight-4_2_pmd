@@ -38,7 +38,8 @@
 #define CYC_SIG_NONE          0x00    /** No signal */
 #define CYC_SIG_START         0x01    /** Start cycle */
 #define CYC_SIG_RESTART       0x02    /** Restart cycle */
-#define CYC_SIG_STOP          0x03    /** Stop cycle */
+#define CYC_SIG_CONTINUE      0x03    /** Continue from the time wait state */
+#define CYC_SIG_STOP          0x04    /** Stop cycle */
 
 /* Defines the behaviour of the ramp */
 #define CYC_MODE_SINGLE_RAMP   0x00    /** Only do a intro ramp */
@@ -48,6 +49,7 @@
  * Rule data definition
  */
 typedef struct {
+  u8_t sig_param;       /** A parameter that defines the behaviour of the mgr */
   char channel;         /** The channel the ramping shall take place on */
   pwm_perc_t rampto;    /** The value that it should ramp to */
   u16_t rate;           /** Using tick rate.. */

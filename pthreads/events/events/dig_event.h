@@ -30,12 +30,27 @@
 #ifndef DIG_EVENT_H_INCLUDED
 #define DIG_EVENT_H_INCLUDED
 
-#define NUMBER_OF_DIG_INPUTS   2
+/* Some usefull macros */
+#define NUMBER_OF_DIG_INPUTS    2
+#define ITERATE_BUTTONS(x)      for (x=0;x<NUMBER_OF_DIG_INPUTS;x++)
+
+#define ALL_BUTTONS_MASK    0x60
+#define BUTTON_PORT         P1
+
+typedef struct {
+  u8_t mode;          /* Select the operation mode of the input pin */
+  u8_t inverted;      /* Selects if the pin is inverted or not */
+} dig_data_t;
 
 typedef struct {
   struct pt pt;
-  u8_t tmr;   /* Generic short period timer */
-  u8_t ltmr;  /* Timer for the lockout period */
+  u8_t old_state;     /* Last state for all buttons */
+  u8_t state;         /* Current button state */
+  u8_t mask;          /* Temporary container for the button mask */
+  u8_t tmr;           /* Timer */
+  u8_t i;
+  dig_data_t *dptr;   /* Pointer to flash memory data */
+  u16_t value[6];     /* Cache for on light value */
 } dig_event_t;
 
 void init_dig_event(dig_event_t *dig_event) __reentrant __banked;

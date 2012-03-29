@@ -28,7 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-//#define PRINT_A     // Enable A prints
+#define PRINT_A     // Enable A prints
 
 #include <stdlib.h>
 
@@ -42,10 +42,12 @@
 #include "comparator.h"
 #include "dac.h"
 
+const u8_t button_mask[] = {0x40, 0x20};
+
 /* Event handle */
 static event_prv_t digevent[NUMBER_OF_DIG_INPUTS];
 static const char *base_name = "Digital Input";
-static const char *dig_names[] = { "Push Button 1", "Push Button 2" };
+static const char *dig_names[] = { "Button 1", "Button 2" };
 
 /*
  * Initialize the dig_event pthread
@@ -55,9 +57,11 @@ void init_dig_event(dig_event_t *dig_event) __reentrant __banked
   char i;
 
   PT_INIT(&dig_event->pt);
+  /* Setup local data pointer to configuration struct */
+  dig_event->dptr = (dig_data_t *)&sys_cfg.in1_mode;
 
   /* Initialize the event data */
-  for (i=0;i<NUMBER_OF_DIG_INPUTS;i++) {
+  ITERATE_BUTTONS(i) {
     digevent[i].base.type = EVENT_EVENT_PROVIDER;
     digevent[i].base.name = base_name;
     digevent[i].type = ETYPE_DIG_INPUT_EVENT;
@@ -66,24 +70,132 @@ void init_dig_event(dig_event_t *dig_event) __reentrant __banked
 }
 
 /*
- * The pir main thread
+ * Toggle the output of the channel connected to this button
  */
+static void toggle_light (dig_event_t *dig_event, event_prv_t *ptr)
+{
+  rule_t *rp;
+
+  rp = rule_lookup_from_event (ptr);
+
+  /* If there is no data return without doing anything */
+  if (!rp)
+    return;
+
+  /* Depending on what action manager this event is routed to we need to do
+   * different things */
+  switch (rp->action->type) {
+    case ATYPE_ABSOLUTE_ACTION:
+    {
+      u8_t channel;
+      /* Toggle the action data value */
+      channel = rp->action_data.abs_data.channel;
+      if (rp->action_data.abs_data.value) {
+        /* Cache the preset light value */
+        dig_event->value[channel] = rp->action_data.abs_data.value;
+        rp->action_data.abs_data.value = 0;
+      } else
+        rp->action_data.abs_data.value = dig_event->value[channel];
+      A_(printf (__AT__ "Sending toggle event !\n");)
+      rule_send_event_signal (ptr);
+      break;
+    }
+
+    case ATYPE_CYCLE_ACTION:
+      /* If it's a cycle just send a start trigger */
+      rule_send_event_signal (ptr);
+      break;
+
+    default:
+      A_(printf (__AT__ "Incorrect action manager !\n");)
+      break;
+  }
+}
+
+/*
+ * Toggle the output of the channel connected to this button
+ */
+void switch_light (event_prv_t *ptr)
+{
+  IDENTIFIER_NOT_USED(ptr);
+}
+
+/*
+ * The buttong main thread
+ */
+#pragma save
+#pragma nogcse
 PT_THREAD(handle_dig_event(dig_event_t *dig_event) __reentrant __banked)
 {
-  char i;
-
   PT_BEGIN(&dig_event->pt);
 
+  A_(printf (__AT__ "Starting digital event provider !\n");)
+  /* Set the last button state to a known state */
+  dig_event->old_state = BUTTON_PORT & ALL_BUTTONS_MASK;
+
+  /* Hog one timer for button debounce */
+  dig_event->tmr = alloc_timer ();
+
   /* Register the event provider */
-  for (i=0; i<NUMBER_OF_DIG_INPUTS; i++)
-    evnt_register_handle(&digevent[i]);
+  ITERATE_BUTTONS(dig_event->i) {
+    evnt_register_handle (&digevent[dig_event->i]);
+  }
 
   while (1)
   {
-    PT_YIELD (&dig_event->pt);
+again:
+    /* Wait for a button event */
+    A_(printf (__AT__ "Waiting for a button to be pressed !\n");)
+    PT_WAIT_UNTIL (&dig_event->pt,
+        (dig_event->old_state != (BUTTON_PORT & ALL_BUTTONS_MASK)));
+    /* Store the current state */
+    dig_event->state = BUTTON_PORT & ALL_BUTTONS_MASK;
+    B_(printf (__AT__ "Pow %02x, %02x !\n", dig_event->old_state &
+               ALL_BUTTONS_MASK, BUTTON_PORT & ALL_BUTTONS_MASK);)
+    /* key debounce */
+    set_timer (dig_event->tmr, 10, NULL);
+    PT_WAIT_UNTIL (&dig_event->pt, get_timer (dig_event->tmr) == 0);
+    /* Now check that the state is the same */
+    if (dig_event->state != (BUTTON_PORT & ALL_BUTTONS_MASK)) {
+      A_(printf (__AT__ "Debounce restart !\n");)
+      goto again;
+    }
+
+    /* State change found so find out what happened */
+    ITERATE_BUTTONS(dig_event->i)
+    {
+      /* Use this mask for the current button */
+      dig_event->mask = button_mask[dig_event->i];
+      B_(printf (__AT__ "Checking button %d, 0x%02x, 0x%02x\n", dig_event->i,
+          dig_event->state & dig_event->mask,
+          dig_event->old_state & dig_event->mask);)
+
+      if ((dig_event->state & dig_event->mask) !=
+          (dig_event->old_state & dig_event->mask))
+      {
+        A_(printf (__AT__ "State has indeed changed !\n");)
+        /* Button changed so process change */
+        if (dig_event->dptr[dig_event->i].mode == 0)
+        {
+          /* Toggle mode button 1 */
+          toggle_light (dig_event, &digevent[dig_event->i]);
+          /* Now wait for the button to be released */
+          PT_WAIT_WHILE (&dig_event->pt, ((BUTTON_PORT & dig_event->mask) ==
+             (dig_event->state & dig_event->mask)));
+        } else if (dig_event->dptr[dig_event->i].mode == 1) {
+          /* Switch light according to switch state */
+          switch_light (&digevent[dig_event->i]);
+        }
+      }
+    }
+    /* key debounce */
+    set_timer (dig_event->tmr, 10, NULL);
+    PT_WAIT_UNTIL (&dig_event->pt, get_timer (dig_event->tmr) == 0);
+    dig_event->old_state = (BUTTON_PORT & ALL_BUTTONS_MASK);
   }
 
   PT_END(&dig_event->pt);
 }
+#pragma restore
 
 /* EOF */

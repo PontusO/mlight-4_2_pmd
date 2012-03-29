@@ -218,10 +218,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pthreads\events\actions\cycle_mgr.h" />
-		<Unit filename="..\pthreads\events\actions\digital_mgr.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="..\pthreads\events\actions\digital_mgr.h" />
 		<Unit filename="..\pthreads\events\core\event_switch.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -99,6 +99,21 @@ static char rule_lookup_event (event_prv_t *ep)
 }
 
 /*
+ * Function for looking up a specific event provider in the rule table and
+ * returning a pointer to said rule.
+ */
+rule_t *rule_lookup_from_event (event_prv_t *ep)
+{
+  char i;
+  if ((i=rule_lookup_event(ep)) < 0)
+    return NULL;
+  if (sys_cfg.rules[i].status == RULE_STATUS_ENABLED)
+    return &sys_cfg.rules[i];
+  else
+    return NULL;
+}
+
+/*
  * This function will lookup the action connected to a specific event provider
  * in the rule table. If the event provider was not found, NULL will be
  * returned.
