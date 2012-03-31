@@ -103,6 +103,7 @@ char add_time_event (time_spec_t *ts, u8_t index) __banked
   time_events[index].type = ETYPE_TIME_EVENT;
   time_events[index].base.name = time_event_name;
   time_events[index].event_name = ts->name;
+  time_events[index].vt.init_event = NULL;
   evnt_register_handle (&time_events[index]);
 
   return 0;

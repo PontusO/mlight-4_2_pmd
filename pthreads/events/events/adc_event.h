@@ -48,7 +48,7 @@ typedef struct {
   struct pt pt;
   char channel;
   int pot_val;
-  union rule_action_data *adptr;
+  struct rule_data_s *rdata;
   int prev_pot_val[CFG_NUM_POTS];
 } adc_event_t;
 

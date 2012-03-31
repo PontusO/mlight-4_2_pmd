@@ -34,23 +34,23 @@
 #define NUMBER_OF_DIG_INPUTS    2
 #define ITERATE_BUTTONS(x)      for (x=0;x<NUMBER_OF_DIG_INPUTS;x++)
 
-#define ALL_BUTTONS_MASK    0x60
-#define BUTTON_PORT         P1
+#define ALL_BUTTONS_MASK        0x60
+#define BUTTON_PORT             P1
 
 typedef struct {
-  u8_t mode;          /* Select the operation mode of the input pin */
-  u8_t inverted;      /* Selects if the pin is inverted or not */
+  u8_t mode;                  /* Select the operation mode of the input pin */
+  u8_t inverted;              /* Selects if the pin is inverted or not */
 } dig_data_t;
 
 typedef struct {
   struct pt pt;
-  u8_t old_state;     /* Last state for all buttons */
-  u8_t state;         /* Current button state */
-  u8_t mask;          /* Temporary container for the button mask */
-  u8_t tmr;           /* Timer */
+  u8_t old_state;             /* Last state for all buttons */
+  u8_t state;                 /* Current button state */
+  u8_t mask;                  /* Temporary container for the button mask */
+  u8_t tmr;                   /* Local Timer */
   u8_t i;
-  dig_data_t *dptr;   /* Pointer to flash memory data */
-  u16_t value[6];     /* Cache for on light value */
+  dig_data_t *dptr;           /* Pointer to flash memory data */
+  struct rule_data_s *rdata;  /* Pointer to dynamic rule data */
 } dig_event_t;
 
 void init_dig_event(dig_event_t *dig_event) __reentrant __banked;

@@ -40,7 +40,7 @@
  */
 typedef struct act_absolute_data_s {
   char channel;
-  int value;
+  u16_t value;
 } act_absolute_data_t;
 
 void init_absval_mgr(void) __reentrant __banked;

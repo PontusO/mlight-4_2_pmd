@@ -36,7 +36,7 @@
  *
  */
 #pragma codeseg APP_BANK
-//#define PRINT_A     // Enable A prints
+#define PRINT_A     // Enable A prints
 
 #include "system.h"
 #include "iet_debug.h"
@@ -46,7 +46,7 @@
 
 /* Function prototypes */
 void cycle_mgr_stop (void);
-void cycle_mgr_trigger (void *input);
+void cycle_mgr_trigger (struct rule *rule);
 
 /* The cycle manager action handle */
 static action_mgr_t  cycleaction;
@@ -96,10 +96,11 @@ void cycle_mgr_stop (void) __reentrant
 /**
  * Trigger function
  */
-void cycle_mgr_trigger (void *input) __reentrant
+void cycle_mgr_trigger (struct rule *rule) __reentrant
 {
   cycle_mgr_t *cmgr;
-  act_cycle_data_t *cycdat = (act_cycle_data_t *)input;
+  act_cycle_data_t *cycdat = (act_cycle_data_t *)rule->action_data;
+  rule_data_t *rdata = rule->r_data;
 
   A_(printf (__AT__ "Entered the trigger function in state: ");)
 
@@ -108,8 +109,11 @@ void cycle_mgr_trigger (void *input) __reentrant
     cmgr = cycle_mgr_tab[(cycdat->channel - 1)];
     if (cmgr->state == CYCLE_STATE_WAITING) {
       A_(printf ("CYCLE_STATE_WAITING\n");)
-      /* If the manager is in waiting state we simply restart the timer */
-      cmgr->signal = CYC_SIG_RESTART;
+      /* If the ramp is in a waiting state we either restart or continue */
+      if (rule->r_data->command == EVENT_USE_CONTINUE)
+        cmgr->signal = CYC_SIG_CONTINUE;
+      else
+        cmgr->signal = CYC_SIG_RESTART;
     } else if (cmgr->state == CYCLE_STATE_DORMANT) {
       A_(printf ("CYCLE_STATE_DORMANT\n");)
       /* If not, we can start normally. */
@@ -129,6 +133,8 @@ void cycle_mgr_trigger (void *input) __reentrant
       cmgr->cdata.time = cycdat->time;
       cmgr->cdata.mode = cycdat->mode;
       cmgr->signal = CYC_SIG_RESTART;
+    } else if (CYCLE_STATE_RAMPING_UP) {
+      cmgr->signal = CYC_SIG_CONTINUE;
     }
   }
 }
@@ -189,9 +195,11 @@ do_single:
       /* First we need to wait for the controller to acknowledge the signal */
       PT_WAIT_UNTIL (&cycle_mgr->pt,
           ramp_ctrl_get_state (cycle_mgr->rctrl) == RAMP_STATE_RAMPING);
-      /* Now we wait while the ramp controller is processing the on ramp */
+      /* Now we wait while the ramp controller is processing the on ramp and we
+       * we have not been interrupted */
       PT_WAIT_WHILE (&cycle_mgr->pt,
-          ramp_ctrl_get_state (cycle_mgr->rctrl) == RAMP_STATE_RAMPING);
+          ramp_ctrl_get_state (cycle_mgr->rctrl) == RAMP_STATE_RAMPING &&
+                               cycle_mgr->signal == CYC_SIG_NONE);
 
       /* If we only are doing the intro ramp, return to start again */
       if (cycle_mgr->cdata.mode == CYC_MODE_SINGLE_RAMP) {
@@ -203,23 +211,35 @@ do_single:
         goto do_single;
       }
 
-      /* We were not accepting any signals during the up ramp so clear any
-       * pending signals */
-      cycle_mgr->signal = CYC_SIG_NONE;
-      /* Doing the wait, set the state to reflect that */
-      cycle_mgr->state = CYCLE_STATE_WAITING;
-again:
-      /* Set the waiting time to the requested timeout in minutes */
-      set_timer (cycle_mgr->tmr, (timer_time_t)(cycle_mgr->cdata.time * 100 * 60), NULL);
-      /* Wait for the timer to reach 0 */
-      A_(printf (__AT__ "Starting Timer %lu !\n", get_timer (cycle_mgr->tmr));)
-      PT_WAIT_UNTIL (&cycle_mgr->pt, !get_timer (cycle_mgr->tmr) ||
-                     cycle_mgr->signal != CYC_SIG_NONE);
-      /* Check why we left the waiting loop ! */
-      if (cycle_mgr->signal == CYC_SIG_RESTART) {
+      /* If we weren't interrupted during the up ramp we should wait now */
+      if (cycle_mgr->signal == CYC_SIG_NONE) {
+        /* Clear any pending signals */
         cycle_mgr->signal = CYC_SIG_NONE;
-        goto again;
+        /* Doing the wait, set the state to reflect that */
+        cycle_mgr->state = CYCLE_STATE_WAITING;
+  again:
+        /* Set the waiting time to the requested timeout in minutes */
+        set_timer (cycle_mgr->tmr,
+                  (timer_time_t)(cycle_mgr->cdata.time * 100 * 60), NULL);
+        /* Wait for the timer to reach 0 */
+        A_(printf (__AT__ "Starting Timer %lu !\n", get_timer (cycle_mgr->tmr));)
+        PT_WAIT_UNTIL (&cycle_mgr->pt, !get_timer (cycle_mgr->tmr) ||
+                       cycle_mgr->signal != CYC_SIG_NONE);
+        /* Check why we left the waiting loop ! */
+        if (cycle_mgr->signal == CYC_SIG_RESTART) {
+          cycle_mgr->signal = CYC_SIG_NONE;
+          goto again;
+        }
+      } else { /* if (cycle_mgr->signal == CYC_SIG_NONE) */
+        /* If the ramp controller is running, send a stop signal and wait
+         * for it to stop before starting a new ramp. */
+        if (ramp_ctrl_get_state (cycle_mgr->rctrl) == RAMP_STATE_RAMPING) {
+          ramp_ctrl_send_stop (cycle_mgr->rctrl);
+          PT_WAIT_UNTIL (&cycle_mgr->pt,
+              ramp_ctrl_get_state (cycle_mgr->rctrl) == RAMP_STATE_DORMANT);
+        }
       }
+
       cycle_mgr->signal = CYC_SIG_NONE;
       /* Indicate that we are rampng down again */
       cycle_mgr->state = CYCLE_STATE_RAMPING_DN;

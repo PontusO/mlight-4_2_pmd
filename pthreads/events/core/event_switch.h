@@ -101,8 +101,9 @@
  * Usefull macros for accessing the event system data structures
  */
 #define GET_EVENT_BASE(x) ((event_virtual_t *)x)->base
-#define GET_ACTION(x) ((action_mgr_t *)x)
-#define GET_EVENT(x) ((event_prv_t *)x)
+#define GET_ACTION(x)     ((action_mgr_t *)x)
+#define GET_EVENT(x)      ((event_prv_t *)x)
+#define GET_RULE_DATA(x)  (rule_lookup_from_event(x)->r_data)
 
 /* Structure prototypes */
 struct rule;
@@ -161,7 +162,7 @@ typedef enum {
  */
 typedef struct {
   void (*stop_action)(void) __reentrant;
-  void (*trigger_action)(void* action_data) __reentrant;
+  void (*trigger_action)(struct rule *rule) __reentrant;
 } action_vt_t;
 
 /**
@@ -177,6 +178,13 @@ typedef struct {
 } action_mgr_t;
 
 /**
+ * A vector table for event provider call backs.
+ */
+typedef struct {
+  void (*init_event)(struct rule *rule) __reentrant; /** Only taken if !zero */
+} event_vt_t;
+
+/**
  * The event provider handle.
  * All event providers need to create its own instance of this data
  * structure and fill out the fields before registering the handle
@@ -186,6 +194,7 @@ typedef struct {
   event_base_t base;  /** Base structure */
   char *event_name;   /** The name of the particular event */
   event_event_t type; /** The particular event trype */
+  event_vt_t vt;      /** The callback table */
 } event_prv_t;
 
 typedef enum {
@@ -212,13 +221,26 @@ union rule_action_data {
 };
 
 /**
+ * Control values to determine how action data shall be interpreted
+ * This command must be sent in the command parameter in rule_data_t
+ */
+typedef enum {
+  EVENT_USE_FIXED_DATA = 0x00,
+  EVENT_USE_DYNAMIC_DATA,
+  EVENT_USE_CONTINUE,
+} event_data_control_t;
+
+/**
  * The rule structure table is stored in flash so the rule struct
  * must not have any volatile data in it. This data is instead stored
  * in this special data structure.
  */
-typedef struct {
-  char event_signal;
-} rule_data_t;
+struct rule_data_s {
+  char event_signal;    /** The trigger signal */
+  u8_t command;         /** A command that can be forwarded to the mgr */
+  u16_t adata;          /** A data parameter that can be forwarded to the mgr */
+};
+typedef struct rule_data_s  rule_data_t;
 
 /**
  * The rule handle.

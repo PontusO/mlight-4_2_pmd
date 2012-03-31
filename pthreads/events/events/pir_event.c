@@ -59,6 +59,7 @@ void init_pir_event(pir_event_t *pir_event) __reentrant __banked
   pirevent.base.name = base_name;
   pirevent.type = ETYPE_PIR_SENSOR_INPUT_EVENT;
   pirevent.event_name = (char*)pir_name;
+  pirevent.vt.init_event = NULL;
 }
 
 /*

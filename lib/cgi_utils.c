@@ -200,6 +200,10 @@ void x_set_wcmd(util_param_t *param) __reentrant __banked
         }
         /* Write new configuration to flash */
         write_config_to_flash();
+
+        /* Make the callback to initialize event provider */
+        if (param->s->parms.rp->event->vt.init_event)
+          param->s->parms.rp->event->vt.init_event (param->s->parms.rp);
         break;
       }
 

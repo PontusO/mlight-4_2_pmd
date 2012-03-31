@@ -201,7 +201,7 @@ PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant)
           /* And execute the new trigger with data from the rule action data */
           if (et->new_action->vt.trigger_action) {
             A_(printf (__AT__ " Executing action trigger function.\n");)
-            et->new_action->vt.trigger_action((void*)sys_cfg.rules[et->i].action_data);
+            et->new_action->vt.trigger_action((void*)sys_cfg.rules[et->i]);
           } else {
             A_(printf(__AT__ " Error: No action trigger defined !\n");)
           }

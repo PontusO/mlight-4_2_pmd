@@ -28,7 +28,7 @@
  *
  */
 #pragma codeseg APP_BANK
-#define PRINT_A     // Enable A prints
+//#define PRINT_A     // Enable A prints
 
 #include <stdlib.h>
 
@@ -48,6 +48,10 @@ const u8_t button_mask[] = {0x40, 0x20};
 static event_prv_t digevent[NUMBER_OF_DIG_INPUTS];
 static const char *base_name = "Digital Input";
 static const char *dig_names[] = { "Button 1", "Button 2" };
+static u16_t cache[6];             /* Cache for on light value */
+
+/* Prototype */
+static void init_event (struct rule *rule) __reentrant;
 
 /*
  * Initialize the dig_event pthread
@@ -66,15 +70,47 @@ void init_dig_event(dig_event_t *dig_event) __reentrant __banked
     digevent[i].base.name = base_name;
     digevent[i].type = ETYPE_DIG_INPUT_EVENT;
     digevent[i].event_name = (char*)dig_names[i];
+    digevent[i].vt.init_event = init_event;
   }
+}
+
+/*
+ * Init method, called when a new rule is created
+ */
+static void init_event (struct rule *rule) __reentrant
+{
+  /* Here we need to initialize the cache to a proper first value.
+   * Firs we check to see if the light is already on. If so we set the cache
+   * to the value set in the rule definition. */
+
+   switch (rule->action->type)
+   {
+    case ATYPE_ABSOLUTE_ACTION:
+    {
+      u8_t channel;
+
+      channel = rule->action_data.abs_data.channel;
+      cache[channel] = rule->action_data.abs_data.value;
+      if (ledlib_get_light_abs (channel))
+        rule->r_data->adata = cache[channel];
+      else
+        rule->r_data->adata = 0;
+      break;
+    }
+
+    default:
+      break;
+   }
 }
 
 /*
  * Toggle the output of the channel connected to this button
  */
-static void toggle_light (dig_event_t *dig_event, event_prv_t *ptr)
+static void toggle_light (dig_event_t *dig_event, event_prv_t *ptr) __reentrant
 {
   rule_t *rp;
+
+  IDENTIFIER_NOT_USED (dig_event);
 
   rp = rule_lookup_from_event (ptr);
 
@@ -87,22 +123,22 @@ static void toggle_light (dig_event_t *dig_event, event_prv_t *ptr)
   switch (rp->action->type) {
     case ATYPE_ABSOLUTE_ACTION:
     {
-      u8_t channel;
-      /* Toggle the action data value */
-      channel = rp->action_data.abs_data.channel;
-      if (rp->action_data.abs_data.value) {
-        /* Cache the preset light value */
-        dig_event->value[channel] = rp->action_data.abs_data.value;
-        rp->action_data.abs_data.value = 0;
-      } else
-        rp->action_data.abs_data.value = dig_event->value[channel];
+      u8_t channel = rp->action_data.abs_data.channel;
+
+      if (rp->r_data->adata)
+        rp->r_data->adata = 0;
+      else
+        rp->r_data->adata = cache[channel];
+
       A_(printf (__AT__ "Sending toggle event !\n");)
+      rp->r_data->command = EVENT_USE_DYNAMIC_DATA;
       rule_send_event_signal (ptr);
       break;
     }
 
     case ATYPE_CYCLE_ACTION:
-      /* If it's a cycle just send a start trigger */
+      /* If it's a cycle just send a start trigger with our own command */
+      rp->r_data->command = EVENT_USE_CONTINUE;
       rule_send_event_signal (ptr);
       break;
 

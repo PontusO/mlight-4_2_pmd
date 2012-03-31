@@ -37,7 +37,7 @@
 #include "lightlib.h"
 
 /* Function prototypes */
-void absval_trigger (void *ldata);
+void absval_trigger (struct rule *rule);
 
 /* The action manager handle */
 static action_mgr_t  absvalmgr;
@@ -60,15 +60,22 @@ void init_absval_mgr(void) __reentrant __banked
 }
 
 /* Set new data */
-void absval_trigger (void *input) __reentrant
+void absval_trigger (struct rule *rule) __reentrant
 {
   ld_param_t led_params;
-  act_absolute_data_t *absdata = (act_absolute_data_t *)input;
+  act_absolute_data_t *absdata = (act_absolute_data_t *)rule->action_data;
+  rule_data_t *rdata = rule->r_data;
 
   A_(printf(__AT__ " Channel %d, Value %04x\n", (int)absdata->channel,
           absdata->value);)
   led_params.channel = absdata->channel-1;
-  led_params.level_absolute = absdata->value;
+
+  /* Get value based on what the caller wanted */
+  if (rdata->command == EVENT_USE_FIXED_DATA)
+    led_params.level_absolute = absdata->value;
+  else if (rdata->command == EVENT_USE_DYNAMIC_DATA)
+    led_params.level_absolute = rdata->adata;
+
   ledlib_set_light_abs (&led_params);
 }
 
