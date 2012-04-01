@@ -319,7 +319,7 @@ PT_THREAD(get_time_events(struct httpd_state *s, char *ptr) __reentrant)
       s->j += sprintf((char *)uip_appdata+s->j, "<td>%s</td><td>%s</td>",
           (((time_spec_t *)s->ptr)->status & TIME_EVENT_ENABLED) ? "Yes" : "No",
           ((time_spec_t *)s->ptr)->name);
-      s->j += sprintf((char *)uip_appdata+s->j, "<td>Time %02d:%02d</td>",
+      s->j += sprintf((char *)uip_appdata+s->j, "<td>%02d:%02d</td>",
                    ((time_spec_t *)s->ptr)->hrs, ((time_spec_t *)s->ptr)->min);
       s->j += sprintf((char *)uip_appdata+s->j, "<td>Weekdays: ");
 

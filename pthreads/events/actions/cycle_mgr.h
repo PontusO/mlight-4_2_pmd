@@ -52,7 +52,7 @@ typedef struct {
   char channel;         /** The channel the ramping shall take place on */
   pwm_perc_t rampto;    /** The value that it should ramp to */
   u16_t rate;           /** Using tick rate.. */
-  unsigned char step;   /** and steps per tick */
+  char step;            /** and steps per tick */
   unsigned int time;    /** The time the light should be on */
   u8_t mode;            /** Indicates the mode of a ramp */
 } act_cycle_data_t;
@@ -81,6 +81,7 @@ typedef struct {
 } cycle_mgr_t;
 
 void init_cycle_mgr(cycle_mgr_t *cycle_mgr) __reentrant __banked;
+u8_t cycle_mgr_get_state (u8_t channel);
 PT_THREAD(handle_cycle_mgr(cycle_mgr_t *cycle_mgr) __reentrant __banked);
 
 #endif // cycle_mgr_H_INCLUDED

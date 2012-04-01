@@ -146,7 +146,7 @@ PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked)
 
   /* Allocate a timer for this thread */
   ramp_ctrl->timer = alloc_timer();
-  A_(printf (__AT__ " Starting ramp controller %p on channel %d\n",
+  A_(printf (__AT__ "Starting ramp controller %p on channel %d\n",
              ramp_ctrl, ramp_ctrl->channel);)
 
   while (1) {
@@ -155,12 +155,12 @@ PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked)
     ramp_ctrl->signal = RAMP_SIG_NONE;
     ramp_ctrl->state = RAMP_STATE_RAMPING;
 
-    A_(printf (__AT__ " Starting a ramp on channel %d\n",
-               ramp_ctrl->channel);)
+    A_(printf (__AT__ "Starting a ramp on channel %d", ramp_ctrl->channel);)
+    A_(printf (" timer %d, rate %d", ramp_ctrl->timer, ramp_ctrl->rate);)
+    A_(printf (" intensity %u, step %d", ramp_ctrl->intensity, ramp_ctrl->step);)
+    A_(printf (" rampto %u\n", ramp_ctrl->rampto);)
 
     do {
-      set_timer (ramp_ctrl->timer, ramp_ctrl->rate, NULL);
-
       if (ramp_ctrl->step >= 0) {
         if (ramp_ctrl->intensity > ramp_ctrl->rampto) {
           ramp_ctrl->intensity = ramp_ctrl->rampto;
@@ -175,7 +175,8 @@ PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked)
       ramp_ctrl->lp.level_percent = ramp_ctrl->intensity;
       ledlib_set_light_percentage_log (&ramp_ctrl->lp);
       /* Time wait */
-      PT_WAIT_UNTIL (&ramp_ctrl->pt, (get_timer(ramp_ctrl->timer) == 0) ||
+      set_timer (ramp_ctrl->timer, ramp_ctrl->rate, NULL);
+      PT_WAIT_UNTIL (&ramp_ctrl->pt, (get_timer (ramp_ctrl->timer) == 0) ||
                                  ramp_ctrl->signal == RAMP_SIG_STOP);
       ramp_ctrl->intensity += ramp_ctrl->step;
 
@@ -192,6 +193,7 @@ PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked)
     }
     /* Make the manager dormant */
     ramp_ctrl->state = RAMP_STATE_DORMANT;
+    A_(printf (__AT__ "Ramp loop restarts !\n");)
   }
   PT_END(&ramp_ctrl->pt);
 }

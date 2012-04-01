@@ -106,11 +106,9 @@ static void init_event (struct rule *rule) __reentrant
 /*
  * Toggle the output of the channel connected to this button
  */
-static void toggle_light (dig_event_t *dig_event, event_prv_t *ptr) __reentrant
+static void toggle_light (event_prv_t *ptr) __reentrant
 {
   rule_t *rp;
-
-  IDENTIFIER_NOT_USED (dig_event);
 
   rp = rule_lookup_from_event (ptr);
 
@@ -151,13 +149,50 @@ static void toggle_light (dig_event_t *dig_event, event_prv_t *ptr) __reentrant
 /*
  * Toggle the output of the channel connected to this button
  */
-void switch_light (event_prv_t *ptr)
+void switch_light (event_prv_t *ptr, u8_t state) __reentrant
 {
-  IDENTIFIER_NOT_USED(ptr);
+  rule_t *rp;
+  u8_t channel;
+
+  rp = rule_lookup_from_event (ptr);
+  channel = rp->action_data.abs_data.channel;
+
+  /* If there is no data return without doing anything */
+  if (!rp)
+    return;
+
+  /* Depending on what action manager this event is routed to we need to do
+   * different things */
+  switch (rp->action->type) {
+    case ATYPE_ABSOLUTE_ACTION:
+    {
+      if (state)
+        rp->r_data->adata = cache[channel];
+      else
+        rp->r_data->adata = 0;
+
+      rp->r_data->command = EVENT_USE_DYNAMIC_DATA;
+      rule_send_event_signal (ptr);
+      break;
+    }
+
+    case ATYPE_CYCLE_ACTION:
+      /* If it's a cycle just send a start trigger with our own command */
+      if (!((cycle_mgr_get_state (channel-1) == CYCLE_STATE_DORMANT)
+             && !state)) {
+        rp->r_data->command = EVENT_USE_CONTINUE;
+        rule_send_event_signal (ptr);
+      }
+      break;
+
+    default:
+      A_(printf (__AT__ "Incorrect action manager !\n");)
+      break;
+  }
 }
 
 /*
- * The buttong main thread
+ * The button main thread
  */
 #pragma save
 #pragma nogcse
@@ -189,7 +224,7 @@ again:
     B_(printf (__AT__ "Pow %02x, %02x !\n", dig_event->old_state &
                ALL_BUTTONS_MASK, BUTTON_PORT & ALL_BUTTONS_MASK);)
     /* key debounce */
-    set_timer (dig_event->tmr, 10, NULL);
+    set_timer (dig_event->tmr, DEBOUNCE_TIME, NULL);
     PT_WAIT_UNTIL (&dig_event->pt, get_timer (dig_event->tmr) == 0);
     /* Now check that the state is the same */
     if (dig_event->state != (BUTTON_PORT & ALL_BUTTONS_MASK)) {
@@ -211,22 +246,23 @@ again:
       {
         A_(printf (__AT__ "State has indeed changed !\n");)
         /* Button changed so process change */
-        if (dig_event->dptr[dig_event->i].mode == 0)
+        if (dig_event->dptr[dig_event->i].mode == BUTTON_TOGGLE_MODE)
         {
           /* Toggle mode button 1 */
-          toggle_light (dig_event, &digevent[dig_event->i]);
+          toggle_light (&digevent[dig_event->i]);
           /* Now wait for the button to be released */
           PT_WAIT_WHILE (&dig_event->pt, ((BUTTON_PORT & dig_event->mask) ==
              (dig_event->state & dig_event->mask)));
-        } else if (dig_event->dptr[dig_event->i].mode == 1) {
+          /* key debounce */
+          set_timer (dig_event->tmr, DEBOUNCE_TIME, NULL);
+          PT_WAIT_UNTIL (&dig_event->pt, get_timer (dig_event->tmr) == 0);
+        } else if (dig_event->dptr[dig_event->i].mode == BUTTON_SWITCH_MODE) {
           /* Switch light according to switch state */
-          switch_light (&digevent[dig_event->i]);
+          switch_light (&digevent[dig_event->i],
+                        (dig_event->state & dig_event->mask));
         }
       }
     }
-    /* key debounce */
-    set_timer (dig_event->tmr, 10, NULL);
-    PT_WAIT_UNTIL (&dig_event->pt, get_timer (dig_event->tmr) == 0);
     dig_event->old_state = (BUTTON_PORT & ALL_BUTTONS_MASK);
   }
 

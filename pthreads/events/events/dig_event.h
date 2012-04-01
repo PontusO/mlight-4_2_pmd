@@ -36,6 +36,12 @@
 
 #define ALL_BUTTONS_MASK        0x60
 #define BUTTON_PORT             P1
+#define DEBOUNCE_TIME           5
+
+enum button_modes_t {
+  BUTTON_TOGGLE_MODE = 0x00,
+  BUTTON_SWITCH_MODE = 0x01,
+};
 
 typedef struct {
   u8_t mode;                  /* Select the operation mode of the input pin */

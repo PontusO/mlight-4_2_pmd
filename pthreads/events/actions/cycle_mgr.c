@@ -102,7 +102,7 @@ void cycle_mgr_trigger (struct rule *rule) __reentrant
   act_cycle_data_t *cycdat = (act_cycle_data_t *)rule->action_data;
   rule_data_t *rdata = rule->r_data;
 
-  A_(printf (__AT__ "Entered the trigger function in state: ");)
+  A_(printf (__AT__ "Entered the trigger function (channel %d) in state: ", cycdat->channel);)
 
   if (cycdat->channel <= CFG_NUM_PWM_DRIVERS) {
     /* Get manager instance */
@@ -117,16 +117,17 @@ void cycle_mgr_trigger (struct rule *rule) __reentrant
     } else if (cmgr->state == CYCLE_STATE_DORMANT) {
       A_(printf ("CYCLE_STATE_DORMANT\n");)
       /* If not, we can start normally. */
+      cmgr->cdata.channel = cycdat->channel - 1;
       cmgr->cdata.rampto = cycdat->rampto;
       cmgr->cdata.rate = cycdat->rate;
       cmgr->cdata.step = cycdat->step;
       cmgr->cdata.time = cycdat->time;
       cmgr->cdata.mode = cycdat->mode;
       cmgr->signal = CYC_SIG_START;
-      /* We need to get the start light level when starting a new cycle */
       cmgr->intensity = ledlib_get_light_percentage(cmgr->cdata.channel);
     } else if (cmgr->state == CYCLE_STATE_RAMPING_DN) {
       A_(printf ("CYCLE_STATE_RAMPING_DN\n");)
+      cmgr->cdata.channel = cycdat->channel - 1;
       cmgr->cdata.rampto = cycdat->rampto;
       cmgr->cdata.rate = cycdat->rate;
       cmgr->cdata.step = cycdat->step;
@@ -137,6 +138,14 @@ void cycle_mgr_trigger (struct rule *rule) __reentrant
       cmgr->signal = CYC_SIG_CONTINUE;
     }
   }
+}
+
+/**
+ * Retrieve the current ramp manager state
+ */
+u8_t cycle_mgr_get_state (u8_t channel) __reentrant
+{
+  return cycle_mgr_tab[channel]->state;
 }
 
 #pragma save
@@ -181,10 +190,15 @@ do_single:
       /* Copy instance data for first ramp */
       if (cycle_mgr->signal == CYC_SIG_START)
         cycle_mgr->rctrl->intensity = cycle_mgr->intensity;
+
       cycle_mgr->rctrl->channel = cycle_mgr->cdata.channel;
       cycle_mgr->rctrl->rate = cycle_mgr->cdata.rate;
-      cycle_mgr->rctrl->step = cycle_mgr->cdata.step;
       cycle_mgr->rctrl->rampto = cycle_mgr->cdata.rampto;
+      /* What direction do we need to go */
+      if (cycle_mgr->cdata.rampto > cycle_mgr->intensity)
+        cycle_mgr->rctrl->step = cycle_mgr->cdata.step;
+      else
+        cycle_mgr->rctrl->step = cycle_mgr->cdata.step * -1;
 
       /* Reset the signal */
       cycle_mgr->signal = CYC_SIG_NONE;
