@@ -46,9 +46,9 @@
 const struct sys_config default_cfg = {
   {{0x00, 0x3F, 0xB2, 0xC9, 0x0A, 0x00}}, /* The MAC address of the node */
   {0x30, 0x30, 0x30, 0x30, 0, 0, 0, 0},   /* String with "0000" */
-  {192, 168, 0, 11},                      /* The IP address of the node */
+  {192, 168, 1, 111},                      /* The IP address of the node */
   {255, 255, 255, 0},                     /* The network mask of the node */
-  {192, 168, 0, 1},                       /* The default gateway of the node */
+  {192, 168, 1, 1},                       /* The default gateway of the node */
   (u16_t)80,                              /* Default Web server port */
   (u8_t)0,                                /* The Timer server is enabled per default */
   {192, 168, 0, 45},                      /* Time protocol server */
