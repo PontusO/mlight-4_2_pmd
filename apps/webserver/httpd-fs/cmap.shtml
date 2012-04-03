@@ -35,52 +35,40 @@ function ctimeon(obj) {
 elem = document.getElementById("idon");
 if (obj.value==0) elem.disabled=true; else elem.disabled=false; }
 
-function setData (frm)
-{
-  var evt=frm.evt.options[frm.evt.selectedIndex].value;
-  var act=frm.act.options[frm.act.selectedIndex].value;
-  if (evt != -1 && act != -1) {
-    /* Only evaluate if both selections are active */
-    var etype = evt >> 16;
-    var atype = act >> 16;
-    /* Rules */
-    if (etype == 1) {
-      if (atype == 1) {
-        enLayer ('abs');
-      } else {
-        enLayer ('invalid');
-        frm.submit.disabled=true;
-        return;
-      }
-    } else if (etype == 2) {
-      if (atype == 1) {
-        enLayer ('abs');
-      } else if (atype == 2) {
-        enLayer ('ramp');
-      } else if (atype == 3) {
-        enLayer ('cycle');
-      }
-    } else if (etype == 3) {
-      if (atype == 1) {
-        enLayer ('abs');
-      } else if (atype == 2) {
-        enLayer ('ramp');
-      } else if (atype == 3) {
-        enLayer ('cycle');
-      }
-    } else if (etype == 4) {
-      if (atype == 1) {
-        enLayer ('abs');
-      } else if (atype == 3) {
-        enLayer ('cycle');
-      }
-    }
-    frm.submit.disabled=false;
-  } else {
-    hideLayers();
-    frm.submit.disabled=true;
-  }
-  ctimeon(document.getElementById("idsel"));
+function setData (frm) {
+var evt=frm.evt.options[frm.evt.selectedIndex].value;
+var act=frm.act.options[frm.act.selectedIndex].value;
+if (evt != -1 && act != -1) {
+var etype = evt >> 16; var atype = act >> 16;
+if (etype == 1) {
+if (atype == 1) {
+enLayer ('abs');
+} else {
+enLayer ('invalid');
+frm.submit.disabled=true;
+return;
+} } else if (etype == 2) {
+if (atype == 1) {
+enLayer ('abs');
+} else if (atype == 3) {
+enLayer ('cycle');
+} } else if (etype == 3) {
+if (atype == 1) {
+enLayer ('abs');
+} else if (atype == 3) {
+enLayer ('cycle');
+} } else if (etype == 4) {
+if (atype == 1) {
+enLayer ('abs');
+} else if (atype == 3) {
+enLayer ('cycle');
+} }
+frm.submit.disabled=false;
+} else {
+hideLayers();
+frm.submit.disabled=true;
+}
+ctimeon(document.getElementById("idsel"));
 }
 window.onload = function() {
   var myForm = document.getElementById('mapfrm');

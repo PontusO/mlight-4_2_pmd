@@ -48,7 +48,7 @@ const u8_t button_mask[] = {0x40, 0x20};
 static event_prv_t digevent[NUMBER_OF_DIG_INPUTS];
 static const char *base_name = "Digital Input";
 static const char *dig_names[] = { "Button 1", "Button 2" };
-static u16_t cache[6];             /* Cache for on light value */
+static u16_t cache[6];            /* Cache for on light value */
 
 /* Prototype */
 static void init_event (struct rule *rule) __reentrant;
@@ -248,7 +248,7 @@ again:
         /* Button changed so process change */
         if (dig_event->dptr[dig_event->i].mode == BUTTON_TOGGLE_MODE)
         {
-          /* Toggle mode button 1 */
+          /* Toggle mode button */
           toggle_light (&digevent[dig_event->i]);
           /* Now wait for the button to be released */
           PT_WAIT_WHILE (&dig_event->pt, ((BUTTON_PORT & dig_event->mask) ==
@@ -259,7 +259,8 @@ again:
         } else if (dig_event->dptr[dig_event->i].mode == BUTTON_SWITCH_MODE) {
           /* Switch light according to switch state */
           switch_light (&digevent[dig_event->i],
-                        (dig_event->state & dig_event->mask));
+              (dig_event->state & dig_event->mask) ^
+              (dig_event->dptr[dig_event->i].inverted ? dig_event->mask : 0));
         }
       }
     }
