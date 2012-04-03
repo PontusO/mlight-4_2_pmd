@@ -109,6 +109,7 @@ char add_time_event (time_spec_t *ts, u8_t index) __banked
   return 0;
 }
 
+static u8_t day_bits[] = { 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
 PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
 {
   u8_t i;
@@ -133,18 +134,20 @@ PT_THREAD(handle_time_event(time_event_t *time_event) __reentrant __banked)
     time_event->sd = RTC_SECOND_EVENT;
     {
       struct time_param tp;
-      u8_t i;
+      u8_t i, dow;
 
       /* get current global time */
       tp.b_time = get_g_time();
       /* Convert to human format */
       binary_to_dat(&tp);
+      dow = day_of_week (tp.time.year, tp.time.month, tp.time.day);
       time_event->time_spec = &sys_cfg.time_events[0];
       for (i=0;i<NMBR_TIME_EVENTS;i++) {
         if (time_event->time_spec->status &
             (TIME_EVENT_ENABLED | TIME_EVENT_ENTRY_USED) &&
             time_event->time_spec->hrs == tp.time.hrs &&
             time_event->time_spec->min == tp.time.min &&
+            time_event->time_spec->weekday & day_bits[dow] &&
             tp.time.sec == 0) {
           A_(printf (__AT__ "Handling a time event !\n");)
           rule_send_event_signal (&time_events[i]);

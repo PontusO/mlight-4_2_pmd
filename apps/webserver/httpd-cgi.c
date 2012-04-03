@@ -204,7 +204,8 @@ PT_THREAD(start_ramp(struct httpd_state *s, char *ptr) __reentrant)
         if (ramp_ctrl_get_state (rcptr) == RAMP_STATE_DORMANT) {
           ramp_ctrl_send_start (rcptr);
         } else {
-          printf ("CGI report, ramp control %d busy !\n", s->parms.channel);
+          A_(printf (__AT__ "CGI report, ramp control %d busy !\n",
+                     s->parms.channel);)
         }
         /* Return Ok status to the web client */
         sprintf((char *)uip_appdata, "<OK>");
@@ -484,8 +485,10 @@ PT_THREAD(get_current_time_date(struct httpd_state *s, char *ptr) __reentrant)
       if (s->parms.modify) {
       sprintf ((char*)uip_appdata, "%02d:%02d",
                s->parms.ts->hrs, s->parms.ts->min);
-    }
-    break;
+      } else {
+        *(char *)uip_appdata = 0;
+      }
+      break;
   }
   PSOCK_SEND_STR(&s->sout, uip_appdata);
 
@@ -873,7 +876,7 @@ PT_THREAD(get_string(struct httpd_state *s, char *ptr) __reentrant)
       break;
 
     case 2:
-      if (s->parms.ts && s->parms.modify) {
+      if (s->parms.modify) {
         string = s->parms.ts->name;
       }
       break;
@@ -907,10 +910,11 @@ PT_THREAD(get_string(struct httpd_state *s, char *ptr) __reentrant)
       break;
   }
 
-  if (string)
+  if (string) {
     sprintf((char *)uip_appdata, "%s", string);
+    PSOCK_SEND_STR(&s->sout, uip_appdata);
+  }
 
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
   PSOCK_END(&s->sout);
 }
 

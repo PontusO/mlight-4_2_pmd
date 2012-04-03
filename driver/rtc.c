@@ -247,6 +247,8 @@ static u8_t is_leap_year(u16_t year) __reentrant
  *  Devised by Tomohiko Sakamoto[2] in 1993, it is accurate for any date in the range
  *  October 15, 1582–December 31, 9999:
  *
+ *  0 = Sunday, 1 = Monday, etc.
+ *
  ************************************************************************************/
 u8_t day_of_week(int y, int m, int d) __reentrant
 {
@@ -258,29 +260,6 @@ u8_t day_of_week(int y, int m, int d) __reentrant
 char *day_of_week_str (u8_t day) __reentrant
 {
   return weekdays[day];
-}
-/*************************************************************************************
- *
- * This function increments a pmdtime time entry with one day.
- *
- ************************************************************************************/
-static void increment_day(struct pmdtime *time) __reentrant
-{
-  if (is_leap_year(time->year) && (time->month == RTC_MONTH_FEBRUARY)) {
-    /* Special handling of leap year in february */
-  } else {
-    if (time->day == days_in_month[time->month]) {
-      time->day = RTC_DAY_THE_FIRST;
-      if (time->month == RTC_MONTH_DECEMBER) {
-        time->month = RTC_MONTH_JANUARY;
-        time->year += 1;
-      } else {
-        time->month += 1;
-      }
-    } else {
-      time->day += 1;
-    }
-  }
 }
 
 static __xdata unsigned long second;

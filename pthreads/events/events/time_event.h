@@ -55,13 +55,13 @@ typedef enum {
  * Time specification for the time event
  *
  * The weekday entry is coded as follows.
- *   __bit 6 = Sunday
- *   __bit 5 = Monday
- *   __bit 4 = Tuesday
- *   __bit 3 = Wednesday
- *   __bit 2 = Thursday
- *   __bit 1 = Friday
- *   __bit 0 = Saturday
+ *   bit 6 = Sunday
+ *   bit 5 = Monday
+ *   bit 4 = Tuesday
+ *   bit 3 = Wednesday
+ *   bit 2 = Thursday
+ *   bit 1 = Friday
+ *   bit 0 = Saturday
  */
 typedef struct {
   time_event_status_t status;
