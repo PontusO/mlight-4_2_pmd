@@ -66,8 +66,6 @@ void absval_trigger (struct rule *rule) __reentrant
   act_absolute_data_t *absdata = (act_absolute_data_t *)rule->action_data;
   rule_data_t *rdata = rule->r_data;
 
-  A_(printf(__AT__ " Channel %d, Value %04x\n", (int)absdata->channel,
-          absdata->value);)
   led_params.channel = absdata->channel-1;
 
   /* Get value based on what the caller wanted */
@@ -75,6 +73,9 @@ void absval_trigger (struct rule *rule) __reentrant
     led_params.level_absolute = absdata->value;
   else if (rdata->command == EVENT_USE_DYNAMIC_DATA)
     led_params.level_absolute = rdata->adata;
+
+  A_(printf(__AT__ "Setting: Channel %d, Value %d\n", (int)led_params.channel,
+          led_params.level_absolute);)
 
   ledlib_set_light_abs (&led_params);
 }

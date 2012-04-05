@@ -29,6 +29,7 @@
  */
 #pragma codeseg APP_BANK
 //#define PRINT_A     // Enable A prints
+//#define PRINT_B
 
 #include <stdlib.h>
 
@@ -89,8 +90,9 @@ static void init_event (struct rule *rule) __reentrant
     {
       u8_t channel;
 
-      channel = rule->action_data.abs_data.channel;
+      channel = rule->action_data.abs_data.channel-1;
       cache[channel] = rule->action_data.abs_data.value;
+      A_(printf (__AT__ "Channel %d, data %u\n", channel, cache[channel]);)
       if (ledlib_get_light_abs (channel))
         rule->r_data->adata = cache[channel];
       else
@@ -121,14 +123,15 @@ static void toggle_light (event_prv_t *ptr) __reentrant
   switch (rp->action->type) {
     case ATYPE_ABSOLUTE_ACTION:
     {
-      u8_t channel = rp->action_data.abs_data.channel;
+      u8_t channel = rp->action_data.abs_data.channel-1;
 
       if (rp->r_data->adata)
         rp->r_data->adata = 0;
       else
         rp->r_data->adata = cache[channel];
 
-      A_(printf (__AT__ "Sending toggle event !\n");)
+      B_(printf (__AT__ "Sending toggle event %d, %d !\n",
+                 channel, cache[channel]);)
       rp->r_data->command = EVENT_USE_DYNAMIC_DATA;
       rule_send_event_signal (ptr);
       break;
@@ -221,8 +224,6 @@ again:
         (dig_event->old_state != (BUTTON_PORT & ALL_BUTTONS_MASK)));
     /* Store the current state */
     dig_event->state = BUTTON_PORT & ALL_BUTTONS_MASK;
-    B_(printf (__AT__ "Pow %02x, %02x !\n", dig_event->old_state &
-               ALL_BUTTONS_MASK, BUTTON_PORT & ALL_BUTTONS_MASK);)
     /* key debounce */
     set_timer (dig_event->tmr, DEBOUNCE_TIME, NULL);
     PT_WAIT_UNTIL (&dig_event->pt, get_timer (dig_event->tmr) == 0);
@@ -237,7 +238,7 @@ again:
     {
       /* Use this mask for the current button */
       dig_event->mask = button_mask[dig_event->i];
-      B_(printf (__AT__ "Checking button %d, 0x%02x, 0x%02x\n", dig_event->i,
+      A_(printf (__AT__ "Checking button %d, 0x%02x, 0x%02x\n", dig_event->i,
           dig_event->state & dig_event->mask,
           dig_event->old_state & dig_event->mask);)
 

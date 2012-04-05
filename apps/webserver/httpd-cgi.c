@@ -791,7 +791,7 @@ PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
     case 1:
     {
       s->j = 0;
-      for (s->i=1; s->i<5; s->i++) {
+      for (s->i=1; s->i<7; s->i++) {
         s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%d",
                 s->i, (s->parms.modify &&
                         s->parms.rp->action_data.abs_data.channel == s->i) ?
