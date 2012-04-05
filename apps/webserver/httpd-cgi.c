@@ -509,23 +509,22 @@ PT_THREAD(get_tz_options(struct httpd_state *s, char *ptr) __reentrant)
   IDENTIFIER_NOT_USED(ptr);
 
   for (s->i = -11 ; s->i<12 ; s->i++) {
-    char *ptr = uip_appdata;
-    ptr += sprintf(ptr, "<option value=\"%d\"", s->i);
+    s->j = sprintf(uip_appdata, "<option value=\"%d\"", s->i);
 
     /* Mark the selected option */
     if (s->i == sys_cfg.time_zone) {
-      ptr += sprintf(ptr, " selected>GMT");
+      s->j += sprintf((char*)uip_appdata+s->j, " selected>GMT");
     } else {
-      ptr += sprintf(ptr, ">GMT");
+      s->j += sprintf((char*)uip_appdata+s->j, ">GMT");
     }
 
     /* GMT has no values */
     if (s->i == 0)
-      ptr += sprintf(ptr, "</option>");
+      s->j += sprintf((char*)uip_appdata+s->j, "</option>");
     else if (s->i < 0)
-      ptr += sprintf(ptr, " %d hrs</option>", s->i);
+      s->j += sprintf((char*)uip_appdata+s->j, " %d hrs</option>", s->i);
     else
-      ptr += sprintf(ptr, " +%d hrs</option>", s->i);
+      s->j += sprintf((char*)uip_appdata+s->j, " +%d hrs</option>", s->i);
 
     PSOCK_SEND_STR (&s->sout, uip_appdata);
   }
