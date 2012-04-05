@@ -214,4 +214,57 @@ void x_set_wcmd(util_param_t *param) __reentrant __banked
   }
 }
 
+static const char cgi_string_new[] = "New";
+static const char cgi_string_modify[] = "Modify";
+
+char *parse_string (util_param_t *param) __reentrant __banked
+{
+  char *string = NULL;
+  char stringno = atoi(param->buffer);
+
+  switch(stringno)
+  {
+    /* Node Name */
+    case 1:
+      string = sys_cfg.device_id;
+      break;
+
+    case 2:
+      if (param->s->parms.modify) {
+        string = param->s->parms.ts->name;
+      }
+      break;
+
+    case 3:
+      string = sys_cfg.username;
+      break;
+
+    case 4:
+      string = sys_cfg.password;
+      break;
+
+    case 5:
+      if (param->s->parms.modify)
+        string = cgi_string_modify;
+      else
+        string = cgi_string_new;
+      break;
+
+    case 10:
+    case 11:
+    case 12:
+    case 13: {
+        ramp_ctrl_t *rcmgr = ramp_ctrl_get_ramp_ctrl (stringno-10);
+        if (rcmgr) {
+          string = ramp_ctrl_get_state_str (rcmgr);
+        } else {
+          string = (char*)"Invalid string !";
+        }
+      }
+      break;
+  }
+
+  return string;
+}
+
 /* EOF */

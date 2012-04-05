@@ -1,49 +1,49 @@
 /**
- * \addtogroup httpd
- * @{
- */
+* \addtogroup httpd
+* @{
+*/
 
 /**
- * \file
- *         Web server script interface
- * \author
- *         Adam Dunkels <adam@sics.se>
- *
- */
+* \file
+* Web server script interface
+* \author
+* Adam Dunkels <adam@sics.se>
+*
+*/
 
 /*
- * Copyright (c) 2001-2006, Adam Dunkels.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior
- *    written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * This file is part of the uIP TCP/IP stack.
- *
- * $Id: httpd-cgi.c,v 1.2 2006/06/11 21:46:37 adam Exp $
- *
- */
+* Copyright (c) 2001-2006, Adam Dunkels.
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions
+* are met:
+* 1. Redistributions of source code must retain the above copyright
+* notice, this list of conditions and the following disclaimer.
+* 2. Redistributions in binary form must reproduce the above copyright
+* notice, this list of conditions and the following disclaimer in the
+* documentation and/or other materials provided with the distribution.
+* 3. The name of the author may not be used to endorse or promote
+* products derived from this software without specific prior
+* written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+* OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+* ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+* GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+* NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*
+* This file is part of the uIP TCP/IP stack.
+*
+* $Id: httpd-cgi.c,v 1.2 2006/06/11 21:46:37 adam Exp $
+*
+*/
 //#define PRINT_A
 
 #include "uip.h"
@@ -105,11 +105,9 @@ static const struct httpd_cgi_call *calls[] = {
   NULL
 };
 
-static const char *ip_format = "%d.%d.%d.%d";
-static const char *error_string = "<ERROR ";
-static const char *str_selected = "selected";
-static const char *cgi_string_new = "New";
-static const char *cgi_string_modify = "Modify";
+static const char ip_format[] = "%d.%d.%d.%d";
+static const char error_string[] = "<ERROR ";
+static const char str_selected[] = "selected";
 
 static
 PT_THREAD(set_level(struct httpd_state *s, char *ptr) __reentrant)
@@ -136,7 +134,7 @@ PT_THREAD(set_level(struct httpd_state *s, char *ptr) __reentrant)
       sprintf((char *)uip_appdata, "%s02>", error_string);
     }
   } else {
-      sprintf((char *)uip_appdata, "%s03>", error_string);
+    sprintf((char *)uip_appdata, "%s03>", error_string);
   }
   PSOCK_SEND_STR(&s->sout, uip_appdata);
   PSOCK_END(&s->sout);
@@ -164,7 +162,7 @@ PT_THREAD(get_level(struct httpd_state *s, char *ptr) __reentrant)
       sprintf((char *)uip_appdata, "%s02>", error_string);
     }
   } else {
-      sprintf((char *)uip_appdata, "%s03>", error_string);
+    sprintf((char *)uip_appdata, "%s03>", error_string);
   }
   PSOCK_SEND_STR(&s->sout, uip_appdata);
   PSOCK_END(&s->sout);
@@ -178,9 +176,9 @@ PT_THREAD(start_ramp(struct httpd_state *s, char *ptr) __reentrant)
   PSOCK_BEGIN(&s->sout);
   {
     /* Make sure we have at least 3 parameters
-     * channel, rate and rampto are mandatory parameters.
-     * step is optional
-     */
+    * channel, rate and rampto are mandatory parameters.
+    * step is optional
+    */
     if (s->parms.num_parms >= 3 &&
         s->parms.channel_updated &&
         s->parms.rate_updated &&
@@ -230,7 +228,7 @@ PT_THREAD(stop_ramp(struct httpd_state *s, char *ptr) __reentrant)
       ramp_ctrl_t *rcptr = ramp_ctrl_get_ramp_ctrl (s->parms.channel);
       /* Assert a signal to the ramp manager to start a ramp */
       A_(printf (__AT__ " Stopping ramp (%p) on channel %d\n",
-                rcptr, (int)s->parms.channel);)
+                 rcptr, (int)s->parms.channel);)
       ramp_ctrl_send_stop (rcptr);
       /* For now, this will always return OK status */
       sprintf((char *)uip_appdata, "<OK>");
@@ -270,8 +268,8 @@ httpd_cgi(char *name) __reentrant
 }
 
 /* ****************************************************************************
- * CGI function template
- */
+* CGI function template
+*/
 #if 0
 /*---------------------------------------------------------------------------*/
 static
@@ -289,18 +287,18 @@ PT_THREAD(get_rtc(struct httpd_state *s, char *ptr) __reentrant)
 
 /*---------------------------------------------------------------------------*/
 /*
- * Create a list of the currently configured time events in the system
- * The output is modeled after this static html code.
- * <tr>
- *   <td><input type="checkbox" name="cb1"></td>
- *   <td>Evening</td>
- *   <td>Time 21:40</td>
- *   <td>Weekdays: Mon-Tue-Wed-Thu-Fri</td>
- * </tr>
- *
- */
+* Create a list of the currently configured time events in the system
+* The output is modeled after this static html code.
+* <tr>
+* <td><input type="checkbox" name="cb1"></td>
+* <td>Evening</td>
+* <td>Time 21:40</td>
+* <td>Weekdays: Mon-Tue-Wed-Thu-Fri</td>
+* </tr>
+*
+*/
 static const char *weekdays[] =
-  {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 static u8_t order[] = {0x20,0x10,0x08,0x04,0x02,0x02,0x40};
 #pragma save
 #pragma nogcse
@@ -316,16 +314,16 @@ PT_THREAD(get_time_events(struct httpd_state *s, char *ptr) __reentrant)
     if (((time_spec_t *)s->ptr)->status & TIME_EVENT_ENTRY_USED) {
       u8_t j;
       s->j = sprintf((char *)uip_appdata,
-                  "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td>", s->i);
+                     "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td>", s->i);
       s->j += sprintf((char *)uip_appdata+s->j, "<td>%s</td><td>%s</td>",
-          (((time_spec_t *)s->ptr)->status & TIME_EVENT_ENABLED) ? "Yes" : "No",
-          ((time_spec_t *)s->ptr)->name);
+                      (((time_spec_t *)s->ptr)->status & TIME_EVENT_ENABLED) ?
+                      "Yes" : "No", ((time_spec_t *)s->ptr)->name);
       s->j += sprintf((char *)uip_appdata+s->j, "<td>%02d:%02d</td>",
-                   ((time_spec_t *)s->ptr)->hrs, ((time_spec_t *)s->ptr)->min);
+                      ((time_spec_t *)s->ptr)->hrs, ((time_spec_t *)s->ptr)->min);
       s->j += sprintf((char *)uip_appdata+s->j, "<td>Weekdays: ");
 
       /* Resolve week days */
-      for (j=0;j<7;j++) {
+      for (j=0; j<7; j++) {
         if (((time_spec_t *)s->ptr)->weekday & order[j]) {
           s->j += sprintf((char *)uip_appdata+s->j, "%s ", weekdays[j]);
         }
@@ -382,13 +380,17 @@ PT_THREAD(map_get_events(struct httpd_state *s, char *ptr) __reentrant)
       s->am = ((rule_t *)s->ptr)->action;
 
       s->j = sprintf((char *)uip_appdata,
-          "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td><td>%s</td>",
-          s->i, (((rule_t *)s->ptr)->status == RULE_STATUS_ENABLED) ?
-          "Yes" : "No");
+                     "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td><td>%s</td>",
+                     s->i, (((rule_t *)s->ptr)->status == RULE_STATUS_ENABLED) ?
+                     "Yes" : "No");
       s->j += sprintf((char *)uip_appdata+s->j, "<td>(%s) %s</td>",
-          s->ep->base.name, s->ep->event_name);
+                      s->ep->base.name, s->ep->event_name);
       s->j += sprintf((char *)uip_appdata+s->j,
-          "<td>%s</td><td>None</td></td></tr>", s->am->action_name);
+                      "<td>%s</td><td>%d</td><td>None</td></td></tr>",
+                      s->am->action_name,
+                      (s->am->type == ATYPE_ABSOLUTE_ACTION ?
+                      ((rule_t *)s->ptr)->action_data.abs_data.channel :
+                      ((rule_t *)s->ptr)->action_data.cycle_data.channel));
       PSOCK_SEND_STR(&s->sout, uip_appdata);
       s->ptr = rule_iter_get_next_entry(&s->parms.iter);
       s->i++;
@@ -424,22 +426,24 @@ PT_THREAD(get_evntfuncs(struct httpd_state *s, char *ptr) __reentrant)
           s->num |= (unsigned long)(((event_prv_t *)s->ptr)->type) << 16;
           s->j = sprintf (uip_appdata, "<option value=\"%ld\" ", s->num);
           s->j += sprintf ((char *)uip_appdata+s->j, "%s>",
-              s->parms.modify && s->parms.rp->event == s->ptr ? str_selected : "");
+                           s->parms.modify && s->parms.rp->event == s->ptr ?
+                           str_selected : "");
           s->j += sprintf ((char *)uip_appdata+s->j, "(%s) ",
-              GET_EVENT_BASE(s->ptr).name);
+                           GET_EVENT_BASE(s->ptr).name);
           sprintf ((char *)uip_appdata+s->j, "%s</option>",
-              GET_EVENT(s->ptr)->event_name);
+                   GET_EVENT(s->ptr)->event_name);
           break;
         case 2:
           s->num = (int)s->ptr;
           s->num |= (unsigned long)(((action_mgr_t*)s->ptr)->type) << 16;
-          s->j  = sprintf ((char *)uip_appdata, "<option value=\"%ld\" ", s->num);
+          s->j = sprintf ((char *)uip_appdata, "<option value=\"%ld\" ", s->num);
           s->j += sprintf ((char *)uip_appdata+s->j, "%s>",
-              s->parms.modify && s->parms.rp->action == s->ptr ? str_selected : "");
+                           s->parms.modify && s->parms.rp->action == s->ptr ?
+                           str_selected : "");
           s->j += sprintf ((char *)uip_appdata+s->j, "(%s) ",
-              GET_EVENT_BASE(s->ptr).name);
+                           GET_EVENT_BASE(s->ptr).name);
           sprintf ((char *)uip_appdata+s->j, "%s</option>",
-              GET_ACTION(s->ptr)->action_name);
+                   GET_ACTION(s->ptr)->action_name);
           break;
         default:
           /* TODO: Implement getting rule from number, if necessery */
@@ -468,23 +472,23 @@ PT_THREAD(get_current_time_date(struct httpd_state *s, char *ptr) __reentrant)
 
   switch (s->i)
   {
-    /* Return the time */
+      /* Return the time */
     case 1:
-    print_time_formated(uip_appdata);
-    break;
+      print_time_formated(uip_appdata);
+      break;
 
     case 2:
-    print_date_formated(uip_appdata);
-    break;
+      print_date_formated(uip_appdata);
+      break;
 
     case 3:
-    print_datetime_formated(uip_appdata);
-    break;
+      print_datetime_formated(uip_appdata);
+      break;
 
     case 4:
       if (s->parms.modify) {
-      sprintf ((char*)uip_appdata, "%02d:%02d",
-               s->parms.ts->hrs, s->parms.ts->min);
+        sprintf ((char*)uip_appdata, "%02d:%02d",
+                 s->parms.ts->hrs, s->parms.ts->min);
       } else {
         *(char *)uip_appdata = 0;
       }
@@ -546,29 +550,29 @@ PT_THREAD(get_ip_num(struct httpd_state *s, char *ptr) __reentrant)
     case 1:
       /* Host IP */
       sprintf((char *)uip_appdata, ip_format,
-        sys_cfg.ip_addr[0], sys_cfg.ip_addr[1],
-        sys_cfg.ip_addr[2], sys_cfg.ip_addr[3]);
+              sys_cfg.ip_addr[0], sys_cfg.ip_addr[1],
+              sys_cfg.ip_addr[2], sys_cfg.ip_addr[3]);
       break;
 
     case 2:
       /* Netmask */
       sprintf((char *)uip_appdata, ip_format,
-        sys_cfg.netmask[0], sys_cfg.netmask[1],
-        sys_cfg.netmask[2], sys_cfg.netmask[3]);
+              sys_cfg.netmask[0], sys_cfg.netmask[1],
+              sys_cfg.netmask[2], sys_cfg.netmask[3]);
       break;
 
     case 3:
       /* Deafult router */
       sprintf((char *)uip_appdata, ip_format,
-        sys_cfg.gw_addr[0], sys_cfg.gw_addr[1],
-        sys_cfg.gw_addr[2], sys_cfg.gw_addr[3]);
+              sys_cfg.gw_addr[0], sys_cfg.gw_addr[1],
+              sys_cfg.gw_addr[2], sys_cfg.gw_addr[3]);
       break;
 
     case 4:
       /* Time server */
       sprintf((char *)uip_appdata, ip_format,
-        sys_cfg.time_server[0], sys_cfg.time_server[1],
-        sys_cfg.time_server[2], sys_cfg.time_server[3]);
+              sys_cfg.time_server[0], sys_cfg.time_server[1],
+              sys_cfg.time_server[2], sys_cfg.time_server[3]);
       break;
 
     case 5:
@@ -660,13 +664,13 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
 
   switch(intno)
   {
-    /* Update interval for the timeset web page */
+      /* Update interval for the timeset web page */
     case 1:
       myint = (u16_t)sys_cfg.update_interval;
       intno = 1;
       break;
 
-    /* mapx value on the cmap.html page */
+      /* mapx value on the cmap.html page */
     case 2:
       intno = 0;
       if (s->parms.rp && s->parms.modify) {
@@ -675,7 +679,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
       }
       break;
 
-    /* tsx value on tentry.shtml page */
+      /* tsx value on tentry.shtml page */
     case 3:
       intno = 0;
       if (s->parms.ts && s->parms.modify) {
@@ -684,19 +688,19 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
       }
       break;
 
-    /* Sensitivity value for the PIR sensor */
+      /* Sensitivity value for the PIR sensor */
     case 4:
       myint = sys_cfg.pir_sensitivity;
       intno = 1;
       break;
 
-    /* Trigger lockout time */
+      /* Trigger lockout time */
     case 5:
       myint = sys_cfg.pir_lockout;
       intno = 1;
       break;
 
-    /* Retrieve the alevel value in cmap.shtml */
+      /* Retrieve the alevel value in cmap.shtml */
     case 6:
       intno = 1;
       if (s->parms.modify)
@@ -705,7 +709,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
         myint = 0;
       break;
 
-    /* Retrieve the rampto value on page cmap.shtml */
+      /* Retrieve the rampto value on page cmap.shtml */
     case 7:
       intno = 1;
       if (s->parms.modify) {
@@ -716,7 +720,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
         myint = 0;
       break;
 
-    /* Retrieve the rate value on page cmap.shtml */
+      /* Retrieve the rate value on page cmap.shtml */
     case 8:
       intno = 1;
       if (s->parms.modify) {
@@ -727,7 +731,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
         myint = 1;
       break;
 
-    /* Retrieve the step value on page cmap.shtml */
+      /* Retrieve the step value on page cmap.shtml */
     case 9:
       intno = 1;
       if (s->parms.modify) {
@@ -746,7 +750,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
       intno = 1;
       break;
 
-    /* Retrieve the timeon value on page cmap.shtml */
+      /* Retrieve the timeon value on page cmap.shtml */
     case 14:
       intno = 1;
       if (s->parms.modify) {
@@ -769,9 +773,11 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
 }
 
 static const char const *inmodes[] = {
-  "Single Throw (Toggle)", "Dual Throw (Switch)" };
+  "Single Throw (Toggle)", "Dual Throw (Switch)"
+};
 static const char const *rmodes[] = {
-  "Single Ramp", "Dual Ramp" };
+  "Single Ramp", "Dual Ramp"
+};
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
@@ -787,66 +793,66 @@ PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
 
   switch(optno)
   {
-    /* Generate options for achannel on cmap.shtml */
+      /* Generate options for achannel on cmap.shtml */
     case 1:
-    {
-      s->j = 0;
-      for (s->i=1; s->i<7; s->i++) {
-        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%d",
-                s->i, (s->parms.modify &&
-                        s->parms.rp->action_data.abs_data.channel == s->i) ?
-                        " selected" : "", s->i);
+      {
+        s->j = 0;
+        for (s->i=1; s->i<7; s->i++) {
+          s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%d",
+                          s->i, (s->parms.modify &&
+                          s->parms.rp->action_data.abs_data.channel == s->i) ?
+                          " selected" : "", s->i);
+        }
       }
-    }
-    break;
+      break;
 
-    /* Generate options for channel on cmap.shtml */
+      /* Generate options for channel on cmap.shtml */
     case 2:
-    {
-      s->j = 0;
-      for (s->i=1; s->i<5; s->i++) {
-        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%d",
-                s->i, (s->parms.modify &&
-                        s->parms.rp->action_data.cycle_data.channel == s->i) ?
-                        " selected" : "", s->i);
+      {
+        s->j = 0;
+        for (s->i=1; s->i<5; s->i++) {
+          s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%d",
+                          s->i, (s->parms.modify &&
+                          s->parms.rp->action_data.cycle_data.channel == s->i) ?
+                          " selected" : "", s->i);
+        }
       }
-    }
-    break;
+      break;
 
-    /* Options for input modes on dig.shtml */
+      /* Options for input modes on dig.shtml */
     case 3:
-    {
-      s->j = 0;
-      for (s->i=0; s->i<2; s->i++) {
-        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%s",
-                s->i, (sys_cfg.in1_mode == s->i) ? " selected" : "",
-                inmodes[s->i]);
+      {
+        s->j = 0;
+        for (s->i=0; s->i<2; s->i++) {
+          s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%s",
+                          s->i, (sys_cfg.in1_mode == s->i) ? " selected" : "",
+                          inmodes[s->i]);
+        }
       }
-    }
-    break;
+      break;
 
     case 4:
-    {
-      s->j = 0;
-      for (s->i=0; s->i<2; s->i++) {
-        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%s",
-                s->i, (sys_cfg.in2_mode == s->i) ? " selected" : "",
-                inmodes[s->i]);
+      {
+        s->j = 0;
+        for (s->i=0; s->i<2; s->i++) {
+          s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%s",
+                          s->i, (sys_cfg.in2_mode == s->i) ? " selected" : "",
+                          inmodes[s->i]);
+        }
       }
-    }
-    break;
+      break;
 
     case 5:
-    {
-      s->j = 0;
-      for (s->i=0; s->i<2; s->i++) {
-        s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%s",
-                s->i, (s->parms.modify &&
-                        s->parms.rp->action_data.cycle_data.mode == s->i) ?
-                        " selected" : "", rmodes[s->i]);
-      }
+      {
+        s->j = 0;
+        for (s->i=0; s->i<2; s->i++) {
+          s->j += sprintf((char*)uip_appdata+s->j, "<option value=\"%d\"%s>%s",
+                          s->i, (s->parms.modify &&
+                          s->parms.rp->action_data.cycle_data.mode == s->i) ?
+                          " selected" : "", rmodes[s->i]);
+        }
 
-    }
+      }
   }
 
   PSOCK_SEND_STR(&s->sout, uip_appdata);
@@ -858,57 +864,18 @@ PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
 static
 PT_THREAD(get_string(struct httpd_state *s, char *ptr) __reentrant)
 {
-  char stringno;
   char *string = NULL;
+  util_param_t up;
 
   PSOCK_BEGIN(&s->sout);
 
   while (*ptr != ' ')
     ptr++;
   ptr++;
-  stringno = atoi(ptr);
 
-  switch(stringno)
-  {
-    /* Node Name */
-    case 1:
-      string = sys_cfg.device_id;
-      break;
-
-    case 2:
-      if (s->parms.modify) {
-        string = s->parms.ts->name;
-      }
-      break;
-
-    case 3:
-      string = sys_cfg.username;
-      break;
-
-    case 4:
-      string = sys_cfg.password;
-      break;
-
-    case 5:
-      if (s->parms.modify)
-        string = cgi_string_modify;
-      else
-        string = cgi_string_new;
-      break;
-
-    case 10:
-    case 11:
-    case 12:
-    case 13: {
-        ramp_ctrl_t *rcmgr = ramp_ctrl_get_ramp_ctrl (stringno-10);
-        if (rcmgr) {
-          string = ramp_ctrl_get_state_str (rcmgr);
-        } else {
-          string = (char*)"Invalid string !";
-        }
-      }
-      break;
-  }
+  up.s = s;
+  up.buffer = ptr;
+  string = parse_string (&up);
 
   if (string) {
     sprintf((char *)uip_appdata, "%s", string);

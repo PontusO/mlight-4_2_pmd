@@ -17,7 +17,7 @@ return true;}
 -->
 </script>
 <noscript>You need Javascript enabled for this to work</noscript>
-<tr><th>Mark</th><th>Enabled</th><th>Event Provider</th><th>Action Manager</th><th>Schedule</th>
+<tr><th>Mark</th><th>Enabled</th><th>Event Provider</th><th>Action Manager</th><th>Channel</th><th>Schedule</th>
 </tr>%! map-get-events
 </table></center>
 <input type="hidden" name="mapcmd" value="">
