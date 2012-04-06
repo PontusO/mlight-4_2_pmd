@@ -49,7 +49,6 @@ const u8_t button_mask[] = {0x40, 0x20};
 static event_prv_t digevent[NUMBER_OF_DIG_INPUTS];
 static const char *base_name = "Digital Input";
 static const char *dig_names[] = { "Button 1", "Button 2" };
-static u16_t cache[6];            /* Cache for on light value */
 
 /* Prototype */
 static void init_event (struct rule *rule) __reentrant;
@@ -71,38 +70,8 @@ void init_dig_event(dig_event_t *dig_event) __reentrant __banked
     digevent[i].base.name = base_name;
     digevent[i].type = ETYPE_DIG_INPUT_EVENT;
     digevent[i].event_name = (char*)dig_names[i];
-    digevent[i].vt.init_event = init_event;
+    digevent[i].vt.init_event = NULL;
   }
-}
-
-/*
- * Init method, called when a new rule is created
- */
-static void init_event (struct rule *rule) __reentrant
-{
-  /* Here we need to initialize the cache to a proper first value.
-   * Firs we check to see if the light is already on. If so we set the cache
-   * to the value set in the rule definition. */
-
-   switch (rule->action->type)
-   {
-    case ATYPE_ABSOLUTE_ACTION:
-    {
-      u8_t channel;
-
-      channel = rule->action_data.abs_data.channel-1;
-      cache[channel] = rule->action_data.abs_data.value;
-      A_(printf (__AT__ "Channel %d, data %u\n", channel, cache[channel]);)
-      if (ledlib_get_light_abs (channel))
-        rule->r_data->adata = cache[channel];
-      else
-        rule->r_data->adata = 0;
-      break;
-    }
-
-    default:
-      break;
-   }
 }
 
 /*
@@ -128,10 +97,10 @@ static void toggle_light (event_prv_t *ptr) __reentrant
       if (rp->r_data->adata)
         rp->r_data->adata = 0;
       else
-        rp->r_data->adata = cache[channel];
+        rp->r_data->adata = rp->action_data.abs_data.value;
 
       B_(printf (__AT__ "Sending toggle event %d, %d !\n",
-                 channel, cache[channel]);)
+                 channel, rp->r_data->adata);)
       rp->r_data->command = EVENT_USE_DYNAMIC_DATA;
       rule_send_event_signal (ptr);
       break;
@@ -158,7 +127,7 @@ void switch_light (event_prv_t *ptr, u8_t state) __reentrant
   u8_t channel;
 
   rp = rule_lookup_from_event (ptr);
-  channel = rp->action_data.abs_data.channel;
+  channel = rp->action_data.abs_data.channel-1;
 
   /* If there is no data return without doing anything */
   if (!rp)
@@ -170,18 +139,20 @@ void switch_light (event_prv_t *ptr, u8_t state) __reentrant
     case ATYPE_ABSOLUTE_ACTION:
     {
       if (state)
-        rp->r_data->adata = cache[channel];
+        rp->r_data->adata = rp->action_data.abs_data.value;
       else
         rp->r_data->adata = 0;
 
       rp->r_data->command = EVENT_USE_DYNAMIC_DATA;
+      B_(printf (__AT__ "Sending switch event %d, %d !\n",
+                 channel, rp->r_data->adata);)
       rule_send_event_signal (ptr);
       break;
     }
 
     case ATYPE_CYCLE_ACTION:
       /* If it's a cycle just send a start trigger with our own command */
-      if (!((cycle_mgr_get_state (channel-1) == CYCLE_STATE_DORMANT)
+      if (!((cycle_mgr_get_state (channel) == CYCLE_STATE_DORMANT)
              && !state)) {
         rp->r_data->command = EVENT_USE_CONTINUE;
         rule_send_event_signal (ptr);

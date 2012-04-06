@@ -380,11 +380,11 @@ PT_THREAD(map_get_events(struct httpd_state *s, char *ptr) __reentrant)
       s->am = ((rule_t *)s->ptr)->action;
 
       s->j = sprintf((char *)uip_appdata,
-                     "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td><td>%s</td>",
-                     s->i, (((rule_t *)s->ptr)->status == RULE_STATUS_ENABLED) ?
-                     "Yes" : "No");
-      s->j += sprintf((char *)uip_appdata+s->j, "<td>(%s) %s</td>",
-                      s->ep->base.name, s->ep->event_name);
+                      "<tr><td><input type=\"checkbox\" name=\"cb%d\"></td><td>%s</td>",
+                      s->i, (((rule_t *)s->ptr)->status == RULE_STATUS_ENABLED) ?
+                      "Yes" : "No");
+      s->j += sprintf((char *)uip_appdata+s->j, "<td>%s</td>",
+                      s->ep->event_name);
       s->j += sprintf((char *)uip_appdata+s->j,
                       "<td>%s</td><td>%d</td><td>None</td></td></tr>",
                       s->am->action_name,
