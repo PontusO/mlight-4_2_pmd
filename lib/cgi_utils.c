@@ -27,8 +27,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-//#pragma codeseg   APP_BANK
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -39,8 +37,6 @@
 #include "flash.h"
 #include "event_switch.h"
 #include "iet_debug.h"
-
-#define __banked
 
 /*---------------------------------------------------------------------------*/
 static char *skip_to_char(char *buf, char chr) __reentrant
@@ -54,7 +50,7 @@ static char *skip_to_char(char *buf, char chr) __reentrant
 
 /* Parameter functions */
 /*---------------------------------------------------------------------------*/
-void x_set_mapcmd(util_param_t *param) __reentrant __banked
+void x_set_mapcmd(util_param_t *param) __reentrant
 {
   u32_t lst=1;
   u8_t i;
@@ -107,7 +103,7 @@ void x_set_mapcmd(util_param_t *param) __reentrant __banked
 }
 
 /*---------------------------------------------------------------------------*/
-void x_set_tscmd(util_param_t *param) __reentrant __banked
+void x_set_tscmd(util_param_t *param) __reentrant
 {
   u16_t lst=1;
   u8_t i;
@@ -154,7 +150,7 @@ void x_set_tscmd(util_param_t *param) __reentrant __banked
 }
 
 /*---------------------------------------------------------------------------*/
-void x_set_wcmd(util_param_t *param) __reentrant __banked
+void x_set_wcmd(util_param_t *param) __reentrant
 {
   u8_t cmd;
   param->buffer = skip_to_char(param->buffer, '=');
@@ -170,7 +166,6 @@ void x_set_wcmd(util_param_t *param) __reentrant __banked
           u8_t evt = param->s->parms.evt >> 16 & 0xff;
           param->s->parms.rp->event = (event_prv_t __xdata *)(param->s->parms.evt & 0xffff);
           param->s->parms.rp->action = (action_mgr_t __xdata *)(param->s->parms.act & 0xffff);
-          param->s->parms.rp->scenario = (unsigned int)evt << 8 | act;
           if (param->s->parms.rp->status != RULE_STATUS_ENABLED)
             param->s->parms.rp->status = RULE_STATUS_DISABLED;
           switch (act)
@@ -214,59 +209,6 @@ void x_set_wcmd(util_param_t *param) __reentrant __banked
         break;
     }
   }
-}
-
-static const char cgi_string_new[] = "New";
-static const char cgi_string_modify[] = "Modify";
-
-char *parse_string (util_param_t *param) __reentrant __banked
-{
-  char *string = NULL;
-  char stringno = atoi(param->buffer);
-
-  switch(stringno)
-  {
-    /* Node Name */
-    case 1:
-      string = sys_cfg.device_id;
-      break;
-
-    case 2:
-      if (param->s->parms.modify) {
-        string = param->s->parms.ts->name;
-      }
-      break;
-
-    case 3:
-      string = sys_cfg.username;
-      break;
-
-    case 4:
-      string = sys_cfg.password;
-      break;
-
-    case 5:
-      if (param->s->parms.modify)
-        string = cgi_string_modify;
-      else
-        string = cgi_string_new;
-      break;
-
-    case 10:
-    case 11:
-    case 12:
-    case 13: {
-        ramp_ctrl_t *rcmgr = ramp_ctrl_get_ramp_ctrl (stringno-10);
-        if (rcmgr) {
-          string = ramp_ctrl_get_state_str (rcmgr);
-        } else {
-          string = (char*)"Invalid string !";
-        }
-      }
-      break;
-  }
-
-  return string;
 }
 
 /* EOF */

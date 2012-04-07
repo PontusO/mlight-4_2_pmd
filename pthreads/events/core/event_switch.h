@@ -249,7 +249,7 @@ struct rule {
   event_prv_t *event;                 /** Pointer to connected event */
   action_mgr_t *action;               /** Pointer to action manager */
   rule_data_t *r_data;                /** Pointer to the volatile data struct */
-  unsigned int scenario;              /** Even/Action combination */
+  u8_t schedule;                      /** Indicate if this rule obides by the schedule */
   union rule_event_data event_data;   /** Data instance for event providers*/
   union rule_action_data action_data; /** Data instance for action managers*/
 };

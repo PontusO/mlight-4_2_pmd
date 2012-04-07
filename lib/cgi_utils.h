@@ -32,16 +32,13 @@
 
 #include "httpd.h"
 
-#define __banked
-
 typedef struct {
   struct httpd_state *s;
   char *buffer;
 } util_param_t;
 
-void x_set_mapcmd(util_param_t *param) __reentrant __banked;
-void x_set_tscmd(util_param_t *param) __reentrant __banked;
-void x_set_wcmd(util_param_t *param) __reentrant __banked;
-char *parse_string (util_param_t *param) __reentrant __banked;
+void x_set_mapcmd(util_param_t *param) __reentrant;
+void x_set_tscmd(util_param_t *param) __reentrant;
+void x_set_wcmd(util_param_t *param) __reentrant;
 
 #endif // CGI_UTILS_H_INCLUDED

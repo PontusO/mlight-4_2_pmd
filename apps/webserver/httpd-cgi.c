@@ -716,22 +716,63 @@ PT_THREAD(get_option(struct httpd_state *s, char *ptr) __reentrant)
   PSOCK_END(&s->sout);
 }
 
+static const char cgi_string_new[] = "New";
+static const char cgi_string_modify[] = "Modify";
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(get_string(struct httpd_state *s, char *ptr) __reentrant)
 {
   char *string = NULL;
-  util_param_t up;
+  char stringno;
 
   PSOCK_BEGIN(&s->sout);
 
   while (*ptr != ' ')
     ptr++;
   ptr++;
+  stringno = atoi(ptr);
 
-  up.s = s;
-  up.buffer = ptr;
-  string = parse_string (&up);
+  switch(stringno)
+  {
+    /* Node Name */
+    case 1:
+      string = sys_cfg.device_id;
+      break;
+
+    case 2:
+      if (s->parms.modify) {
+        string = s->parms.ts->name;
+      }
+      break;
+
+    case 3:
+      string = sys_cfg.username;
+      break;
+
+    case 4:
+      string = sys_cfg.password;
+      break;
+
+    case 5:
+      if (s->parms.modify)
+        string = cgi_string_modify;
+      else
+        string = cgi_string_new;
+      break;
+
+    case 10:
+    case 11:
+    case 12:
+    case 13: {
+        ramp_ctrl_t *rcmgr = ramp_ctrl_get_ramp_ctrl (stringno-10);
+        if (rcmgr) {
+          string = ramp_ctrl_get_state_str (rcmgr);
+        } else {
+          string = (char*)"Invalid string !";
+        }
+      }
+      break;
+  }
 
   if (string) {
     sprintf((char *)uip_appdata, "%s", string);
