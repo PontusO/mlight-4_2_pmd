@@ -83,12 +83,9 @@
 		<Unit filename="..\apps\webserver\httpd-fs.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="..\apps\webserver\httpd-fs.h" />
 		<Unit filename="..\apps\webserver\httpd-fs\401.html" />
 		<Unit filename="..\apps\webserver\httpd-fs\404.html" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\get_level.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\set_level.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\start_ramp.cgi" />
-		<Unit filename="..\apps\webserver\httpd-fs\cgi\stop_ramp.cgi" />
 		<Unit filename="..\apps\webserver\httpd-fs\cmap.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\dig.shtml" />
 		<Unit filename="..\apps\webserver\httpd-fs\footer.html" />

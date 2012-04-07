@@ -73,17 +73,9 @@ HTTPD_CGI_CALL(f_get_check_box, "get-check", get_check_box);
 HTTPD_CGI_CALL(f_get_string, "get-string", get_string);
 HTTPD_CGI_CALL(f_get_int, "get-int", get_int);
 HTTPD_CGI_CALL(f_get_option, "get-option", get_option);
-
 HTTPD_CGI_CALL(f_get_time_events, "te-get-time-events", get_time_events);
 HTTPD_CGI_CALL(f_get_tsday, "get-tsday", get_tsday);
-
 HTTPD_CGI_CALL(f_map_get_events, "map-get-events", map_get_events);
-
-HTTPD_CGI_CALL(f_set_level, "set-level", set_level);
-HTTPD_CGI_CALL(f_get_level, "get-level", get_level);
-HTTPD_CGI_CALL(f_start_ramp, "start-ramp", start_ramp);
-HTTPD_CGI_CALL(f_stop_ramp, "stop-ramp", stop_ramp);
-
 HTTPD_CGI_CALL(f_get_evntfuncs, "get-evntfuncs", get_evntfuncs);
 
 static const struct httpd_cgi_call *calls[] = {
@@ -97,149 +89,13 @@ static const struct httpd_cgi_call *calls[] = {
   &f_get_time_events,
   &f_get_tsday,
   &f_map_get_events,
-  &f_set_level,
-  &f_get_level,
-  &f_start_ramp,
-  &f_stop_ramp,
   &f_get_evntfuncs,
   NULL
 };
 
 static const char ip_format[] = "%d.%d.%d.%d";
-static const char error_string[] = "<ERROR ";
 static const char str_selected[] = "selected";
 
-static
-PT_THREAD(set_level(struct httpd_state *s, char *ptr) __reentrant)
-{
-  IDENTIFIER_NOT_USED(ptr);
-
-  PSOCK_BEGIN(&s->sout);
-
-  /* Make sure only 2 parameters were passed to this cgi */
-  if (s->parms.num_parms == 2) {
-    /* Make sure only the correct parameters were passed */
-    if (s->parms.channel_updated && s->parms.level_updated) {
-      /* Validate parameters */
-      if (s->parms.channel < CFG_NUM_LIGHT_DRIVERS &&
-          s->parms.level <= 100) {
-        ld_param_t led_params;
-        led_params.channel = s->parms.channel;
-        led_params.level_percent = s->parms.level;
-        ledlib_set_light_percentage_log (&led_params);
-        sprintf((char *)uip_appdata, "<OK>");
-      } else {
-        sprintf((char *)uip_appdata, "%s01>", error_string);
-      }
-    } else {
-      sprintf((char *)uip_appdata, "%s02>", error_string);
-    }
-  } else {
-    sprintf((char *)uip_appdata, "%s03>", error_string);
-  }
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-  PSOCK_END(&s->sout);
-}
-
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(get_level(struct httpd_state *s, char *ptr) __reentrant)
-{
-  IDENTIFIER_NOT_USED(ptr);
-
-  PSOCK_BEGIN(&s->sout);
-  /* Make sure only 1 parameter was passed to this cgi */
-  if (s->parms.num_parms == 1) {
-    /* Make sure only the correct parameters were passed */
-    if (s->parms.channel_updated) {
-      /* Validate parameters */
-      if (s->parms.channel < CFG_NUM_LIGHT_DRIVERS) {
-        u8_t val = ledlib_get_light_percentage (s->parms.channel);
-        sprintf((char *)uip_appdata, "<%d>", val);
-      } else {
-        sprintf((char *)uip_appdata, "%s01>", error_string);
-      }
-    } else {
-      sprintf((char *)uip_appdata, "%s02>", error_string);
-    }
-  } else {
-    sprintf((char *)uip_appdata, "%s03>", error_string);
-  }
-  PSOCK_SEND_STR(&s->sout, uip_appdata);
-  PSOCK_END(&s->sout);
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(start_ramp(struct httpd_state *s, char *ptr) __reentrant)
-{
-  IDENTIFIER_NOT_USED(ptr);
-
-  PSOCK_BEGIN(&s->sout);
-  {
-    /* Make sure we have at least 3 parameters
-    * channel, rate and rampto are mandatory parameters.
-    * step is optional
-    */
-    if (s->parms.num_parms >= 3 &&
-        s->parms.channel_updated &&
-        s->parms.rate_updated &&
-        s->parms.rampto_updated)
-    {
-      /* Get the ramp controller associated with our channel */
-      ramp_ctrl_t *rcptr = ramp_ctrl_get_ramp_ctrl (s->parms.channel);
-      if (!rcptr) {
-        A_(printf (__AT__ "%p is not a valid ramp manager !\n", rcptr);)
-        sprintf((char *)uip_appdata, "%s04>", error_string);
-      } else {
-        /* Assert a signal to the ramp manager to start a ramp */
-        A_(printf (__AT__ "Starting ramp (%p) on channel %d\n",
-                   rcptr, (int)s->parms.channel);)
-        rcptr->rate = s->parms.rate;
-        if (!s->parms.step_updated)
-          rcptr->step = 1;
-        else
-          rcptr->step = s->parms.step;
-        rcptr->rampto = s->parms.rampto;
-        if (ramp_ctrl_get_state (rcptr) == RAMP_STATE_DORMANT) {
-          ramp_ctrl_send_start (rcptr);
-        } else {
-          A_(printf (__AT__ "CGI report, ramp control %d busy !\n",
-                     s->parms.channel);)
-        }
-        /* Return Ok status to the web client */
-        sprintf((char *)uip_appdata, "<OK>");
-      }
-    } else {
-      sprintf((char *)uip_appdata, "%s01>", error_string);
-    }
-    PSOCK_SEND_STR(&s->sout, uip_appdata);
-  }
-  PSOCK_END(&s->sout);
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(stop_ramp(struct httpd_state *s, char *ptr) __reentrant)
-{
-  IDENTIFIER_NOT_USED(ptr);
-
-  PSOCK_BEGIN(&s->sout);
-  {
-    if (s->parms.num_parms == 1 &&
-        s->parms.channel_updated) {
-      ramp_ctrl_t *rcptr = ramp_ctrl_get_ramp_ctrl (s->parms.channel);
-      /* Assert a signal to the ramp manager to start a ramp */
-      A_(printf (__AT__ "Stopping ramp (%p) on channel %d\n",
-                 rcptr, (int)s->parms.channel);)
-      ramp_ctrl_send_stop (rcptr);
-      /* For now, this will always return OK status */
-      sprintf((char *)uip_appdata, "<OK>");
-    } else {
-      sprintf((char *)uip_appdata, "%s03>", error_string);
-    }
-    PSOCK_SEND_STR(&s->sout, uip_appdata);
-  }
-  PSOCK_END(&s->sout);
-}
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(nullfunction(struct httpd_state *s, char *ptr) __reentrant)
@@ -345,7 +201,7 @@ PT_THREAD(get_tsday(struct httpd_state *s, char *ptr) __reentrant)
 
   PSOCK_BEGIN(&s->sout);
 
-  if (s->parms.ts && s->parms.modify) {
+  if (s->parms.modify) {
     while (*ptr != ' ')
       ptr++;
     ptr++;
@@ -606,12 +462,12 @@ PT_THREAD(get_check_box(struct httpd_state *s, char *ptr) __reentrant)
   switch(check_box)
   {
     case 0:
-      if (s->parms.ts && s->parms.modify)
+      if (s->parms.modify)
         state = s->parms.ts->status & TIME_EVENT_ENABLED;
       break;
 
     case 1:
-      if (s->parms.rp && s->parms.modify)
+      if (s->parms.modify)
         state = s->parms.rp->status & RULE_STATUS_ENABLED;
       break;
 
@@ -673,7 +529,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
       /* mapx value on the cmap.html page */
     case 2:
       intno = 0;
-      if (s->parms.rp && s->parms.modify) {
+      if (s->parms.modify) {
         myint = (int)s->parms.rp;
         intno = (char)myint;
       }
@@ -682,7 +538,7 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
       /* tsx value on tentry.shtml page */
     case 3:
       intno = 0;
-      if (s->parms.ts && s->parms.modify) {
+      if (s->parms.modify) {
         myint = (int)s->parms.ts;
         intno = (char)myint;
       }

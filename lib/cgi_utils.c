@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#pragma codeseg   APP_BANK
+//#pragma codeseg   APP_BANK
 
 #include <stdio.h>
 #include <string.h>
@@ -39,6 +39,8 @@
 #include "flash.h"
 #include "event_switch.h"
 #include "iet_debug.h"
+
+#define __banked
 
 /*---------------------------------------------------------------------------*/
 static char *skip_to_char(char *buf, char chr) __reentrant

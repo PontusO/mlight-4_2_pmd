@@ -32,6 +32,8 @@
 
 #include "httpd.h"
 
+#define __banked
+
 typedef struct {
   struct httpd_state *s;
   char *buffer;
