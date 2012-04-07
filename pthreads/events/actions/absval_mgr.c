@@ -52,7 +52,6 @@ void init_absval_mgr(void) __reentrant __banked
   absvalmgr.base.name = action_base_name_onoff;
   absvalmgr.type = ATYPE_ABSOLUTE_ACTION;
   absvalmgr.action_name = (char*)absval_name;
-  absvalmgr.vt.stop_action = NULL;
   absvalmgr.vt.trigger_action = absval_trigger;
 
   /* register this non threaded action manager */
@@ -67,6 +66,9 @@ void absval_trigger (struct rule *rule) __reentrant
   rule_data_t *rdata = rule->r_data;
 
   led_params.channel = absdata->channel-1;
+
+  /* First, stop any ramping action going on on this channel */
+  cycle_mgr_stop_channel (led_params.channel);
 
   /* Get value based on what the caller wanted */
   if (rdata->command == EVENT_USE_FIXED_DATA)

@@ -85,7 +85,6 @@ static char find_first_free_entry(void **table, char max)
  * absvalmgr.base.type = EVENT_ACTION_MANAGER;
  * absvalmgr.base.name = "A cool action manager";  // This is for the GUI
  * absvalmgr.props = ACT_PRP_ABSOLUTE_VALUE;
- * absvalmgr.vt.stop_action = absval_stop;
  * absvalmgr.vt.trigger_action = absval_trigger;
  *
  * evnt_register_handle (&absvalmgr);

@@ -161,7 +161,6 @@ typedef enum {
  * stop method.
  */
 typedef struct {
-  void (*stop_action)(void) __reentrant;
   void (*trigger_action)(struct rule *rule) __reentrant;
 } action_vt_t;
 

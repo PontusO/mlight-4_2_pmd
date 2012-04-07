@@ -195,9 +195,6 @@ PT_THREAD(handle_event_switch(event_thread_t *et) __reentrant)
         sys_cfg.rules[et->i].r_data->event_signal = 0;
         et->new_action = sys_cfg.rules[et->i].action;
         if (et->new_action != NULL) {
-          /* Stop any ongoing action in the action manager */
-          if (et->new_action->vt.stop_action)
-            et->new_action->vt.stop_action();
           /* And execute the new trigger with data from the rule action data */
           if (et->new_action->vt.trigger_action) {
             A_(printf (__AT__ " Executing action trigger function.\n");)

@@ -115,6 +115,7 @@ PT_THREAD(set_level(struct httpd_state *s, char *ptr) __reentrant)
   IDENTIFIER_NOT_USED(ptr);
 
   PSOCK_BEGIN(&s->sout);
+
   /* Make sure only 2 parameters were passed to this cgi */
   if (s->parms.num_parms == 2) {
     /* Make sure only the correct parameters were passed */
@@ -187,11 +188,11 @@ PT_THREAD(start_ramp(struct httpd_state *s, char *ptr) __reentrant)
       /* Get the ramp controller associated with our channel */
       ramp_ctrl_t *rcptr = ramp_ctrl_get_ramp_ctrl (s->parms.channel);
       if (!rcptr) {
-        A_(printf (__AT__ " %p is not a valid ramp manager !\n", rcptr);)
+        A_(printf (__AT__ "%p is not a valid ramp manager !\n", rcptr);)
         sprintf((char *)uip_appdata, "%s04>", error_string);
       } else {
         /* Assert a signal to the ramp manager to start a ramp */
-        A_(printf (__AT__ " Starting ramp (%p) on channel %d\n",
+        A_(printf (__AT__ "Starting ramp (%p) on channel %d\n",
                    rcptr, (int)s->parms.channel);)
         rcptr->rate = s->parms.rate;
         if (!s->parms.step_updated)
@@ -227,7 +228,7 @@ PT_THREAD(stop_ramp(struct httpd_state *s, char *ptr) __reentrant)
         s->parms.channel_updated) {
       ramp_ctrl_t *rcptr = ramp_ctrl_get_ramp_ctrl (s->parms.channel);
       /* Assert a signal to the ramp manager to start a ramp */
-      A_(printf (__AT__ " Stopping ramp (%p) on channel %d\n",
+      A_(printf (__AT__ "Stopping ramp (%p) on channel %d\n",
                  rcptr, (int)s->parms.channel);)
       ramp_ctrl_send_stop (rcptr);
       /* For now, this will always return OK status */
@@ -432,7 +433,6 @@ PT_THREAD(get_evntfuncs(struct httpd_state *s, char *ptr) __reentrant)
                            GET_EVENT_BASE(s->ptr).name);
           sprintf ((char *)uip_appdata+s->j, "%s</option>",
                    GET_EVENT(s->ptr)->event_name);
-          //printf ("%s\n", uip_appdata);
           break;
         case EVENT_ACTION_MANAGER:
           s->num = (int)s->ptr;

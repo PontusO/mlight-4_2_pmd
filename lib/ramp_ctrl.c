@@ -150,6 +150,8 @@ PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked)
              ramp_ctrl, ramp_ctrl->channel);)
 
   while (1) {
+restart:
+    ramp_ctrl->state = RAMP_STATE_DORMANT;
     PT_WAIT_UNTIL (&ramp_ctrl->pt, ramp_ctrl->signal == RAMP_SIG_START);
     /* Reset signal and set state to ramping */
     ramp_ctrl->signal = RAMP_SIG_NONE;
@@ -178,6 +180,12 @@ PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked)
       set_timer (ramp_ctrl->timer, ramp_ctrl->rate, NULL);
       PT_WAIT_UNTIL (&ramp_ctrl->pt, (get_timer (ramp_ctrl->timer) == 0) ||
                                  ramp_ctrl->signal == RAMP_SIG_STOP);
+
+      if (ramp_ctrl->signal == RAMP_SIG_STOP) {
+        ramp_ctrl->signal = RAMP_SIG_NONE;
+        goto restart;
+      }
+
       ramp_ctrl->intensity += ramp_ctrl->step;
 
     } while ((ramp_ctrl->intensity != ramp_ctrl->rampto) &&
@@ -191,8 +199,6 @@ PT_THREAD(handle_ramp_ctrl(ramp_ctrl_t *ramp_ctrl) __reentrant __banked)
     } else {
       ramp_ctrl->signal = RAMP_SIG_NONE;
     }
-    /* Make the manager dormant */
-    ramp_ctrl->state = RAMP_STATE_DORMANT;
     A_(printf (__AT__ "Ramp loop restarts !\n");)
   }
   PT_END(&ramp_ctrl->pt);

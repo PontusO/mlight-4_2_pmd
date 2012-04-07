@@ -82,6 +82,7 @@ typedef struct {
 
 void init_cycle_mgr(cycle_mgr_t *cycle_mgr) __reentrant __banked;
 u8_t cycle_mgr_get_state (u8_t channel);
+char cycle_mgr_stop_channel (u8_t channel) __reentrant __banked;
 PT_THREAD(handle_cycle_mgr(cycle_mgr_t *cycle_mgr) __reentrant __banked);
 
 #endif // cycle_mgr_H_INCLUDED
