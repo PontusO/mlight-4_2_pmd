@@ -421,7 +421,7 @@ PT_THREAD(get_evntfuncs(struct httpd_state *s, char *ptr) __reentrant)
     while (s->ptr) {
       switch (GET_EVENT_BASE(s->ptr).type)
       {
-        case 1:
+        case EVENT_EVENT_PROVIDER:
           s->num = (int)s->ptr;
           s->num |= (unsigned long)(((event_prv_t *)s->ptr)->type) << 16;
           s->j = sprintf (uip_appdata, "<option value=\"%ld\" ", s->num);
@@ -432,8 +432,9 @@ PT_THREAD(get_evntfuncs(struct httpd_state *s, char *ptr) __reentrant)
                            GET_EVENT_BASE(s->ptr).name);
           sprintf ((char *)uip_appdata+s->j, "%s</option>",
                    GET_EVENT(s->ptr)->event_name);
+          //printf ("%s\n", uip_appdata);
           break;
-        case 2:
+        case EVENT_ACTION_MANAGER:
           s->num = (int)s->ptr;
           s->num |= (unsigned long)(((action_mgr_t*)s->ptr)->type) << 16;
           s->j = sprintf ((char *)uip_appdata, "<option value=\"%ld\" ", s->num);

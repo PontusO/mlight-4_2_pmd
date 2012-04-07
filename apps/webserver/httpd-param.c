@@ -388,6 +388,7 @@ PARAM_FUNC (set_tsx)
     /* Need to clear the weekday entry */
     ts->weekday  = 0;
     s->parms.ts = ts;
+    s->parms.modify = TRUE;
   }
 }
 
@@ -642,7 +643,7 @@ PARAM_FUNC (set_save)
   buffer = skip_to_char(buffer, '=');
   if (strncmp("save", buffer, 4) == 0) {
     /* Actions needed for the time event set page */
-    if (ts_update) {
+    if (ts_update && !s->parms.modify) {
       s->parms.ts->status |= TIME_EVENT_ENTRY_USED;
       add_time_event (s->parms.ts, s->parms.ts_index);
     }

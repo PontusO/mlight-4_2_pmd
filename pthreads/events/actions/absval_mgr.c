@@ -49,7 +49,7 @@ static const char *absval_name = "Set absolute light level";
 void init_absval_mgr(void) __reentrant __banked
 {
   absvalmgr.base.type = EVENT_ACTION_MANAGER;
-  absvalmgr.base.name = action_base_name_dimmable;
+  absvalmgr.base.name = action_base_name_onoff;
   absvalmgr.type = ATYPE_ABSOLUTE_ACTION;
   absvalmgr.action_name = (char*)absval_name;
   absvalmgr.vt.stop_action = NULL;
