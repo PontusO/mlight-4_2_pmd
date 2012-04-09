@@ -126,6 +126,13 @@ void pmd(void) __banked
 #ifdef HAVE_FLASH
   validate_config_flash();  // before we do anything else do this.
 #endif
+  /* Check if user wants to factory default the unit */
+  if (!(read_nicreg (DM9000_GPR) & FACTORY_DEFAULT_MASK)) {
+    /* Go and get the default values from flash */
+    load_default_config();
+    /* Write it to flash */
+    write_config_to_flash();
+  }
 
   init_swtimers();          // Initialize all software timers
   httpd_init();             // Initialise the webserver app.

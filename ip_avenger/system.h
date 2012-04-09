@@ -117,6 +117,9 @@ typedef long s32_t;
 #undef CONFIG_ENABLE_UART_0
 void putchar(char n);
 
+/* Bitmask used to validate a factory default */
+#define FACTORY_DEFAULT_MASK    4
+
 /* Global system error function */
 void add_error_to_log (int error) __reentrant;
 int *get_error_log (void) __reentrant;
