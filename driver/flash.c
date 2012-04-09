@@ -221,9 +221,9 @@ static void write_new_verification_word(int ver)
   reg_bak = PSBANK;
   PSBANK = ((PSBANK | 0x10) & 0xDF); /* select COBANK = 01*/
 
-  SFRPAGE = CONFIG_PAGE;
-  CCH0CN =  CCH0CN & 0x01;  /* clear CHBLKW(CCH0CN.0) __bit*/
-  SFRPAGE = LEGACY_PAGE;
+  SFRPAGE  = CONFIG_PAGE;
+  CCH0CN  &= 0xfe;  /* clear CHBLKW(CCH0CN.0) __bit*/
+  SFRPAGE  = LEGACY_PAGE;
 
   enter_flash_write();
 
