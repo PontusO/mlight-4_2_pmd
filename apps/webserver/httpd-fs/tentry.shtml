@@ -4,15 +4,17 @@
 <!--
 function validate() {
 var ok=1;
-elem = document.getElementById("idname"); if (!isStrOk(elem, 1, 8)) ok=0;
-elem = document.getElementById("idtime"); if (!isTime(elem)) ok=0;
+elem=document.getElementById("idname"); if (!isStrOk(elem, 1, 8)) ok=0;
+elem=document.getElementById("idtime"); if (!isTime(elem)) ok=0;
+if (!document.form.tsd7.checked && !document.form.tsd6.checked && !document.form.tsd5.checked && !document.form.tsd4.checked && !document.form.tsd3.checked && !document.form.tsd2.checked && !document.form.tsd1.checked && ok==1) {
+alert("You must check at least one weekday !"); return false; }
 if (!ok) { return doAlert(); }
 return true; }
 //-->
 </script>
 <h1>%! get-string 5
  Time Event</h1><hr color="#258D92" size="2" width="90%">
-<form onsubmit="return validate();" action="tevents.shtml"><center><table width="90%" class="mytab">
+<form name="form" onsubmit="return validate();" action="tevents.shtml"><center><table width="90%" class="mytab">
 <input type="hidden" name="tsx" value="%! get-int 3
 ">
 <tr><td>Event Name</td><td colspan="8"><input type="text" id="idname" name="tsname" size="16" maxlength="8" value="%! get-string 2
@@ -34,7 +36,7 @@ return true; }
 ></div></td>
 <td><div>Sat<br><input type="checkbox" name="tsd1" %! get-tsday 1
 ></div></td>
-<td><div>Sun<br><input type="checkbox" name="tsd7" %! get-tsday 7
+<td><div>Sun<br><input type="checkbox" id="mon" name="tsd7" %! get-tsday 7
 ></div></td>
 </tr>
 </center></table>

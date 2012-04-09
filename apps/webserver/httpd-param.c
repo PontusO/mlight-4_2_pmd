@@ -215,22 +215,18 @@ PARAM_FUNC (set_in2m)
 PARAM_FUNC (set_in1s)
 {
   IDENTIFIER_NOT_USED(s);
+  IDENTIFIER_NOT_USED(buffer);
 
-  buffer = skip_to_char(buffer, '=');
-  if (strncmp(buffer, "on", 2) == 0) {
-    sys_cfg.in1_inverted = TRUE;
-  }
+  sys_cfg.in1_inverted = TRUE;
 }
 
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_in2s)
 {
   IDENTIFIER_NOT_USED(s);
+  IDENTIFIER_NOT_USED(buffer);
 
-  buffer = skip_to_char(buffer, '=');
-  if (strncmp(buffer, "on", 2) == 0) {
-    sys_cfg.in2_inverted = TRUE;
-  }
+  sys_cfg.in2_inverted = TRUE;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -269,11 +265,9 @@ PARAM_FUNC (set_pirlock)
 PARAM_FUNC (set_pirena)
 {
   IDENTIFIER_NOT_USED(s);
+  IDENTIFIER_NOT_USED(buffer);
 
-  buffer = skip_to_char(buffer, '=');
-  if (strncmp(buffer, "on", 2) == 0) {
-    sys_cfg.pir_enabled = TRUE;
-  }
+  sys_cfg.pir_enabled = TRUE;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -313,11 +307,10 @@ PARAM_FUNC (set_mapcmd)
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_mapenabled)
 {
+  IDENTIFIER_NOT_USED(buffer);
+
   if (s->parms.rp) {
-    buffer = skip_to_char(buffer, '=');
-    if (strncmp(buffer, "on", 2) == 0) {
-      s->parms.rp->status = RULE_STATUS_ENABLED;
-    }
+    s->parms.rp->status = RULE_STATUS_ENABLED;
   }
 }
 
@@ -416,11 +409,10 @@ PARAM_FUNC (set_tsname)
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_tsenable)
 {
+  IDENTIFIER_NOT_USED(buffer);
+
   if (s->parms.ts) {
-    buffer = skip_to_char(buffer, '=');
-    if (strncmp(buffer, "on", 2) == 0) {
-      s->parms.ts->status |= TIME_EVENT_ENABLED;
-    }
+    s->parms.ts->status |= TIME_EVENT_ENABLED;
     ts_update = TRUE;
   }
 }
@@ -435,13 +427,9 @@ PARAM_FUNC (set_tstime)
     buffer = skip_to_char(buffer, '=');
     if (NEOP(*buffer)) {
       s->parms.ts->hrs = atoi(buffer);
-      if (s->parms.ts->hrs > 23)
-        s->parms.ts->hrs = 23;
       buffer = skip_to_char(buffer, '%');
       buffer += 2;
       s->parms.ts->min = atoi(buffer);
-      if (s->parms.ts->min > 59)
-        s->parms.ts->min = 59;
     }
     ts_update = TRUE;
   }
@@ -539,15 +527,10 @@ PARAM_FUNC (reset_time)
 PARAM_FUNC (enable_time)
 {
   IDENTIFIER_NOT_USED (s);
+  IDENTIFIER_NOT_USED(buffer);
 
-  buffer = skip_to_char(buffer, '=');
-  if (strncmp(buffer, "on", 2) == 0) {
-    /* Make sure we try to get a new time */
-    RTC_GET_TIME_EVENT = 1;
-    sys_cfg.enable_time = 1;
-  } else if (strncmp(buffer, "off", 3) == 0) {
-    sys_cfg.enable_time = 0;
-  }
+  RTC_GET_TIME_EVENT = 1;
+  sys_cfg.enable_time = 1;
 }
 /*---------------------------------------------------------------------------*/
 PARAM_FUNC (set_time)
