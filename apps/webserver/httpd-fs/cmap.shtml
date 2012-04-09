@@ -122,7 +122,7 @@ window.onload = function() {
 
 <div id="cycle" style="display:none">
 <table width="90%" class="mytab">
-<col style="width:40%" /><tr><td>On Time (1-60 minutes)</td><td><input type="text" id="idon" name="timeon" size="3" maxlength="2" value="%! get-int 14
+<col style="width:40%" /><tr><td>On Time (1-60 minutes)</td><td><input type="text" id="idon" name="timeon" size="3" maxlength="2" value="%! get-int 20
 " disabled></td></tr>
 </table>
 </div>

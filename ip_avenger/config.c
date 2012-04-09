@@ -109,9 +109,9 @@ void config() {
   /* This makes all inputs pulled high and all outputs set to high */
   P0 = 0xFF;
   /*
-   * Pull all keyboard inputs high
+   * Pull all keyboard inputs high %X1111000 and set all others to low
    */
-  P1 = 0xFF;
+  P1 = 0xF8;
 //-----------------------------------------------------------------------------
 // EMIF_Init
 //-----------------------------------------------------------------------------

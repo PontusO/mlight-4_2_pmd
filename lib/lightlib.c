@@ -126,8 +126,12 @@ void init_ledlib(void) __reentrant __banked
  */
 static void set_ledbit (u8_t ledbit, u8_t value) __reentrant
 {
+  /* Invert the value since we have an inverter as a mosfet driver */
+  value = value ? 0 : 1;
+
   switch (ledbit)
   {
+#if 0
     case 0:
       P1_0 = value;
       break;
@@ -137,12 +141,14 @@ static void set_ledbit (u8_t ledbit, u8_t value) __reentrant
     case 2:
       P1_2 = value;
       break;
+#endif
     case 3:
       P1_3 = value;
       break;
     case 4:
       P1_4 = value;
       break;
+#if 0
     case 5:
       P1_5 = value;
       break;
@@ -152,6 +158,7 @@ static void set_ledbit (u8_t ledbit, u8_t value) __reentrant
     case 7:
       P1_7 = value;
       break;
+#endif
   }
 }
 
@@ -169,13 +176,14 @@ char ledlib_set_light_abs (ld_param_t *params) __reentrant __banked
 
   /* the percentage value is 1/655 of max_int. */
   light_drivers[channel].pwm_percent = get_percent (value);
-  light_drivers[channel].pwm_ratio = value;
 
   if (light_drivers[channel].driver_type == LIGHT_PWM) {
+    light_drivers[channel].pwm_ratio = value;
     set_pca_duty (channel, value);
-  } else
-    set_ledbit (light_drivers[channel].io_pin,
-                light_drivers[channel].pwm_percent ? 1 : 0);
+  } else {
+    light_drivers[channel].pwm_ratio = value ? 1 : 0;
+    set_ledbit (light_drivers[channel].io_pin, value ? 1 : 0);
+  }
   return 0;
 }
 
@@ -191,13 +199,15 @@ char ledlib_set_light_percentage_log (ld_param_t *params) __reentrant __banked
   if (channel >= CFG_NUM_LIGHT_DRIVERS || value > MAX_PERCENTAGE_VALUE)
     return -1;
 
-  light_drivers[channel].pwm_percent = value;
   if (light_drivers[channel].driver_type == LIGHT_PWM) {
+    light_drivers[channel].pwm_percent = value;
     light_drivers[channel].pwm_ratio = calc_pwm (value);
     set_pca_duty (channel, light_drivers[channel].pwm_ratio);
-  }  else
-    set_ledbit (light_drivers[channel].io_pin,
-                light_drivers[channel].pwm_percent ? 1 : 0);
+  }  else {
+    light_drivers[channel].pwm_percent = value ? 1000 : 0;
+    light_drivers[channel].pwm_ratio = value ? 1 : 0;
+    set_ledbit (light_drivers[channel].io_pin, value ? 1 : 0);
+  }
   return 0;
 }
 

@@ -253,12 +253,14 @@ char *parse_string (util_param_t *param) __reentrant __banked
     case 10:
     case 11:
     case 12:
-    case 13: {
+    case 13:
+    case 14:
+    case 15: {
         ramp_ctrl_t *rcmgr = ramp_ctrl_get_ramp_ctrl (stringno-10);
         if (rcmgr) {
           string = ramp_ctrl_get_state_str (rcmgr);
         } else {
-          string = (char*)"Invalid string !";
+          string = ledlib_get_light_abs (stringno - 10) ? "On" : "Off";
         }
       }
       break;

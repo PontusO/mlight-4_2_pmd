@@ -181,13 +181,11 @@ void putchar(char chr)
 void putchar1(char chr)
 #endif
 {
-  P1_4 = 1;
   SFRPAGE = UART1_PAGE;
   /* First wait for the tx_busy flag to be cleared by the __interrupt */
   while (!TI1);
   TI1   = 0;
   SBUF1 = chr;
-  P1_4 = 0;
 }
 
 /*********************************************************************************

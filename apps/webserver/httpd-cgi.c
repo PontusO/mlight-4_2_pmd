@@ -746,12 +746,14 @@ PT_THREAD(get_int(struct httpd_state *s, char *ptr) __reentrant)
     case 11:
     case 12:
     case 13:
+    case 14:
+    case 15:
       myint = (u16_t)ledlib_get_light_percentage(intno - 10);
       intno = 1;
       break;
 
       /* Retrieve the timeon value on page cmap.shtml */
-    case 14:
+    case 20:
       intno = 1;
       if (s->parms.modify) {
         myint = s->parms.rp->action_data.cycle_data.time;
