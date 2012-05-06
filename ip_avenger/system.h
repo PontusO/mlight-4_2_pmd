@@ -86,9 +86,9 @@ typedef long s32_t;
  * Make sure the correct include file is included in the build.
  */
 #if BUILD_TARGET == IET902X
-#include <c8051f020.h>
+#include <C8051F020.h>
 #elif BUILD_TARGET == IET912X
-#include <c8051f120.h>
+#include <C8051F120.h>
 #else
 #error Incorrect Build Target specified
 #endif

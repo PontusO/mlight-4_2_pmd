@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "DM9000.h"
+#include "dm9000.h"
 #include "CUart.h"
 
 extern void datagram(void);
