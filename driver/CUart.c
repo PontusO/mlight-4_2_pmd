@@ -93,12 +93,11 @@ void uart0_init(u8_t baud) __reentrant
 * Will override dummy putchar in SDCC libraries.
 *
 *********************************************************************************/
-#if PUTCHAR_UART==0
-void putchar(char a)
-#else
-void putchar0(char a)
-#endif
+void putchar0(char a) __reentrant
 {
+  if (a = '\n')
+    putchar (0x0a);
+
 #if BUILD_TARGET == IET912X
   SFRPAGE = UART0_PAGE; // Set the correct SFR page
 #endif
@@ -109,6 +108,15 @@ void putchar0(char a)
   SFRPAGE = LEGACY_PAGE; // Reset to legacy SFR page
 #endif
 }
+
+#if PUTCHAR_UART==0
+void putchar(char a)
+{
+  if (a == '\n')
+    putchar0 (0x0d);
+  putchar0 (a);
+}
+#endif
 #endif
 
 #ifdef CONFIG_ENABLE_UART_1
@@ -175,19 +183,25 @@ void uart1_init(u8_t baud) __reentrant
 * Prints a character on uart 1
 *
 *********************************************************************************/
-#if PUTCHAR_UART==1
-void putchar(char chr)
-#else
 void putchar1(char chr)
-#endif
 {
   SFRPAGE = UART1_PAGE;
-  /* First wait for the tx_busy flag to be cleared by the __interrupt */
+  /* First wait for the uart to be done */
   while (!TI1);
   TI1   = 0;
   SBUF1 = chr;
 }
 
+#if PUTCHAR_UART==1
+void putchar(char a)
+{
+  if (a == '\n')
+    putchar1 (0x0d);
+  putchar1 (a);
+}
+#endif
+
+#ifdef IET_CONFIG_UART1_INTERRUPT_ENABLE
 /*********************************************************************************
 *
 * Function: UART1_ISR
@@ -201,6 +215,7 @@ void UART1_ISR (void) __interrupt UART1_VECTOR
 {
 
 }
+#endif
 #endif
 
 // EOF

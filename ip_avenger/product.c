@@ -148,27 +148,27 @@ void pmd(void) __banked
 
   EA = TRUE;                // Enable interrupts
 
-  A_(printf("\r\n");)
-  printf("Invector Embedded Technologies Debug system output v. 1.001\r\n");
-  printf("System: IET9123 mLight 4/2, 20MHz system clock, DM9000E Ethernet Controller\r\n");
+  A_(printf("\n");)
+  printf("Invector Embedded Technologies Debug system output v. 1.001\n");
+  printf("System: IET9123 mLight 4/2, 20MHz system clock, DM9000E Ethernet Controller\n");
   printf("Size of parameter flash area %d (Max size is 1024 bytes)!\n", sizeof sys_cfg) ;
-  A_(printf("Current Host Settings:\r\n");)
-  A_(printf("  IP Address: %d.%d.%d.%d\r\n",
+  A_(printf("Current Host Settings:\n");)
+  A_(printf("  IP Address: %d.%d.%d.%d\n",
     (u16_t)(htons(uip_hostaddr[0]) >> 8),
     (u16_t)(htons(uip_hostaddr[0]) & 0xff),
     (u16_t)(htons(uip_hostaddr[1]) >> 8),
     (u16_t)(htons(uip_hostaddr[1]) & 0xff));)
-  A_(printf("  Default Router: %d.%d.%d.%d\r\n",
+  A_(printf("  Default Router: %d.%d.%d.%d\n",
     (u16_t)(htons(uip_draddr[0]) >> 8),
     (u16_t)(htons(uip_draddr[0]) & 0xff),
     (u16_t)(htons(uip_draddr[1]) >> 8),
     (u16_t)(htons(uip_draddr[1]) & 0xff));)
-  A_(printf("  Netmask: %d.%d.%d.%d\r\n",
+  A_(printf("  Netmask: %d.%d.%d.%d\n",
     (u16_t)(htons(uip_netmask[0]) >> 8),
     (u16_t)(htons(uip_netmask[0]) & 0xff),
     (u16_t)(htons(uip_netmask[1]) >> 8),
     (u16_t)(htons(uip_netmask[1]) & 0xff));)
-  A_(printf("  Network address: %02x-%02x-%02x-%02x-%02x-%02x\r\n",
+  A_(printf("  Network address: %02x-%02x-%02x-%02x-%02x-%02x\n",
     (u16_t)uip_ethaddr.addr[0],(u16_t)uip_ethaddr.addr[1],(u16_t)uip_ethaddr.addr[2],
     (u16_t)uip_ethaddr.addr[3],(u16_t)uip_ethaddr.addr[4],(u16_t)uip_ethaddr.addr[5]);)
 
@@ -218,7 +218,7 @@ void pmd(void) __banked
 
         // UIP_CONNS - nominally 10 - is the maximum simultaneous
         // connections allowed. Scan through all 10
-        C_(printf("Time for connection periodic management\x0a\x0d");)
+        C_(printf("Time for connection periodic management\n");)
         for (i = 0; i < UIP_CONNS; i++)
         {
           uip_periodic(i);
@@ -242,7 +242,7 @@ void pmd(void) __banked
         }
 
 #if UIP_UDP
-        C_(printf("Time for udp periodic management\x0a\x0d");)
+        C_(printf("Time for udp periodic management\n");)
         for (i = 0; i < UIP_UDP_CONNS; i++)
         {
           uip_udp_periodic(i);
@@ -260,7 +260,7 @@ void pmd(void) __banked
       // Call the ARP timer function every 10 seconds. Flush dead entries
       if (ARP_EventPending)
       {
-        B_(printf("ARP house keeping.\x0a\x0d");)
+        B_(printf("ARP house keeping.\n");)
         ARP_EventPending = FALSE;
         uip_arp_timer();
       }
@@ -268,10 +268,10 @@ void pmd(void) __banked
     // Packet Received (uip_len != 0) Process incoming
     else
     {
-      B_(printf("Received incomming data package.\x0a\x0d");)
+      B_(printf("Received incomming data package.\n");)
       if (BUF->type == htons(UIP_ETHTYPE_IP))
       {
-        B_(printf("IP Package received.\x0a\x0d");)
+        B_(printf("IP Package received.\n");)
         // Received an IP packet
         uip_arp_ipin();
         uip_input();
@@ -283,14 +283,14 @@ void pmd(void) __banked
           uip_arp_out();
           tcpip_output();
           tcpip_output();
-          B_(printf("IP Package transmitted.\x0a\x0d");)
+          B_(printf("IP Package transmitted.\n");)
         }
       }
       else
       {
         if (BUF->type == htons(UIP_ETHTYPE_ARP))
         {
-          B_(printf("ARP package received.\x0a\x0d");)
+          B_(printf("ARP package received.\n");)
           // Received an ARP packet
           uip_arp_arpin();
           // If the above function invocation resulted in data that
@@ -300,7 +300,7 @@ void pmd(void) __banked
           {
             tcpip_output();
             tcpip_output();
-            B_(printf("ARP Package transmitted.\x0a\x0d");)
+            B_(printf("ARP Package transmitted.\n");)
           }
         }
       }
